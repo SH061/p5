@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script>/* 리허설 점검용: 주소에 ?rehearsal=1 이 있을 때만, 화면이 가려져도 애니메이션을 계속 돌린다 */
+if(/[?&]rehearsal=1/.test(location.search)){(function(){let q=[],last=0;const ch=new MessageChannel();ch.port1.onmessage=()=>{const n=performance.now();if(n-last>=33&&q.length){last=n;const c=q;q=[];c.forEach(f=>{try{f(n)}catch(e){console.error(e)}})}ch.port2.postMessage(0)};window.requestAnimationFrame=f=>{q.push(f);return q.length};window.cancelAnimationFrame=()=>{};ch.port2.postMessage(0);})();}
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>수업내용 확인하기! — 에너지의 흡수와 방출</title>
