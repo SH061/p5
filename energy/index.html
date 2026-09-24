@@ -2262,7 +2262,7 @@ function switchTeacherTab(tab){
   document.getElementById("tab-heatq").classList.toggle("active", tab==="heatq");
   document.getElementById("view-neutral").classList.toggle("hidden", tab!=="neutral");
   document.getElementById("view-heatq").classList.toggle("hidden", tab!=="heatq");
-  if(tab==="neutral"){ const f=document.getElementById("gf-neutral-frame"); if(!f.src) f.src="neutralization.html"; fitNeutralFrame(); }
+  if(tab==="neutral"){ const f=document.getElementById("gf-neutral-frame"); if(!f.src) f.src="neutralization.html?v=2"; fitNeutralFrame(); }
   if(tab==="groups" || tab==="exprec" || tab==="heatq") GF.teacherRender();
   document.getElementById("view-progress").classList.toggle("hidden", tab!=="progress");
   document.getElementById("view-results").classList.toggle("hidden", tab!=="results");

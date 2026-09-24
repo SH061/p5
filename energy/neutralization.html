@@ -54,8 +54,8 @@
     main > section, main > aside{min-height:0}
     main > section.card{display:flex;flex-direction:column;overflow:auto}
     main > section.card:nth-of-type(2){overflow:hidden}
-    #simbox{flex:1 1 auto;min-height:0;display:flex;align-items:stretch;justify-content:stretch}
-    #sim{flex:none}
+    #simbox{flex:1 1 auto;min-height:160px;position:relative;overflow:hidden}
+    #sim{position:absolute;left:0;top:0}
     #macro{width:auto;max-width:none;height:calc(100vh - 420px);min-height:240px;margin:0 auto}
     .side{overflow:auto;padding-right:4px}
     .steps{margin-top:6px}
@@ -269,6 +269,7 @@ function fitSim(){
 }
 let fitT=null, simZoom=1;
 window.addEventListener('resize',()=>{ clearTimeout(fitT); fitT=setTimeout(fitSim,120); });
+if(window.ResizeObserver){ new ResizeObserver(()=>{ clearTimeout(fitT); fitT=setTimeout(fitSim,120); }).observe(document.getElementById('simbox')); }
 
 function newExp(){
   const H0=cfg.hp*cfg.hv;
@@ -709,9 +710,10 @@ let last=performance.now();
 function frame(now){
   const raw=Math.min(0.05,(now-last)/1000);last=now;
   const sp=+$('oSpeed').value,dt=raw*sp;
-  if(!paused){const n=Math.max(2,Math.ceil(dt/0.01));for(let i=0;i<n;i++){macroStep(dt/n);simStep(dt/n);}}
-  drawMacro(paused?0:dt);drawSim();ui();
-  requestAnimationFrame(frame);
+  requestAnimationFrame(frame);   // 오류가 나도 다음 장면은 계속 그림
+  const safe=(f)=>{try{f();}catch(e){if(!frame.err){frame.err=1;console.error(e);}}};
+  if(!paused){const n=Math.max(2,Math.ceil(dt/0.01));safe(()=>{for(let i=0;i<n;i++){macroStep(dt/n);simStep(dt/n);}});}
+  safe(()=>drawMacro(paused?0:dt));safe(drawSim);safe(ui);
 }
 document.querySelectorAll('[data-ml]').forEach(b=>b.onclick=()=>addNaOH(+b.dataset.ml));
 $('bAdd').onclick=()=>{const v=parseFloat($('inMl').value);if(v>0)addNaOH(v);};
