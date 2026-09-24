@@ -3451,7 +3451,7 @@ function simStep(dt){
   $("gf-bNew").onclick=()=>isCtrl()&&act({t:"new",cfg:{...cfg}});
 
   // 입자 화면: 상자 크기에 맞춰 그리는 영역을 바꿈(찌그러짐 없음). 큰 화면은 입자를 1.5배로
-  function waterTarget(nH){ return Math.min(260, Math.max(20, Math.round((85-nH)*(PW*PH)/(380*560)))); }
+  function waterTarget(nH){ const k=simZoom<1?0.6:1; return Math.min(260, Math.max(16, Math.round(k*(85-nH)*(PW*PH)/(380*560)))); }
   let simZoom=1;
   function layoutExp(){
     const st=$("gf-stage"); if(!st) return;
@@ -3463,7 +3463,8 @@ function simStep(dt){
     layoutExp();
     const w=Math.max(160,Math.floor(box.clientWidth)), h=Math.max(200,Math.floor(box.clientHeight));
     cv.style.width=w+"px"; cv.style.height=h+"px";
-    const Z = w>=700 ? 1.5 : 1, lw=Math.round(w/Z), lh=Math.round(h/Z);
+    // 큰 화면은 1.5배 확대, 휴대폰처럼 작은 화면은 0.8배로 줄여서 입자가 겹쳐 보이지 않게
+    const Z = w>=700 ? 1.5 : (w<260 ? 0.8 : 1), lw=Math.round(w/Z), lh=Math.round(h/Z);
     if(lw===PW && lh===PH && Z===simZoom) return;
     const sx=lw/PW, sy=lh/PH;
     PW=lw; PH=lh; PX1=PW-8; PY1=PH-8; simZoom=Z;
