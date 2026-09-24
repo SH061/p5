@@ -855,6 +855,31 @@
   .gf-tq-stat .ex{ background:#fff0e6; color:#b4460b; } .gf-tq-stat .en{ background:#e8f1ff; color:#1f55b8; }
   .gf-tq-stat i{ display:block; height:12px; border-radius:6px; margin-top:8px; background:currentColor; opacity:.7; }
   #view-neutral iframe{ display:block; width:100%; height:calc(100vh - 70px); border:0; background:#f6f4ee; }
+
+  /* 교사 상단 메뉴는 항상 한 줄 — 화면이 좁아지면 글자·여백을 줄이고 짧은 이름으로 바꾼다 */
+  .teacher-topbar{ flex-wrap:nowrap !important; overflow-x:auto; scrollbar-width:thin; }
+  .teacher-topbar > *{ flex-shrink:0; }
+  .teacher-topbar .spacer{ flex:1 1 0; min-width:4px; }
+  .teacher-topbar .lbl-sm{ display:none; }
+  @media (max-width:1750px){
+    .teacher-topbar{ gap:5px; padding:8px 10px 6px; }
+    .teacher-topbar .pill-tab{ padding:6px 11px; font-size:12px; }
+    .teacher-topbar .btn, .teacher-topbar .gate-btn, .teacher-topbar .ps-btn{ padding:6px 9px; font-size:12px; }
+    .teacher-topbar .gf-stagectl button{ padding:5px 7px; font-size:11.5px; }
+    .teacher-topbar .last-updated{ display:none; }
+  }
+  @media (max-width:1500px){
+    .teacher-topbar .lbl-lg{ display:none; }
+    .teacher-topbar .lbl-sm{ display:inline; }
+    .teacher-topbar .class-label{ font-weight:800; }
+  }
+  @media (max-width:1180px){
+    .teacher-topbar{ gap:3px; padding:8px 6px 6px; }
+    .teacher-topbar .pill-tab{ padding:5px 7px; font-size:11px; }
+    .teacher-topbar .btn, .teacher-topbar .gate-btn, .teacher-topbar .ps-btn{ padding:5px 6px; font-size:11px; }
+    .teacher-topbar .gf-stagectl{ gap:2px; padding:0 2px; }
+    .teacher-topbar .gf-stagectl button{ padding:4px 5px; font-size:10.5px; }
+  }
 </style>
 </head>
 <body>
@@ -1103,13 +1128,13 @@
     <!-- 반 선택 후 화면 -->
     <div id="teacher-main" class="hidden">
       <div class="teacher-topbar">
-        <button class="pill-tab active" id="tab-progress">진행 상황</button>
-        <button class="pill-tab" id="tab-results">문항별 결과</button>
-        <button class="pill-tab" id="tab-groups">👥 조별 활동</button>
-        <button class="pill-tab" id="tab-exprec">📈 실험 기록</button>
-        <button class="pill-tab" id="tab-neutral">🧪 중화 반응 실험</button>
-        <button class="pill-tab" id="tab-heatq">🔥 발열·흡열 퀴즈</button>
-        <span class="gf-stagectl" id="gf-stagectl"><span>학생 진행</span><button data-open="1">① 실험</button><button data-open="2">② 퀴즈</button><button data-open="3">③ 문제풀이</button></span>
+        <button class="pill-tab active" id="tab-progress"><span class="lbl-lg">진행 상황</span><span class="lbl-sm">진행</span></button>
+        <button class="pill-tab" id="tab-results"><span class="lbl-lg">문항별 결과</span><span class="lbl-sm">문항별</span></button>
+        <button class="pill-tab" id="tab-groups"><span class="lbl-lg">👥 조별 활동</span><span class="lbl-sm">👥 조별</span></button>
+        <button class="pill-tab" id="tab-exprec"><span class="lbl-lg">📈 실험 기록</span><span class="lbl-sm">📈 실험기록</span></button>
+        <button class="pill-tab" id="tab-neutral"><span class="lbl-lg">🧪 중화 반응 실험</span><span class="lbl-sm">🧪 중화실험</span></button>
+        <button class="pill-tab" id="tab-heatq"><span class="lbl-lg">🔥 발열·흡열 퀴즈</span><span class="lbl-sm">🔥 발열퀴즈</span></button>
+        <span class="gf-stagectl" id="gf-stagectl"><span class="lbl-lg">학생 진행</span><button data-open="1">① 실험</button><button data-open="2">② 퀴즈</button><button data-open="3">③ 문제풀이</button></span>
         <button class="btn gate-btn state-unknown" id="btn-gate-toggle">접속 확인 중…</button>
         <span class="spacer"></span>
         <span class="class-label" id="teacher-current-class"></span>
@@ -1117,10 +1142,10 @@
         <button class="btn ghost accuracy-toggle on" id="btn-accuracy-toggle">정답률 공개</button>
         <button class="btn ghost" id="btn-change-class">반 변경</button>
         <span class="refresh-wrap">
-          <button class="btn ghost" id="btn-teacher-refresh">↻ 새로고침</button>
+          <button class="btn ghost" id="btn-teacher-refresh" title="새로고침">↻<span class="lbl-lg"> 새로고침</span></button>
           <span class="last-updated" id="teacher-last-updated"></span>
         </span>
-        <button class="btn danger" id="btn-teacher-reset">🗑 전체 초기화</button>
+        <button class="btn danger" id="btn-teacher-reset" title="전체 초기화">🗑<span class="lbl-lg"> 전체 초기화</span></button>
         <button class="btn ghost" id="btn-teacher-close2">✕</button>
       </div>
 
@@ -1392,7 +1417,7 @@ function gasConfigured(){ return true; }
 ============================================================ */
 // 예비 암호 — 구글시트 "선생님암호" 시트가 비었거나 서버 확인이 안 될 때만 통과되는 값.
 // 평소 쓸 암호(복수 가능)는 그 시트에서 셀 편집으로 관리하고, 이 값은 잠금 사고 방지용.
-const TEACHER_PASSCODE = "3699";
+// 교사 암호는 페이지에 두지 않는다 — Supabase의 teacher_passcodes 표에서 관리하고 서버 함수로만 확인한다.
 const CLASS_COUNT = 10;
 // 캐릭터 배정 소금값 — 활동마다 달라서 같은 학생이라도 다른 활동에선 다른 캐릭터가 배정된다.
 // 한 활동 안에선 같다(학생 완료 카드와 교사 정답왕/성장왕/탐구왕 화면이 같은 캐릭터를 맞추도록).
@@ -2042,23 +2067,19 @@ async function tryGateSubmit(){
   const confirmBtn = document.getElementById("teacher-gate-confirm");
   const val = String(inputEl.value).trim();
   if(!val) return;
-  // 평소 쓸 암호는 구글시트 "선생님암호" 시트에서 줄 단위로 추가/수정한다(재배포 불필요).
-  // 시트가 비었거나 서버 응답을 못 받으면 예비 암호(TEACHER_PASSCODE)로만 통과한다.
+  // 암호는 Supabase의 teacher_passcodes 표(학생은 읽을 수 없음)에 있고, 맞는지만 서버 함수로 확인한다.
   gateSubmitting = true;
   confirmBtn.disabled = true;
   const _label = confirmBtn.textContent;
   confirmBtn.textContent = "확인 중…";
   let allowed = false;
   try{
-    // Supabase settings 테이블의 "teacher_passcodes" 행({list:[...]})에 암호를 여러 개 둘 수 있다.
-    try{
-      const v = await getSetting("teacher_passcodes");
-      const list = (v && Array.isArray(v.list)) ? v.list.map(String) : [];
-      allowed = list.length ? (list.indexOf(val) !== -1) : (val === TEACHER_PASSCODE);
-    }catch(e){
-      allowed = (val === TEACHER_PASSCODE);
-    }
-  }finally{
+    const r = await fetch(SUPABASE_URL + "/rest/v1/rpc/check_teacher_passcode", {method:"POST",
+      headers:{"apikey":SUPABASE_ANON_KEY, "Authorization":"Bearer "+SUPABASE_ANON_KEY, "Content-Type":"application/json"},
+      body: JSON.stringify({p: val})});
+    allowed = r.ok && (await r.json()) === true;
+  }catch(e){ allowed = false; }
+  finally{
     gateSubmitting = false;
     confirmBtn.disabled = false;
     confirmBtn.textContent = _label;
@@ -2124,13 +2145,13 @@ function paintGateButton(){
   gateBtn.classList.remove("state-unknown","state-open","state-closed","state-confirm");
   if(gateConfirmArmed){
     gateBtn.classList.add("state-confirm");
-    gateBtn.textContent = "정말 닫을까요? 다시 클릭";
+    gateBtn.textContent = "닫을까요? 한 번 더"; gateBtn.title = "한 번 더 누르면 학생 접속을 막아요";
   } else if(gateOpen){
     gateBtn.classList.add("state-open");
-    gateBtn.textContent = "🟢 접속 가능 (클릭하면 닫기)";
+    gateBtn.textContent = "🟢 접속 가능"; gateBtn.title = "누르면 학생 접속을 닫아요";
   } else {
     gateBtn.classList.add("state-closed");
-    gateBtn.textContent = "🔴 접속 불가능 (클릭하면 열기)";
+    gateBtn.textContent = "🔴 접속 닫힘"; gateBtn.title = "누르면 학생 접속을 열어요";
   }
 }
 async function refreshGateButton(){
@@ -2334,7 +2355,7 @@ async function renderTeacherDashboard(){
   const stamp = document.getElementById("teacher-last-updated");
   refreshBtn.classList.add("loading");
   refreshBtn.disabled = true;
-  refreshBtn.textContent = "↻ 새로고침 중…";
+  refreshBtn.innerHTML = '↻<span class="lbl-lg"> 새로고침 중…</span>';
   const body = document.getElementById("teacher-progress-body");
   try{
     const data = await fetchTeacherData();
@@ -2366,7 +2387,7 @@ async function renderTeacherDashboard(){
   }finally{
     refreshBtn.classList.remove("loading");
     refreshBtn.disabled = false;
-    refreshBtn.textContent = "↻ 새로고침";
+    refreshBtn.innerHTML = '↻<span class="lbl-lg"> 새로고침</span>';
   }
 }
 
