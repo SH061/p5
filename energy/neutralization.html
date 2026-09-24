@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>중화 반응과 발열 실험</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{--bg:#f6f4ee;--card:#fff;--ink:#1d1b18;--sub:#6b665e;--line:#e4dfd4;--hot:#ff7a1a}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Malgun Gothic",system-ui,sans-serif}
+  header{padding:16px 22px 4px}
+  h1{margin:0;font-size:23px;letter-spacing:-.5px}
+  header p{margin:5px 0 0;color:var(--sub);font-size:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+  .card h3{margin:0 0 8px;font-size:15px}
+  .setup{margin:10px 22px 0;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end}
+  .fld{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--sub)}
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{border:0;border-radius:0;padding:8px 12px;background:#f7f5f0;font-size:14px}
+  .seg button.on{background:#1d1b18;color:#fff;font-weight:700}
+  .seg button + button{border-left:1px solid var(--line)}
+  main{display:grid;grid-template-columns:290px minmax(0,1fr) 330px;gap:14px;padding:12px 22px 24px}
+  @media (max-width:1250px){main{grid-template-columns:290px minmax(0,1fr)}.side{grid-column:1/-1;display:grid!important;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}}
+  @media (max-width:760px){main{grid-template-columns:1fr}}
+  canvas{display:block;width:100%;height:auto}
+  button{font:inherit;font-size:14px;border:0;border-radius:10px;padding:9px 13px;cursor:pointer;background:#ece7dc;color:var(--ink)}
+  button.main{background:#3b6fd8;color:#fff;font-weight:700}
+  button:active{transform:translateY(1px)}
+  button:disabled{opacity:.4;cursor:default}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+  input[type=number]{font:inherit;font-size:15px;width:84px;padding:8px;border:1px solid var(--line);border-radius:10px}
+  label.tg{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--sub);cursor:pointer}
+  select{font:inherit;font-size:14px;padding:7px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  .read{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .rd{background:#f7f5f0;border-radius:10px;padding:8px 10px}
+  .rd span{display:block;font-size:12px;color:var(--sub)}
+  .rd b{font-size:22px;font-variant-numeric:tabular-nums}
+  .rd.hot b{color:#d4570a}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+  @media (max-width:700px){.steps{grid-template-columns:1fr 1fr}}
+  .step{border:1px solid var(--line);border-radius:10px;padding:8px;font-size:12.5px;color:var(--sub);transition:.25s;background:#fbfaf7}
+  .step b{display:block;font-size:13.5px;color:var(--ink);margin-bottom:2px}
+  .step.on{border-color:var(--hot);background:#fff4ea;color:#7a3d0c;box-shadow:0 0 0 3px #ffd9b8}
+  .side{display:flex;flex-direction:column;gap:12px}
+  /* 컴퓨터 화면: 세로 높이에 맞춰 한 화면에 다 보이게 */
+  @media (min-width:1000px){
+    header{padding:8px 22px 0}
+    h1{font-size:19px}
+    header p{font-size:12.5px;margin-top:2px}
+    .setup{margin:6px 22px 0;padding:8px 12px;gap:8px 18px}
+    .seg button{padding:6px 10px}
+    main{grid-template-columns:auto minmax(0,1fr) 320px;gap:12px;padding:8px 22px 8px;height:calc(100vh - 150px)}
+    main > section, main > aside{min-height:0}
+    main > section.card{display:flex;flex-direction:column;overflow:auto}
+    main > section.card:nth-of-type(2){overflow:hidden}
+    #simbox{flex:1 1 auto;min-height:0;display:flex;align-items:stretch;justify-content:stretch}
+    #sim{flex:none}
+    #macro{width:auto;max-width:none;height:calc(100vh - 420px);min-height:240px;margin:0 auto}
+    .side{overflow:auto;padding-right:4px}
+    .steps{margin-top:6px}
+    .step{padding:6px 8px}
+    .msg{margin-top:6px;min-height:18px}
+    .card{padding:10px}
+    .card h3{margin-bottom:6px}
+  }
+  .msg{margin-top:10px;font-size:14.5px;font-weight:700;min-height:21px;color:#2b6b2b}
+  .note{font-size:12.5px;color:var(--sub);line-height:1.55;margin:6px 0 0}
+  .calc{font-size:14px;line-height:1.8}
+  .calc .k{color:var(--sub)}
+  .calc b{font-variant-numeric:tabular-nums}
+  .state{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:700;font-size:13px}
+  .legend{display:grid;grid-template-columns:1fr 1fr;gap:5px 10px;font-size:12.5px}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .dot{width:13px;height:13px;border-radius:50%;display:inline-block;flex:none}
+  .bar{height:14px;border-radius:7px;background:#f0ece3;overflow:hidden;margin-top:6px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffb36b,#ff7a1a);transition:width .2s}
+  .hint{background:#eef4ff;border-radius:10px;padding:8px 10px;font-size:13px;color:#2c4a86;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>중화 반응과 발열 실험</h1>
+  <p>묽은 염산에 수산화 나트륨 수용액을 조금씩 넣으면서 온도와 지시약 색을 관찰해 보세요. 알짜 이온 반응식은 <b>H⁺ + OH⁻ → H₂O</b>이고, 이 반응에서 열이 나옵니다.</p>
+</header>
+
+<div class="setup card">
+  <div class="fld">묽은 염산 농도<div class="seg" id="gHp"></div></div>
+  <div class="fld">묽은 염산 부피<div class="seg" id="gHv"></div></div>
+  <div class="fld">수산화 나트륨 수용액 농도<div class="seg" id="gNp"></div></div>
+  <div class="fld">지시약<div class="seg" id="gInd"></div></div>
+  <button id="bNew">새 실험 시작</button>
+</div>
+
+<main>
+  <section class="card">
+    <h3>실험 장치</h3>
+    <canvas id="macro"></canvas>
+    <div class="row">
+      <button class="main" data-ml="1">1 mL 넣기</button>
+      <button class="main" data-ml="5">5 mL 넣기</button>
+      <button class="main" data-ml="10">10 mL 넣기</button>
+    </div>
+    <div class="row">
+      <input type="number" id="inMl" min="0.5" max="100" step="0.5" value="2">
+      <span>mL</span>
+      <button class="main" id="bAdd">넣기</button>
+    </div>
+    <div class="row">
+      <label class="tg"><input type="checkbox" id="oStir" checked> 유리 막대로 젓기</label>
+    </div>
+    <div class="read">
+      <div class="rd"><span>넣은 NaOH (뷰렛 눈금)</span><b id="rAdd">0.0 mL</b></div>
+      <div class="rd"><span>용액 전체 부피</span><b id="rVol">20.0 mL</b></div>
+    </div>
+    <p class="note" id="pourNote"></p>
+  </section>
+
+  <section class="card">
+    <h3>확대해서 본 입자 모습</h3>
+    <div id="simbox"><canvas id="sim"></canvas></div>
+    <div class="row">
+      <label class="tg">속도
+        <select id="oSpeed"><option value="0.25">느리게 (1/4배)</option><option value="1" selected>실제 속도</option><option value="3">빠르게 (3배)</option></select>
+      </label>
+      <label class="tg"><input type="checkbox" id="oReal"> 실제 모습 보기 (H₃O⁺)</label>
+      <label class="tg"><input type="checkbox" id="oSpec"> 구경꾼 이온 흐리게</label>
+      <button id="bPause">일시정지</button>
+    </div>
+    <div class="hint" id="realHint" hidden>물속의 H⁺는 혼자 있지 않고 물 분자에 붙어 <b>H₃O⁺(하이드로늄 이온)</b>로 있어요. 그래서 실제 반응은 H₃O⁺ + OH⁻ → 2H₂O입니다. 교과서의 H⁺ + OH⁻ → H₂O는 이것을 간단히 나타낸 식이에요.</div>
+    <div class="msg" id="msg"></div>
+    <div class="steps">
+      <div class="step" id="s1"><b>① 충돌</b>H⁺와 OH⁻가 만난다</div>
+      <div class="step" id="s2"><b>② 결합</b>H⁺가 OH⁻의 O에 달라붙는다</div>
+      <div class="step" id="s3"><b>③ 물 생성 + 열 방출</b>새 O–H 결합이 생기며 에너지가 나온다</div>
+      <div class="step" id="s4"><b>④ 온도 상승</b>나온 에너지로 주변 분자가 더 빨리 움직인다</div>
+    </div>
+    <p class="note"><b id="unitNote"></b><br>지시약 색은 그 자리 주변에 H⁺와 OH⁻ 중 어느 것이 더 많은지에 따라 천천히 바뀝니다.</p>
+  </section>
+
+  <aside class="side">
+    <div class="card">
+      <h3>온도 측정</h3>
+      <div class="read" style="margin-top:0">
+        <div class="rd"><span>처음 온도</span><b>20.0 °C</b></div>
+        <div class="rd hot"><span>현재 온도</span><b id="rT">20.0 °C</b></div>
+        <div class="rd hot"><span>최고 온도</span><b id="rTmax">20.0 °C</b></div>
+        <div class="rd"><span>최고 온도 − 처음 온도</span><b id="rDT">0.0 °C</b></div>
+      </div>
+      <div style="margin-top:10px;font-size:13px;color:var(--sub)">반응한 H⁺의 양 (처음 H⁺ 대비)</div>
+      <div class="bar"><i id="barR"></i></div>
+      <p class="note">반응한 양이 많을수록 나온 열이 많아서 온도가 더 올라갑니다. 반응이 끝나면 더 오르지 않아요.</p>
+    </div>
+    <div class="card">
+      <h3>넣은 NaOH 부피 – 온도 그래프</h3>
+      <canvas id="gV"></canvas>
+      <p class="note">온도가 가장 높은 곳이 중화점입니다. 그 뒤에 넣는 NaOH는 반응할 H⁺가 없고, 20 °C 용액이 섞여 온도가 내려가요.</p>
+    </div>
+    <div class="card">
+      <h3>시간 – 온도 그래프</h3>
+      <canvas id="gT"></canvas>
+    </div>
+    <div class="card">
+      <h3 style="display:flex;justify-content:space-between;align-items:center">중화점 계산 <label class="tg" style="font-weight:400"><input type="checkbox" id="oCalc"> 보이기</label></h3>
+      <div id="calcBox" class="calc" hidden></div>
+      <p class="note">이 실험에서는 <b>농도(%) × 부피(mL)</b>를 이온의 양으로 생각합니다(단순화한 모형). 같은 농도라면 같은 부피끼리 완전히 중화됩니다.</p>
+    </div>
+    <div class="card">
+      <h3>에너지 도표</h3>
+      <canvas id="energy"></canvas>
+    </div>
+    <div class="card">
+      <h3>입자 보기</h3>
+      <div class="legend">
+        <span><i class="dot" style="background:#fff;border:3px solid #f5b301"></i>H⁺ (수소 이온)</span>
+        <span><i class="dot" style="border:3px solid #3b82f6;background:#e5484d"></i>OH⁻ (수산화 이온)</span>
+        <span><i class="dot" style="background:#9b6bd6"></i>Na⁺</span>
+        <span><i class="dot" style="background:#3fae5a"></i>Cl⁻</span>
+        <span><i class="dot" style="background:#e5484d"></i>산소(O)</span>
+        <span><i class="dot" style="background:#fff;border:1px solid #aaa"></i>수소(H)</span>
+        <span><i class="dot" style="background:#ff7a1a;box-shadow:0 0 6px #ff7a1a"></i>방출된 열</span>
+        <span><i class="dot" style="background:#ffd2ad"></i>열을 받은 분자</span>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+function setupCanvas(cv,w,h){const d=Math.max(1,window.devicePixelRatio||1);cv.width=w*d;cv.height=h*d;cv.style.aspectRatio=w+'/'+h;const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);return c;}
+let PW=560,PH=440,PX0=10,PX1=550,PY0=10,PY1=430;
+const MW=270,MH=448;
+let ctx=setupCanvas($('sim'),PW,PH);
+let mctx=setupCanvas($('macro'),MW,MH);
+function fitMacroCanvas(cv){
+  // 실험 장치를 화면에 보이는 실제 크기 × 화면 픽셀 밀도로 그려서 선명하게
+  const r=cv.getBoundingClientRect(); if(!r.height) return null;
+  const k=r.height/MH, d=Math.max(1,window.devicePixelRatio||1), W=Math.round(MW*k*d), H=Math.round(MH*k*d);
+  if(cv.width===W && cv.height===H) return null;
+  cv.width=W; cv.height=H; const c=cv.getContext('2d'); c.setTransform(k*d,0,0,k*d,0,0); return c;
+}
+
+const ectx=setupCanvas($('energy'),306,170);
+const vctx=setupCanvas($('gV'),306,180);
+const tctx=setupCanvas($('gT'),306,150);
+
+// ---- constants ----
+let UP=10;
+const ROOM=20,MOLU=0.000274, DH=57000, CP=4.18, POUR=2.0, BUR=100, DUR=1.6, V0=50, COOL=0.0006;
+
+// ---- setup UI ----
+const cfg={hp:10,hv:20,np:10,ind:'btb'};
+function seg(id,key,opts,fmt){
+  const g=$(id);g.innerHTML='';
+  for(const v of opts){const b=document.createElement('button');b.textContent=fmt(v);b.onclick=()=>{cfg[key]=v;paint();if(key==='ind'){applyInd();}else newExp();};b.dataset.v=v;g.appendChild(b);}
+  function paint(){for(const b of g.children)b.classList.toggle('on',String(cfg[key])===b.dataset.v);}
+  paint();
+}
+seg('gHp','hp',[10,20,30],v=>v+'%');
+seg('gHv','hv',[10,20,30,40,50],v=>v+' mL');
+seg('gNp','np',[10,20,30],v=>v+'%');
+seg('gInd','ind',['btb','php','none'],v=>({btb:'BTB',php:'페놀프탈레인',none:'없음'})[v]);
+
+// ---- state ----
+let S,mols,heats,flashes,reactions,texts,energyPulses,pReacted,idc=0,KEref,paused=false,field,starve=0,splash=[];
+let GX=27,GY=21,CW=PW/GX,CH=PH/GY;
+
+const realMode=()=>$('oReal').checked;
+const RAD={w:10,h:8,h3o:13,oh:11,na:8,cl:13};
+function rad(t){return t==='h'&&realMode()?RAD.h3o:RAD[t];}
+function mk(type,x,y,vx,vy){return{id:idc++,type,x,y,vx,vy,a:Math.random()*6.283,w:(Math.random()-.5)*3,r:rad(type),glow:0,busy:false,dead:false};}
+function randV(s){const a=Math.random()*6.283,sp=s*(0.55+Math.random()*0.9);return[Math.cos(a)*sp,Math.sin(a)*sp];}
+function place(type){
+  const r=RAD[type]+2;
+  for(let k=0;k<500;k++){
+    const x=PX0+r+Math.random()*(PX1-PX0-2*r),y=PY0+r+Math.random()*(PY1-PY0-2*r);
+    if(mols.every(m=>Math.hypot(m.x-x,m.y-y)>m.r+r+1)){const[vx,vy]=randV(V0);mols.push(mk(type,x,y,vx,vy));return;}
+  }
+  const[vx,vy]=randV(V0);mols.push(mk(type,PX0+r+Math.random()*(PX1-PX0-2*r),PY0+r+Math.random()*(PY1-PY0-2*r),vx,vy));
+}
+function avgKE(){let s=0,n=0;for(const m of mols){if(m.busy)continue;s+=(m.vx*m.vx+m.vy*m.vy)/2;n++;}return n?s/n:0;}
+
+// 물 분자 수: 원래 화면(560×440)과 같은 밀도가 되도록 넓이에 비례
+function waterTarget(nH){ return Math.min(320, Math.max(25, Math.round((90-nH)*(PW*PH)/(560*440)))); }
+// 컴퓨터 화면에서는 입자 화면을 상자 크기에 딱 맞게(찌그러짐 없이 그리는 영역 자체를 바꿈)
+function fitSim(){
+  const box=$('simbox'), cv=$('sim'); if(!box) return;
+  const desk=window.matchMedia('(min-width:1000px)').matches;
+  let w=560,h=440;
+  if(desk){ w=Math.floor(box.clientWidth); h=Math.floor(box.clientHeight); }
+  w=desk?Math.max(240,Math.min(w,1800)):560; h=desk?Math.max(160,Math.min(h,1100)):440;
+  cv.style.width = desk ? w+'px' : ''; cv.style.height = desk ? h+'px' : '';
+  // 컴퓨터 화면에서는 입자를 1.5배로 확대해서 그림 (그리는 좌표는 화면 크기 ÷ 1.5)
+  const Z = desk ? 1.5 : 1, lw = Math.round(w/Z), lh = Math.round(h/Z);
+  if(lw===PW && lh===PH && Z===simZoom) return;
+  const sx=lw/PW, sy=lh/PH;
+  PW=lw; PH=lh; PX1=PW-10; PY1=PH-10; simZoom=Z;
+  ctx=setupCanvas(cv,w,h); ctx.scale(Z,Z);
+  GX=Math.max(8,Math.round(PW/20)); GY=Math.max(8,Math.round(PH/20)); CW=PW/GX; CH=PH/GY;
+  fcv.width=GX; fcv.height=GY;
+  field=new Float32Array(GX*GY).fill(S?S.bulk:-1);
+  if(!mols) return;
+  for(const m of mols){ m.x=Math.min(PX1-m.r,Math.max(PX0+m.r,m.x*sx)); m.y=Math.min(PY1-m.r,Math.max(PY0+m.r,m.y*sy)); }
+  for(const h2 of heats){ h2.x*=sx; h2.y*=sy; h2.trail=[]; }
+  const want=waterTarget(Math.max(1,Math.round(S.H0/UP)));
+  let ws=mols.filter(m=>m.type==='w'&&!m.busy);
+  if(ws.length<want){ for(let i=ws.length;i<want;i++) place('w'); }
+  else if(ws.length>want){ const drop=new Set(ws.slice(0,ws.length-want)); mols=mols.filter(m=>!drop.has(m)); }
+}
+let fitT=null, simZoom=1;
+window.addEventListener('resize',()=>{ clearTimeout(fitT); fitT=setTimeout(fitSim,120); });
+
+function newExp(){
+  const H0=cfg.hp*cfg.hv;
+  UP=Math.max(cfg.np,H0/60);
+  $('unitNote').textContent=`입자 1개 = NaOH ${cfg.np}% 수용액 ${fmt(UP/cfg.np)} mL에 들어 있는 OH⁻의 양`;
+  S={H0,H:H0,OH:0,U:0,queue:0,added:0,V:cfg.hv,T:ROOM,Td:ROOM,Tmax:ROOM,reacted:0,t:0,histT:[{t:0,T:ROOM}],histV:[{v:0,T:ROOM}],hAcc:0,pAcc:0,bulk:-1,pouring:false};
+  mols=[];heats=[];flashes=[];reactions=[];texts=[];energyPulses=[];pReacted=0;starve=0;splash=[];
+  const nH=Math.max(1,Math.round(H0/UP));
+  for(let i=0;i<nH;i++)place('h');
+  for(let i=0;i<nH;i++)place('cl');
+  const nW=waterTarget(nH);
+  for(let i=0;i<nW;i++)place('w');
+  KEref=avgKE();
+  field=new Float32Array(GX*GY).fill(-1);
+  $('inMl').max=BUR;
+}
+function applyInd(){}
+
+function addNaOH(ml){
+  ml=Math.round(ml*10)/10;
+  const room=BUR-S.added-S.queue;
+  ml=Math.min(ml,room);
+  if(ml<=0)return;
+  S.queue+=ml;
+}
+function spawnBase(){
+  const x=PW/2+(Math.random()-.5)*120,y=PY0+14+Math.random()*30;
+  for(const t of ['oh','na']){
+    const a=Math.PI*(0.15+Math.random()*0.7),sp=Math.sqrt(2*KEref)*(0.7+Math.random()*0.6);
+    mols.push(mk(t,x+(Math.random()-.5)*30,y+Math.random()*12,Math.cos(a)*sp,Math.sin(a)*sp));
+  }
+  splash.push({x,t:0});
+}
+
+// ---- macro model ----
+function macroStep(dt){
+  const s=S;s.t+=dt;
+  if(s.queue>1e-9){
+    const dv=Math.min(s.queue,POUR*dt);s.queue-=dv;s.added+=dv;
+    const u=dv*cfg.np;s.U+=u;
+    s.T=(s.T*s.V+ROOM*dv)/(s.V+dv);s.V+=dv;
+    s.pAcc+=u/UP;while(s.pAcc>=1-1e-6){s.pAcc-=1;spawnBase();}
+    s.pouring=true;
+  }else{s.queue=0;s.pouring=false;}
+  const stir=$('oStir').checked,tau=stir?2.5:8;
+  const dm=s.U*(1-Math.exp(-dt/tau));s.U-=dm;s.OH+=dm;
+  const r=Math.min(s.H,s.OH);
+  if(r>0){s.H-=r;s.OH-=r;s.reacted+=r;s.T+=r*MOLU*DH/(s.V*CP);}
+  s.T-=COOL*(s.T-ROOM)*dt;
+  s.Td+=(s.T-s.Td)*(1-Math.exp(-dt/2.5));
+  if(s.Td>s.Tmax)s.Tmax=s.Td;
+  const eps=0.002*s.H0+1e-6,tgt=(s.OH-s.H)/(s.OH+s.H+eps);
+  s.bulk+=(tgt-s.bulk)*(1-Math.exp(-dt/(stir?1.2:4)));
+  s.hAcc+=dt;
+  if(s.hAcc>=0.25){s.hAcc=0;s.histT.push({t:s.t,T:s.Td});s.histV.push({v:s.added,T:s.Td});
+    if(s.histT.length>2400)s.histT.shift();if(s.histV.length>4000)s.histV.shift();}
+}
+
+// ---- particle sim ----
+function lerpAng(a,b,k){let d=((b-a+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;return a+d*k;}
+function midAng(a,b){let d=((b-a+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;return a+d/2;}
+function budget(){return Math.round(S.reacted/UP+0.35)-pReacted;}
+
+function startReaction(a,b){
+  a.busy=b.busy=true;pReacted++;starve=0;
+  const ke0=((a.vx*a.vx+a.vy*a.vy)+(b.vx*b.vx+b.vy*b.vy))/4;
+  reactions.push({a,b,t:0,q:0,done:false,ke0,mode:realMode()?'real':'h',ang:Math.atan2(b.y-a.y,b.x-a.x),sx:a.x,sy:a.y});
+}
+function finishReaction(r){
+  const a=r.a,b=r.b,ang=r.ang;
+  if(r.mode==='real'){a.type='w';a.r=RAD.w;a.a=ang+Math.PI;}
+  else a.dead=true;
+  b.type='w';b.r=RAD.w;b.a=midAng(b.a,ang+Math.PI);
+  const mx=r.mode==='real'?(a.x+b.x)/2:b.x,my=r.mode==='real'?(a.y+b.y)/2:b.y;
+  const N=12;
+  for(let i=0;i<N;i++){const t=i/N*6.283+Math.random()*.25,sp=170+Math.random()*40;
+    heats.push({x:mx,y:my,vx:Math.cos(t)*sp,vy:Math.sin(t)*sp,life:1.5,skip:[a.id,b.id],age:0,trail:[]});}
+  const sp=Math.sqrt(2*r.ke0),ux=Math.cos(ang),uy=Math.sin(ang);
+  if(r.mode==='real'){a.vx=-ux*sp;a.vy=-uy*sp;a.glow=1;}
+  b.vx=ux*sp;b.vy=uy*sp;b.glow=1;b.w=(Math.random()-.5)*8;
+  flashes.push({x:mx,y:my,t:0});
+  texts.push({x:mx,y:my-20,t:0,s:'열 방출!'});
+  energyPulses.push({t:0});
+}
+
+// 저을 때: 곳곳에 무작위 방향의 작은 소용돌이가 생겼다 사라짐 → 한쪽으로 쏠리지 않고 뒤섞임
+let eddies=[],eddyT=0;
+function stirFlow(dt){eddyT-=dt;if(eddyT>0)return;eddyT=1+Math.random()*1.2;const R=Math.min(PW,PH);eddies=Array.from({length:5},()=>({x:PX0+Math.random()*(PX1-PX0),y:PY0+Math.random()*(PY1-PY0),s:(Math.random()<.5?-1:1)*(260+Math.random()*220),r:R*(0.14+Math.random()*0.12)}));}
+function simStep(dt){
+  const stir=$('oStir').checked;
+  if(stir)stirFlow(dt);
+  const cx=PW/2,cy=PH/2;
+  for(const m of mols){
+    // 무질서한 열운동: 매 순간 작은 무작위 충격 + 가끔 방향이 확 바뀜 (저으면 더 활발)
+    if(!m.busy){const kick=(stir?16:9)*Math.sqrt(dt/0.01);m.vx+=(Math.random()+Math.random()-1)*kick;m.vy+=(Math.random()+Math.random()-1)*kick;if(Math.random()<(stir?3:1)*dt){const a=Math.random()*6.283,sp=Math.hypot(m.vx,m.vy);m.vx=Math.cos(a)*sp;m.vy=Math.sin(a)*sp;}}
+    if(stir&&!m.busy){for(const e of eddies){const dx=m.x-e.x,dy=m.y-e.y,d=Math.hypot(dx,dy)||1,q=d/e.r;if(q>2.2)continue;const f=e.s*q*Math.exp(-q*q)*dt;m.vx+=-dy/d*f;m.vy+=dx/d*f;}}
+    m.x+=m.vx*dt;m.y+=m.vy*dt;m.a+=m.w*dt;
+    if(m.glow>0)m.glow=Math.max(0,m.glow-dt/1.8);
+    if(m.x<PX0+m.r){m.x=PX0+m.r;m.vx=Math.abs(m.vx);}
+    if(m.x>PX1-m.r){m.x=PX1-m.r;m.vx=-Math.abs(m.vx);}
+    if(m.y<PY0+m.r){m.y=PY0+m.r;m.vy=Math.abs(m.vy);}
+    if(m.y>PY1-m.r){m.y=PY1-m.r;m.vy=-Math.abs(m.vy);}
+  }
+  let bud=budget();
+  const n=mols.length;
+  for(let i=0;i<n;i++){const p=mols[i];
+    for(let j=i+1;j<n;j++){const q=mols[j];
+      if(p.busy&&q.busy)continue;
+      const dx=q.x-p.x,dy=q.y-p.y;
+      if(Math.abs(dx)>40||Math.abs(dy)>40)continue;
+      if(p.busy||q.busy){
+        const s=p.busy?p:q,o=p.busy?q:p,ddx=o.x-s.x,ddy=o.y-s.y,rr=s.r+o.r+6,d=Math.hypot(ddx,ddy);
+        if(d<rr&&d>0){const nx=ddx/d,ny=ddy/d;o.x=s.x+nx*rr;o.y=s.y+ny*rr;const vn=o.vx*nx+o.vy*ny;if(vn<0){o.vx-=2*vn*nx;o.vy-=2*vn*ny;}}
+        continue;
+      }
+      const rr=p.r+q.r,d2=dx*dx+dy*dy;
+      if(bud>0&&d2<(rr+4)*(rr+4)&&((p.type==='h'&&q.type==='oh')||(p.type==='oh'&&q.type==='h'))){
+        startReaction(p.type==='h'?p:q,p.type==='h'?q:p);bud--;continue;
+      }
+      if(d2>=rr*rr)continue;
+      const d=Math.sqrt(d2)||.01,nx=dx/d,ny=dy/d,ov=rr-d;
+      p.x-=nx*ov/2;p.y-=ny*ov/2;q.x+=nx*ov/2;q.y+=ny*ov/2;
+      const rv=(q.vx-p.vx)*nx+(q.vy-p.vy)*ny;
+      if(rv<0){p.vx+=rv*nx;p.vy+=rv*ny;q.vx-=rv*nx;q.vy-=rv*ny;const tw=(Math.random()-.5)*1.5;p.w+=tw;q.w-=tw;p.w*=.9;q.w*=.9;}
+    }
+  }
+  // if macro says reaction happened but particles haven't met yet, guide the nearest pair together
+  if(budget()>0){starve+=dt;
+    if(starve>0.6){
+      let best=null,bd=1e9;
+      const hs=mols.filter(m=>m.type==='h'&&!m.busy),os=mols.filter(m=>m.type==='oh'&&!m.busy);
+      for(const h of hs)for(const o of os){const d=Math.hypot(h.x-o.x,h.y-o.y);if(d<bd){bd=d;best=[h,o];}}
+      if(best){const[h,o]=best,dx=o.x-h.x,dy=o.y-h.y,d=Math.hypot(dx,dy)||1,f=260*dt;
+        h.vx+=dx/d*f;h.vy+=dy/d*f;o.vx-=dx/d*f;o.vy-=dy/d*f;}
+    }
+  }else starve=0;
+
+  for(const r of reactions){
+    r.t+=dt;const p=r.t/DUR,a=r.a,b=r.b;
+    const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1,ux=dx/d,uy=dy/d;
+    if(!r.done){
+      const damp=Math.exp(-5*dt);
+      b.vx*=damp;b.vy*=damp;b.w*=damp;
+      if(p<0.35){
+        a.vx*=damp;a.vy*=damp;a.w*=damp;
+        const hold=r.mode==='real'?25:20,f=(d-hold)*6*dt;a.vx+=ux*f;a.vy+=uy*f;b.vx-=ux*f;b.vy-=uy*f;
+        r.ang=Math.atan2(dy,dx);
+        a.a=lerpAng(a.a,r.ang,1-Math.exp(-10*dt));
+        b.a=lerpAng(b.a,r.ang+Math.PI-1.82,1-Math.exp(-10*dt));
+        r.sx=a.x;r.sy=a.y;
+      }else{
+        const s=Math.min(1,(p-0.35)/0.45);r.q=s*s*(3-2*s);
+        if(r.mode==='h'){
+          a.vx=0;a.vy=0;
+          const tx=b.x-Math.cos(r.ang)*13,ty=b.y-Math.sin(r.ang)*13;
+          a.x=r.sx+(tx-r.sx)*r.q;a.y=r.sy+(ty-r.sy)*r.q;
+        }else{a.vx*=damp;a.vy*=damp;const f=(d-25)*6*dt;a.vx+=ux*f;a.vy+=uy*f;b.vx-=ux*f;b.vy-=uy*f;}
+      }
+      if(p>=0.8){r.done=true;finishReaction(r);}
+    }
+    if(p>=1){a.busy=b.busy=false;}
+  }
+  reactions=reactions.filter(r=>r.t<DUR);
+  mols=mols.filter(m=>!m.dead);
+
+  for(const h of heats){
+    h.age+=dt;h.life-=dt;h.x+=h.vx*dt;h.y+=h.vy*dt;
+    h.trail.push([h.x,h.y]);if(h.trail.length>7)h.trail.shift();
+    if(h.x<PX0||h.x>PX1)h.vx*=-1;if(h.y<PY0||h.y>PY1)h.vy*=-1;
+    for(const m of mols){
+      if(m.busy||(h.age<0.18&&h.skip.includes(m.id)))continue;
+      if(Math.abs(m.x-h.x)<m.r+3&&Math.hypot(m.x-h.x,m.y-h.y)<m.r+3){
+        const hl=Math.hypot(h.vx,h.vy)||1,sp=Math.hypot(m.vx,m.vy)+45;
+        let vx=m.vx/(Math.hypot(m.vx,m.vy)||1)*.5+h.vx/hl*.5,vy=m.vy/(Math.hypot(m.vx,m.vy)||1)*.5+h.vy/hl*.5;const l=Math.hypot(vx,vy)||1;
+        m.vx=vx/l*sp;m.vy=vy/l*sp;m.w+=(Math.random()-.5)*10;m.glow=1;h.dead=true;break;
+      }
+    }
+    if(h.life<=0)h.dead=true;
+  }
+  heats=heats.filter(h=>!h.dead);
+  for(const f of flashes)f.t+=dt;flashes=flashes.filter(f=>f.t<0.9);
+  for(const t of texts)t.t+=dt;texts=texts.filter(t=>t.t<1.4);
+  for(const e of energyPulses)e.t+=dt;energyPulses=energyPulses.filter(e=>e.t<1.6);
+  for(const s of splash)s.t+=dt;splash=splash.filter(s=>s.t<0.8);
+
+  // particle speeds follow the measured temperature (hotter = faster)
+  const target=KEref*(1+(S.Td-ROOM)/35),ke=avgKE();
+  if(ke>0){const k=1-Math.exp(-1.2*dt),s=Math.sqrt((ke+(target-ke)*k)/ke);for(const m of mols)if(!m.busy&&m.glow<0.3){m.vx*=s;m.vy*=s;}}
+
+  // indicator field: local balance of H+ and OH- around each spot, changing gradually
+  const hs=[],os=[];for(const m of mols){if(m.type==='h')hs.push(m);else if(m.type==='oh')os.push(m);}
+  const sig2=2*70*70,k=1-Math.exp(-dt/0.9);
+  for(let gy=0;gy<GY;gy++)for(let gx=0;gx<GX;gx++){
+    const x=(gx+.5)*CW,y=(gy+.5)*CH;let dH=0,dO=0;
+    for(const m of hs){const dx=m.x-x,dy=m.y-y;dH+=Math.exp(-(dx*dx+dy*dy)/sig2);}
+    for(const m of os){const dx=m.x-x,dy=m.y-y;dO+=Math.exp(-(dx*dx+dy*dy)/sig2);}
+    const tgt=(dO-dH+S.bulk*0.06)/(dO+dH+0.06);
+    const i=gy*GX+gx;field[i]+=(tgt-field[i])*k;
+  }
+}
+
+// ---- colors ----
+function mix(c1,c2,t){return[c1[0]+(c2[0]-c1[0])*t,c1[1]+(c2[1]-c1[1])*t,c1[2]+(c2[2]-c1[2])*t];}
+const YEL=[238,206,58],GRN=[96,178,92],BLU=[52,104,214],PINK=[228,60,150];
+function indRGBA(s){
+  if(cfg.ind==='btb'){
+    const t=Math.max(-1,Math.min(1,s*1.25));
+    const c=t<0?mix(GRN,YEL,-t):mix(GRN,BLU,t);return[c[0],c[1],c[2],0.55];
+  }
+  if(cfg.ind==='php'){
+    const t=Math.max(0,Math.min(1,(s-0.08)/0.5));return[PINK[0],PINK[1],PINK[2],0.62*t*t*(3-2*t)];
+  }
+  return[150,190,235,0.12];
+}
+const fcv=document.createElement('canvas');fcv.width=GX;fcv.height=GY;const fctx=fcv.getContext('2d');
+function drawField(){
+  const img=fctx.createImageData(GX,GY);
+  for(let i=0;i<GX*GY;i++){
+    const c=cfg.ind==='none'?[150,190,235,0.12]:indRGBA(field[i]);
+    const a=c[3],bg=[251,250,247];
+    img.data[i*4]=bg[0]+(c[0]-bg[0])*a;img.data[i*4+1]=bg[1]+(c[1]-bg[1])*a;img.data[i*4+2]=bg[2]+(c[2]-bg[2])*a;img.data[i*4+3]=255;
+  }
+  fctx.putImageData(img,0,0);
+  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.beginPath();ctx.roundRect(PX0-4,PY0-4,PX1-PX0+8,PY1-PY0+8,16);ctx.clip();
+  ctx.drawImage(fcv,0,0,PW,PH);ctx.restore();
+}
+
+// ---- particle drawing ----
+function drawO(x,y,r){const g=ctx.createRadialGradient(x-r*.35,y-r*.35,r*.15,x,y,r);g.addColorStop(0,'#ff9a9c');g.addColorStop(1,'#d23a3f');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();}
+function drawH(x,y,rr=5){const g=ctx.createRadialGradient(x-2,y-2,1,x,y,rr);g.addColorStop(0,'#fff');g.addColorStop(1,'#d9d9d9');ctx.fillStyle=g;ctx.strokeStyle='#9a9a9a';ctx.lineWidth=.8;ctx.beginPath();ctx.arc(x,y,rr,0,7);ctx.fill();ctx.stroke();}
+function bond(x1,y1,x2,y2,alpha=1,dash=false){ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle='#8c8c8c';ctx.lineWidth=3;if(dash)ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore();}
+function ring(x,y,r,col,sign,alpha=1){
+  if(alpha<=0.02)return;
+  ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.stroke();
+  ctx.fillStyle=col;ctx.beginPath();ctx.arc(x+r*.72,y-r*.72,6.5,0,7);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='bold 12px Pretendard,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(sign,x+r*.72,y-r*.72+.5);ctx.restore();
+}
+function halo(m){if(m.glow<=0)return;ctx.save();ctx.globalAlpha=m.glow*.55;const g=ctx.createRadialGradient(m.x,m.y,m.r*.5,m.x,m.y,m.r+13);g.addColorStop(0,'#ffb170');g.addColorStop(1,'rgba(255,140,60,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(m.x,m.y,m.r+13,0,7);ctx.fill();ctx.restore();}
+function drawMol(m){
+  halo(m);
+  if(m.type==='na'||m.type==='cl'){
+    const col=m.type==='na'?['#c9a6f2','#8756c8']:['#8fe0a2','#2f9a4b'];
+    ctx.globalAlpha=$('oSpec').checked?0.22:1;
+    const g=ctx.createRadialGradient(m.x-3,m.y-3,2,m.x,m.y,m.r);g.addColorStop(0,col[0]);g.addColorStop(1,col[1]);
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(m.x,m.y,m.r,0,7);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 11px Pretendard,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(m.type==='na'?'+':'−',m.x,m.y+.5);ctx.globalAlpha=1;return;
+  }
+  if(m.type==='h'){
+    if(realMode()){
+      for(const t of [m.a,m.a+2.094,m.a-2.094])bond(m.x,m.y,m.x+Math.cos(t)*14,m.y+Math.sin(t)*14);
+      drawO(m.x,m.y,9.5);for(const t of [m.a,m.a+2.094,m.a-2.094])drawH(m.x+Math.cos(t)*14,m.y+Math.sin(t)*14);
+      ring(m.x,m.y,19,'#f5b301','+');
+    }else{drawH(m.x,m.y,6.5);ring(m.x,m.y,11,'#f5b301','+');}
+    return;
+  }
+  const hs=m.type==='w'?[m.a+0.912,m.a-0.912]:[m.a];
+  for(const t of hs)bond(m.x,m.y,m.x+Math.cos(t)*12,m.y+Math.sin(t)*12);
+  drawO(m.x,m.y,m.type==='oh'?9.5:9);
+  for(const t of hs)drawH(m.x+Math.cos(t)*12,m.y+Math.sin(t)*12);
+  if(m.type==='oh')ring(m.x,m.y,m.r+5,'#3b82f6','−');
+}
+function label(c,x,y,s,col){
+  c.save();c.font='bold 13px Pretendard,sans-serif';c.textAlign='center';c.textBaseline='middle';
+  const w=c.measureText(s).width+14;c.fillStyle='rgba(255,255,255,.93)';c.strokeStyle=col;c.lineWidth=1.5;
+  c.beginPath();c.roundRect(x-w/2,y-11,w,22,8);c.fill();c.stroke();c.fillStyle=col;c.fillText(s,x,y+1);c.restore();
+}
+function drawReaction(r){
+  const a=r.a,b=r.b,p=r.t/DUR,q=r.q,ang=r.ang;
+  if(r.done){if(r.mode==='real')drawMol(a);drawMol(b);return;}
+  ctx.save();ctx.strokeStyle='#ffcf6b';ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc((a.x+b.x)/2,(a.y+b.y)/2,32,0,7);ctx.stroke();ctx.restore();
+  if(r.mode==='h'){
+    bond(b.x,b.y,b.x+Math.cos(b.a)*12,b.y+Math.sin(b.a)*12);
+    if(q>0)bond(b.x,b.y,a.x,a.y,q,q<0.95);
+    drawO(b.x,b.y,9.5);drawH(b.x+Math.cos(b.a)*12,b.y+Math.sin(b.a)*12);
+    if(q>0){ctx.save();ctx.globalAlpha=.55;ctx.fillStyle='#fff3b0';ctx.beginPath();ctx.arc(a.x,a.y,10,0,7);ctx.fill();ctx.restore();}
+    drawH(a.x,a.y,q>0?5:6.5);
+    ring(a.x,a.y,11,'#f5b301','+',1-q);ring(b.x,b.y,b.r+5,'#3b82f6','−',1-q);
+  }else{
+    const sx=a.x+Math.cos(a.a)*14,sy=a.y+Math.sin(a.a)*14,ex=b.x-Math.cos(ang)*12,ey=b.y-Math.sin(ang)*12;
+    const hx=sx+(ex-sx)*q,hy=sy+(ey-sy)*q;
+    for(const t of [a.a+2.094,a.a-2.094])bond(a.x,a.y,a.x+Math.cos(t)*14,a.y+Math.sin(t)*14);
+    bond(b.x,b.y,b.x+Math.cos(b.a)*12,b.y+Math.sin(b.a)*12);
+    if(q<1)bond(a.x,a.y,hx,hy,1-q,q>0.05);if(q>0)bond(b.x,b.y,hx,hy,q,q<0.95);
+    drawO(a.x,a.y,9.5);drawO(b.x,b.y,9.5);
+    for(const t of [a.a+2.094,a.a-2.094])drawH(a.x+Math.cos(t)*14,a.y+Math.sin(t)*14);
+    drawH(b.x+Math.cos(b.a)*12,b.y+Math.sin(b.a)*12);
+    if(q>0){ctx.save();ctx.globalAlpha=.55;ctx.fillStyle='#fff3b0';ctx.beginPath();ctx.arc(hx,hy,10,0,7);ctx.fill();ctx.restore();}
+    drawH(hx,hy);
+    ring(a.x,a.y,19,'#f5b301','+',1-q);ring(b.x,b.y,b.r+5,'#3b82f6','−',1-q);
+  }
+  label(ctx,(a.x+b.x)/2,Math.min(a.y,b.y)-38,p<0.35?'충돌!':'결합 생성 중','#8a5a00');
+}
+function drawSim(){
+  ctx.clearRect(0,0,PW,PH);
+  drawField();
+  ctx.strokeStyle='#b9c2cf';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(PX0-4,PY0-4,PX1-PX0+8,PY1-PY0+8,16);ctx.stroke();
+  for(const s of splash){ctx.save();ctx.globalAlpha=1-s.t/0.8;ctx.strokeStyle='#5b8fe0';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(s.x,PY0+6,8+s.t*60,3+s.t*6,0,0,7);ctx.stroke();ctx.restore();}
+  const busy=new Set();for(const r of reactions){busy.add(r.a.id);busy.add(r.b.id);}
+  for(const m of mols)if(!busy.has(m.id))drawMol(m);
+  for(const r of reactions)drawReaction(r);
+  for(const h of heats){
+    ctx.save();ctx.lineCap='round';
+    for(let i=1;i<h.trail.length;i++){ctx.globalAlpha=i/h.trail.length*.6;ctx.strokeStyle='#ff9a3c';ctx.lineWidth=3*i/h.trail.length;ctx.beginPath();ctx.moveTo(...h.trail[i-1]);ctx.lineTo(...h.trail[i]);ctx.stroke();}
+    ctx.globalAlpha=1;ctx.shadowColor='#ff7a1a';ctx.shadowBlur=10;ctx.fillStyle='#ff7a1a';ctx.beginPath();ctx.arc(h.x,h.y,3.5,0,7);ctx.fill();ctx.restore();
+  }
+  for(const f of flashes){const k=f.t/0.9;ctx.save();ctx.globalAlpha=(1-k)*.9;
+    const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,20+k*55);g.addColorStop(0,'rgba(255,230,150,.9)');g.addColorStop(1,'rgba(255,120,30,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(f.x,f.y,20+k*55,0,7);ctx.fill();ctx.strokeStyle='#ff7a1a';ctx.lineWidth=3*(1-k);ctx.beginPath();ctx.arc(f.x,f.y,10+k*75,0,7);ctx.stroke();ctx.restore();}
+  for(const t of texts){ctx.save();ctx.globalAlpha=Math.min(1,(1.4-t.t)*2);label(ctx,t.x,t.y-t.t*28,t.s,'#d4570a');ctx.restore();}
+}
+
+// ---- macro apparatus drawing ----
+let rodPh=0;
+function drawMacro(dt){
+  const nc=fitMacroCanvas($('macro')); if(nc) mctx=nc;
+  const c=mctx;c.clearRect(0,0,MW,MH);
+  const bx0=40,bx1=220,by0=190,by1=410,cap=150;
+  // burette
+  const tx=130,tt=8,tb=150,tw=16;
+  c.fillStyle='#f4f7fb';c.strokeStyle='#8f9bab';c.lineWidth=1.5;c.beginPath();c.roundRect(tx-tw/2,tt,tw,tb-tt,4);c.fill();c.stroke();
+  const left=(BUR-S.added)/BUR,ly=tt+4+(1-left)*(tb-tt-8);
+  c.fillStyle='rgba(170,200,240,.55)';c.fillRect(tx-tw/2+2,ly,tw-4,tb-2-ly);
+  c.fillStyle='#51607a';c.font='9px sans-serif';c.textAlign='left';
+  for(let v=0;v<=100;v+=10){const y=tt+4+v/100*(tb-tt-8);c.fillRect(tx+tw/2-5,y,5,1);if(v%20===0)c.fillText(v,tx+tw/2+3,y+3);}
+  c.fillStyle='#51607a';c.font='bold 11px Pretendard,sans-serif';c.textAlign='right';c.fillText('뷰렛',tx-tw/2-4,24);c.font='10px Pretendard,sans-serif';c.fillText('NaOH '+cfg.np+'%',tx-tw/2-4,38);
+  c.fillStyle='#6a7486';c.fillRect(tx-10,tb,20,7);c.fillRect(tx-2,tb+7,4,16);
+  const surf=by1-Math.min(1,S.V/cap)*(by1-by0);
+  if(S.pouring){c.strokeStyle='rgba(120,160,220,.8)';c.lineWidth=2.5;c.beginPath();c.moveTo(tx,tb+23);c.lineTo(tx,surf);c.stroke();
+    for(let i=0;i<3;i++){const yy=tb+23+((performance.now()/4+i*40)%(surf-tb-23));c.fillStyle='#8fb3e8';c.beginPath();c.arc(tx,yy,2.4,0,7);c.fill();}}
+  // liquid
+  const col=cfg.ind==='none'?[150,190,235,0.18]:indRGBA(S.bulk);
+  c.save();c.beginPath();c.moveTo(bx0,surf);c.lineTo(bx0,by1-10);c.quadraticCurveTo(bx0,by1,bx0+10,by1);c.lineTo(bx1-10,by1);c.quadraticCurveTo(bx1,by1,bx1,by1-10);c.lineTo(bx1,surf);c.closePath();c.clip();
+  c.fillStyle=`rgba(${col[0]|0},${col[1]|0},${col[2]|0},${Math.max(col[3],0.08)})`;c.fillRect(bx0,surf,bx1-bx0,by1-surf);
+  const f=Math.min(1,S.U/(cfg.np*1.5));
+  if(cfg.ind!=='none'&&f>0.03){
+    const pc=indRGBA(1),rad=14+30*f;
+    const g=c.createRadialGradient(tx,surf+12,1,tx,surf+12,rad);
+    g.addColorStop(0,`rgba(${pc[0]|0},${pc[1]|0},${pc[2]|0},${Math.min(0.85,pc[3]*1.3*f)})`);g.addColorStop(1,`rgba(${pc[0]|0},${pc[1]|0},${pc[2]|0},0)`);
+    c.fillStyle=g;c.fillRect(bx0,surf,bx1-bx0,by1-surf);
+  }
+  c.restore();
+  // beaker glass
+  c.strokeStyle='#8f9bab';c.lineWidth=3;c.beginPath();c.moveTo(bx0-4,by0-20);c.lineTo(bx0,by1-10);c.quadraticCurveTo(bx0,by1+2,bx0+10,by1+2);c.lineTo(bx1-10,by1+2);c.quadraticCurveTo(bx1,by1+2,bx1,by1-10);c.lineTo(bx1+4,by0-20);c.stroke();
+  c.strokeStyle='rgba(120,140,170,.6)';c.lineWidth=1;c.fillStyle='#6a7486';c.font='10px sans-serif';c.textAlign='left';
+  for(let v=25;v<=150;v+=25){const y=by1-v/cap*(by1-by0);c.beginPath();c.moveTo(bx0,y);c.lineTo(bx0+(v%50?8:14),y);c.stroke();if(v%50===0)c.fillText(v+' mL',bx0+16,y+3);}
+  // stir rod
+  if($('oStir').checked){rodPh+=dt*3;const x=130+Math.sin(rodPh)*55;c.strokeStyle='rgba(160,175,195,.9)';c.lineWidth=5;c.lineCap='round';c.beginPath();c.moveTo(x+18,by0-40);c.lineTo(x-4,by1-8);c.stroke();c.lineCap='butt';}
+  // digital thermometer probe
+  const px=200;c.strokeStyle='#555';c.lineWidth=4;c.beginPath();c.moveTo(px,by0-40);c.lineTo(px,by1-14);c.stroke();
+  c.fillStyle='#333';c.beginPath();c.arc(px,by1-14,4,0,7);c.fill();
+  c.fillStyle='#222';c.beginPath();c.roundRect(px-40,by0-78,80,38,8);c.fill();
+  c.fillStyle='#b6f5a8';c.font='bold 19px ui-monospace,Consolas,monospace';c.textAlign='center';c.fillText(S.Td.toFixed(1)+'°C',px,by0-52);
+  c.fillStyle='#51607a';c.font='bold 13px Pretendard,sans-serif';c.textAlign='left';c.fillText('묽은 염산 '+cfg.hp+'%, '+cfg.hv+' mL',bx0,by1+26);
+}
+
+// ---- panels ----
+function drawEnergy(){
+  const c=ectx,w=306,h=170;c.clearRect(0,0,w,h);
+  c.strokeStyle='#555';c.lineWidth=1.5;c.beginPath();c.moveTo(28,8);c.lineTo(28,150);c.lineTo(300,150);c.stroke();
+  c.fillStyle='#555';c.font='12px Pretendard,sans-serif';c.save();c.translate(13,80);c.rotate(-Math.PI/2);c.textAlign='center';c.fillText('에너지',0,0);c.restore();
+  c.textAlign='center';c.fillText('반응 진행 →',250,166);
+  const yR=40,yP=125;
+  const path=x=>{if(x<105)return yR;if(x<150){const s=(x-105)/45;return yR-12*Math.sin(s*Math.PI/2);}if(x<205){const s=(x-150)/55,e=s*s*(3-2*s);return(yR-12)+(yP-yR+12)*e;}return yP;};
+  c.strokeStyle='#333';c.lineWidth=3;c.beginPath();for(let x=38;x<=285;x+=2){const y=path(x);x===38?c.moveTo(x,y):c.lineTo(x,y);}c.stroke();
+  c.fillStyle='#8a5a00';c.font='bold 12px Pretendard,sans-serif';c.textAlign='left';c.fillText('H⁺ + OH⁻',40,yR-9);c.fillStyle='#1e5fb4';c.fillText('H₂O',226,yP-9);
+  const hot=energyPulses.length>0;c.strokeStyle=hot?'#ff7a1a':'#e7a36b';c.fillStyle=c.strokeStyle;c.lineWidth=hot?4:2.5;
+  c.beginPath();c.moveTo(282,yR);c.lineTo(282,yP-8);c.stroke();c.beginPath();c.moveTo(276,yP-10);c.lineTo(288,yP-10);c.lineTo(282,yP);c.fill();
+  c.setLineDash([3,3]);c.strokeStyle='#bbb';c.lineWidth=1;c.beginPath();c.moveTo(105,yR);c.lineTo(288,yR);c.stroke();c.setLineDash([]);
+  c.fillStyle='#d4570a';c.font='bold 12px Pretendard,sans-serif';c.textAlign='right';c.fillText('열 방출',275,82);c.fillText('(발열 반응)',275,97);
+  for(const e of energyPulses){const k=Math.min(1,e.t/1.1),x=38+k*247,y=path(x);c.save();c.shadowColor='#ff7a1a';c.shadowBlur=12;c.fillStyle='#ff7a1a';c.beginPath();c.arc(x,y,6,0,7);c.fill();c.restore();}
+}
+function axes(c,w,h,x0,x1,y0,y1,lo,hi,xl){
+  c.strokeStyle='#555';c.lineWidth=1.2;c.beginPath();c.moveTo(x0,y0);c.lineTo(x0,y1);c.lineTo(x1,y1);c.stroke();
+  c.fillStyle='#666';c.font='11px sans-serif';c.textAlign='right';
+  const span=hi-lo,step=span>40?10:span>16?5:2;
+  for(let t=Math.ceil(lo/step)*step;t<=hi;t+=step){const y=y1-(t-lo)/span*(y1-y0);c.fillText(t+'°',x0-4,y+4);c.strokeStyle='#eee';c.beginPath();c.moveTo(x0+1,y);c.lineTo(x1,y);c.stroke();}
+  c.textAlign='center';c.fillText(xl,(x0+x1)/2,h-3);
+}
+function tRange(arr){let lo=18,hi=26;for(const p of arr){lo=Math.min(lo,Math.floor(p.T-1));hi=Math.max(hi,Math.ceil(p.T+2));}return[lo,hi];}
+function drawGV(){
+  const c=vctx,w=306,h=180;c.clearRect(0,0,w,h);
+  const x0=34,x1=w-8,y0=10,y1=h-30;const[lo,hi]=tRange(S.histV);
+  const need=S.H0/cfg.np,vmax=Math.max(10,Math.ceil(Math.max(S.added+S.queue,$('oCalc').checked?need*1.4:0,10)/10)*10);
+  axes(c,w,h,x0,x1,y0,y1,lo,hi,'넣은 NaOH 부피 (mL)');
+  c.fillStyle='#666';c.font='11px sans-serif';c.textAlign='center';
+  const stepx=vmax>60?20:vmax>30?10:5;
+  for(let v=0;v<=vmax;v+=stepx){const x=x0+v/vmax*(x1-x0);c.fillText(v,x,y1+13);}
+  const X=v=>x0+v/vmax*(x1-x0),Y=t=>y1-(t-lo)/(hi-lo)*(y1-y0);
+  if($('oCalc').checked&&need<=vmax){c.setLineDash([4,4]);c.strokeStyle='#2b6b2b';c.beginPath();c.moveTo(X(need),y0);c.lineTo(X(need),y1);c.stroke();c.setLineDash([]);c.fillStyle='#2b6b2b';c.fillText('계산한 중화점',X(need),y0+10);}
+  c.strokeStyle='#e5484d';c.lineWidth=2.5;c.beginPath();S.histV.forEach((p,i)=>i?c.lineTo(X(p.v),Y(p.T)):c.moveTo(X(p.v),Y(p.T)));c.stroke();
+  const l=S.histV[S.histV.length-1];c.fillStyle='#e5484d';c.beginPath();c.arc(X(l.v),Y(l.T),4,0,7);c.fill();
+}
+function drawGT(){
+  const c=tctx,w=306,h=150;c.clearRect(0,0,w,h);
+  const x0=34,x1=w-8,y0=10,y1=h-28;const[lo,hi]=tRange(S.histT);
+  const tmax=Math.max(60,Math.ceil(S.t/30)*30);
+  axes(c,w,h,x0,x1,y0,y1,lo,hi,'시간 (초)');
+  c.fillStyle='#666';c.font='11px sans-serif';c.textAlign='center';
+  const st=tmax>240?60:tmax>120?30:15;for(let t=0;t<=tmax;t+=st)c.fillText(t,x0+t/tmax*(x1-x0),y1+13);
+  const X=t=>x0+t/tmax*(x1-x0),Y=T=>y1-(T-lo)/(hi-lo)*(y1-y0);
+  c.strokeStyle='#e5484d';c.lineWidth=2.5;c.beginPath();S.histT.forEach((p,i)=>i?c.lineTo(X(p.t),Y(p.T)):c.moveTo(X(p.t),Y(p.T)));c.stroke();
+}
+function fmt(x){return(Math.round(x*10)/10).toFixed(1);}
+function ui(){
+  $('rAdd').textContent=fmt(S.added)+' mL';$('rVol').textContent=fmt(S.V)+' mL';
+  $('rT').textContent=fmt(S.Td)+' °C';$('rTmax').textContent=fmt(S.Tmax)+' °C';$('rDT').textContent=fmt(S.Tmax-ROOM)+' °C';
+  $('barR').style.width=(S.reacted/S.H0*100).toFixed(1)+'%';
+  $('pourNote').textContent=S.queue>0?`넣는 중… (남은 양 ${fmt(S.queue)} mL)`:(S.added>=BUR-1e-6?'뷰렛이 비었습니다. 새 실험을 시작하세요.':'');
+  document.querySelectorAll('[data-ml]').forEach(b=>b.disabled=S.added+S.queue>=BUR-1e-6);
+  $('bAdd').disabled=S.added+S.queue>=BUR-1e-6;
+  $('realHint').hidden=!realMode();
+  let st=0;
+  if(reactions.length){const r=reactions.reduce((a,b)=>a.t>b.t?a:b),p=r.t/DUR;st=p<0.35?1:p<0.8?2:3;}
+  if(heats.length&&(!reactions.length||reactions.every(r=>r.done)))st=st===3&&heats.length>6?3:4;
+  for(let i=1;i<=4;i++)$('s'+i).classList.toggle('on',i===st);
+  const totOH=S.OH+S.U,neutral=Math.abs(S.H-totOH)<0.02*S.H0+0.5;
+  let msg='';
+  if(S.added===0&&S.queue===0)msg='뷰렛으로 NaOH 수용액을 넣어 보세요. 노란 테두리 H⁺와 파란 테두리 OH⁻가 만나면 물이 됩니다.';
+  else if(S.queue>0||S.U>0.03*S.H0)msg=$('oStir').checked?'NaOH가 퍼지면서 섞이는 중이에요. 섞인 곳부터 반응해요.':'젓지 않으면 잘 섞이지 않아 반응이 느려요. 유리 막대로 저어 보세요.';
+  else if(neutral)msg='중화점! H⁺와 OH⁻가 모두 반응해 물이 되었어요. 온도가 가장 높아요.';
+  else if(S.H>totOH)msg='아직 H⁺가 남아 있어요(산성). NaOH를 더 넣으면 더 반응해요.';
+  else msg='OH⁻가 남았어요(염기성). 반응할 H⁺가 없어 열이 나오지 않고, 온도가 내려가요.';
+  $('msg').textContent=msg;
+  $('calcBox').hidden=!$('oCalc').checked;
+  if($('oCalc').checked){
+    const need=S.H0/cfg.np,oh=cfg.np*S.added;
+    const state=neutral?['중화점','#e6f4e3','#2b6b2b']:S.H>totOH?['산성','#fff5cc','#8a6a00']:['염기성','#e3edff','#1e4fa8'];
+    $('calcBox').innerHTML=`<div><span class="k">염산 속 H⁺의 양</span> = ${cfg.hp} × ${cfg.hv} = <b>${S.H0}</b></div>
+      <div><span class="k">넣은 OH⁻의 양</span> = ${cfg.np} × ${fmt(S.added)} = <b>${fmt(oh)}</b></div>
+      <div><span class="k">중화점까지 필요한 NaOH</span> = ${S.H0} ÷ ${cfg.np} = <b>${fmt(need)} mL</b></div>
+      <div><span class="k">지금 상태</span> <span class="state" style="background:${state[1]};color:${state[2]}">${state[0]}</span></div>`;
+  }
+  drawEnergy();drawGV();drawGT();
+}
+
+let last=performance.now();
+function frame(now){
+  const raw=Math.min(0.05,(now-last)/1000);last=now;
+  const sp=+$('oSpeed').value,dt=raw*sp;
+  if(!paused){const n=Math.max(2,Math.ceil(dt/0.01));for(let i=0;i<n;i++){macroStep(dt/n);simStep(dt/n);}}
+  drawMacro(paused?0:dt);drawSim();ui();
+  requestAnimationFrame(frame);
+}
+document.querySelectorAll('[data-ml]').forEach(b=>b.onclick=()=>addNaOH(+b.dataset.ml));
+$('bAdd').onclick=()=>{const v=parseFloat($('inMl').value);if(v>0)addNaOH(v);};
+$('bNew').onclick=newExp;
+$('bPause').onclick=()=>{paused=!paused;$('bPause').textContent=paused?'계속':'일시정지';};
+$('oReal').onchange=()=>{for(const m of mols)m.r=rad(m.type);};
+newExp();fitSim();requestAnimationFrame(frame);
+</script>
+</body>
+</html>
