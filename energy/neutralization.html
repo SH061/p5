@@ -278,7 +278,7 @@ function newExp(){
   $('unitNote').textContent=`입자 1개 = NaOH ${cfg.np}% 수용액 ${fmt(UP/cfg.np)} mL에 들어 있는 OH⁻의 양`;
   S={H0,H:H0,OH:0,U:0,queue:0,added:0,V:cfg.hv,T:ROOM,Td:ROOM,Tmax:ROOM,reacted:0,t:0,histT:[{t:0,T:ROOM}],histV:[{v:0,T:ROOM}],hAcc:0,pAcc:0,bulk:-1,pouring:false};
   mols=[];heats=[];flashes=[];reactions=[];texts=[];energyPulses=[];pReacted=0;starve=0;splash=[];
-  const nH=Math.max(1,Math.round(H0/UP));
+  const nH=Math.max(1,Math.round(H0/UP)); S.unit=H0/nH; S.hpend=0;
   for(let i=0;i<nH;i++)place('h');
   for(let i=0;i<nH;i++)place('cl');
   const nW=waterTarget(nH);
@@ -312,13 +312,14 @@ function macroStep(dt){
     const dv=Math.min(s.queue,POUR*dt);s.queue-=dv;s.added+=dv;
     const u=dv*cfg.np;s.U+=u;
     s.T=(s.T*s.V+ROOM*dv)/(s.V+dv);s.V+=dv;
-    s.pAcc+=u/UP;while(s.pAcc>=1-1e-6){s.pAcc-=1;spawnBase();}
+    s.pAcc+=u/UP;while(s.pAcc>=1-1e-3){s.pAcc-=1;spawnBase();}
     s.pouring=true;
   }else{s.queue=0;s.pouring=false;}
   const stir=$('oStir').checked,tau=stir?2.5:8;
   const dm=s.U*(1-Math.exp(-dt/tau));s.U-=dm;s.OH+=dm;
   const r=Math.min(s.H,s.OH);
-  if(r>0){s.H-=r;s.OH-=r;s.reacted+=r;s.T+=r*MOLU*DH/(s.V*CP);}
+  if(r>0){s.H-=r;s.OH-=r;s.reacted+=r; s.hpend=(s.hpend||0)+r;}
+  if(s.hpend>1e-9 && reactions.length===0 && (budget()<=0 || !mols.some(m=>m.type==="h"&&!m.busy) || !mols.some(m=>m.type==="oh"&&!m.busy))){ const q=s.hpend*(1-Math.exp(-dt/0.8)); s.hpend-=q; s.T+=q*MOLU*DH/(s.V*CP); }
   s.T-=COOL*(s.T-ROOM)*dt;
   s.Td+=(s.T-s.Td)*(1-Math.exp(-dt/2.5));
   if(s.Td>s.Tmax)s.Tmax=s.Td;
@@ -340,6 +341,7 @@ function startReaction(a,b){
   reactions.push({a,b,t:0,q:0,done:false,ke0,mode:realMode()?'real':'h',ang:Math.atan2(b.y-a.y,b.x-a.x),sx:a.x,sy:a.y});
 }
 function finishReaction(r){
+    { const q=Math.min(S.hpend||0, S.unit||0); if(q>0){ S.hpend-=q; S.T+=q*MOLU*DH/(S.V*CP); } }
   const a=r.a,b=r.b,ang=r.ang;
   if(r.mode==='real'){a.type='w';a.r=RAD.w;a.a=ang+Math.PI;}
   else a.dead=true;
@@ -398,15 +400,10 @@ function simStep(dt){
     }
   }
   // if macro says reaction happened but particles haven't met yet, guide the nearest pair together
-  if(budget()>0){starve+=dt;
-    if(starve>0.6){
-      let best=null,bd=1e9;
-      const hs=mols.filter(m=>m.type==='h'&&!m.busy),os=mols.filter(m=>m.type==='oh'&&!m.busy);
-      for(const h of hs)for(const o of os){const d=Math.hypot(h.x-o.x,h.y-o.y);if(d<bd){bd=d;best=[h,o];}}
-      if(best){const[h,o]=best,dx=o.x-h.x,dy=o.y-h.y,d=Math.hypot(dx,dy)||1,f=260*dt;
-        h.vx+=dx/d*f;h.vy+=dy/d*f;o.vx-=dx/d*f;o.vy-=dy/d*f;}
-    }
-  }else starve=0;
+    if(budget()>0){ starve+=dt; if(starve>0.25){ const hs=mols.filter(m=>m.type==='h'&&!m.busy), os=mols.filter(m=>m.type==='oh'&&!m.busy), used=new Set();
+      const k=Math.min(budget(),4), f=(budget()>1?900:520)*dt;
+      for(let n=0;n<k;n++){ let best=null,bd=1e9; for(const h of hs){ if(used.has(h)) continue; for(const o of os){ if(used.has(o)) continue; const d=Math.hypot(h.x-o.x,h.y-o.y); if(d<bd){ bd=d; best=[h,o]; } } }
+        if(!best) break; const [h,o]=best; used.add(h); used.add(o); const dx=o.x-h.x,dy=o.y-h.y,d=Math.hypot(dx,dy)||1; h.vx+=dx/d*f; h.vy+=dy/d*f; o.vx-=dx/d*f; o.vy-=dy/d*f; } } } else starve=0;
 
   for(const r of reactions){
     r.t+=dt;const p=r.t/DUR,a=r.a,b=r.b;
@@ -647,13 +644,14 @@ function axes(c,w,h,x0,x1,y0,y1,lo,hi,xl){
   c.strokeStyle='#555';c.lineWidth=1.2;c.beginPath();c.moveTo(x0,y0);c.lineTo(x0,y1);c.lineTo(x1,y1);c.stroke();
   c.fillStyle='#666';c.font='11px sans-serif';c.textAlign='right';
   const span=hi-lo,step=span>40?10:span>16?5:2;
-  for(let t=Math.ceil(lo/step)*step;t<=hi;t+=step){const y=y1-(t-lo)/span*(y1-y0);c.fillText(t+'°',x0-4,y+4);c.strokeStyle='#eee';c.beginPath();c.moveTo(x0+1,y);c.lineTo(x1,y);c.stroke();}
+  for(let t=Math.ceil(lo/step)*step;t<=hi;t+=step){const y=y1-(t-lo)/span*(y1-y0);c.fillText(t,x0-4,y+4);c.strokeStyle='#eee';c.beginPath();c.moveTo(x0+1,y);c.lineTo(x1,y);c.stroke();}
   c.textAlign='center';c.fillText(xl,(x0+x1)/2,h-3);
+  c.save();c.translate(9,(y0+y1)/2);c.rotate(-Math.PI/2);c.fillText('온도 (°C)',0,0);c.restore();
 }
 function tRange(arr){let lo=18,hi=26;for(const p of arr){lo=Math.min(lo,Math.floor(p.T-1));hi=Math.max(hi,Math.ceil(p.T+2));}return[lo,hi];}
 function drawGV(){
   const c=vctx,w=306,h=180;c.clearRect(0,0,w,h);
-  const x0=34,x1=w-8,y0=10,y1=h-30;const[lo,hi]=tRange(S.histV);
+  const x0=40,x1=w-8,y0=10,y1=h-30;const[lo,hi]=tRange(S.histV);
   const need=S.H0/cfg.np,vmax=Math.max(10,Math.ceil(Math.max(S.added+S.queue,$('oCalc').checked?need*1.4:0,10)/10)*10);
   axes(c,w,h,x0,x1,y0,y1,lo,hi,'넣은 NaOH 부피 (mL)');
   c.fillStyle='#666';c.font='11px sans-serif';c.textAlign='center';
@@ -666,7 +664,7 @@ function drawGV(){
 }
 function drawGT(){
   const c=tctx,w=306,h=150;c.clearRect(0,0,w,h);
-  const x0=34,x1=w-8,y0=10,y1=h-28;const[lo,hi]=tRange(S.histT);
+  const x0=40,x1=w-8,y0=10,y1=h-28;const[lo,hi]=tRange(S.histT);
   const tmax=Math.max(60,Math.ceil(S.t/30)*30);
   axes(c,w,h,x0,x1,y0,y1,lo,hi,'시간 (초)');
   c.fillStyle='#666';c.font='11px sans-serif';c.textAlign='center';

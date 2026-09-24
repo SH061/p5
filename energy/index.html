@@ -3257,7 +3257,7 @@ window.GF = (function(){
     const H0=cfg.hp*cfg.hv; UP=Math.max(cfg.np, H0/60);
     S={H0,H:H0,OH:0,U:0,queue:0,added:0,V:cfg.hv,T:ROOM,Td:ROOM,Tmax:ROOM,reacted:0,pAcc:0,bulk:-1,pouring:false};
     mols=[]; heats=[]; flashes=[]; reactions=[]; texts=[]; pReacted=0; spawnedOH=0; starve=0; splash=[];
-    const nH=Math.max(1,Math.round(H0/UP));
+    const nH=Math.max(1,Math.round(H0/UP)); S.unit=H0/nH; S.hpend=0;
     for(let i=0;i<nH;i++) place("h"); for(let i=0;i<nH;i++) place("cl");
     for(let i=0;i<waterTarget(nH);i++) place("w");
     KEref=avgKE(); field=new Float32Array(GX*GY).fill(-1); paintSegs();
@@ -3273,10 +3273,11 @@ window.GF = (function(){
   function macroStep(dt){
     const s=S;
     if(s.queue>1e-9){ const dv=Math.min(s.queue,POUR*dt); s.queue-=dv; s.added+=dv; const u=dv*cfg.np; s.U+=u;
-      s.T=(s.T*s.V+ROOM*dv)/(s.V+dv); s.V+=dv; s.pAcc+=u/UP; while(s.pAcc>=1-1e-6){ s.pAcc-=1; spawnBase(); } s.pouring=true; }
+      s.T=(s.T*s.V+ROOM*dv)/(s.V+dv); s.V+=dv; s.pAcc+=u/UP; while(s.pAcc>=1-1e-3){ s.pAcc-=1; spawnBase(); } s.pouring=true; }
     else { s.queue=0; s.pouring=false; }
     const tau=stir?2.5:8, dm=s.U*(1-Math.exp(-dt/tau)); s.U-=dm; s.OH+=dm;
-    const r=Math.min(s.H,s.OH); if(r>0){ s.H-=r; s.OH-=r; s.reacted+=r; s.T+=r*MOLU*DH/(s.V*CP); }
+    const r=Math.min(s.H,s.OH); if(r>0){ s.H-=r; s.OH-=r; s.reacted+=r; s.hpend=(s.hpend||0)+r; }
+    if(s.hpend>1e-9 && reactions.length===0 && (budget()<=0 || !mols.some(m=>m.type==="h"&&!m.busy) || !mols.some(m=>m.type==="oh"&&!m.busy))){ const q=s.hpend*(1-Math.exp(-dt/0.8)); s.hpend-=q; s.T+=q*MOLU*DH/(s.V*CP); }
     s.T-=COOL*(s.T-ROOM)*dt;
     s.Td+=(s.T-s.Td)*(1-Math.exp(-dt/2.5)); if(s.Td>s.Tmax) s.Tmax=s.Td;
     const eps=0.002*s.H0+1e-6, tgt=(s.OH-s.H)/(s.OH+s.H+eps); s.bulk+=(tgt-s.bulk)*(1-Math.exp(-dt/(stir?1.2:4)));
@@ -3288,6 +3289,7 @@ window.GF = (function(){
     const ke0=((a.vx*a.vx+a.vy*a.vy)+(b.vx*b.vx+b.vy*b.vy))/4;
     reactions.push({a,b,t:0,q:0,done:false,ke0,ang:Math.atan2(b.y-a.y,b.x-a.x),sx:a.x,sy:a.y}); }
   function finishReaction(r){
+    { const q=Math.min(S.hpend||0, S.unit||0); if(q>0){ S.hpend-=q; S.T+=q*MOLU*DH/(S.V*CP); } }
     const a=r.a,b=r.b,ang=r.ang; a.dead=true; b.type="w"; b.r=RAD.w; b.a=midAng(b.a,ang+Math.PI);
     for(let i=0;i<12;i++){ const t=i/12*6.283+Math.random()*.25, sp=170+Math.random()*40; heats.push({x:b.x,y:b.y,vx:Math.cos(t)*sp,vy:Math.sin(t)*sp,life:1.5,skip:[b.id],age:0,trail:[]}); }
     const sp=Math.sqrt(2*r.ke0); b.vx=Math.cos(ang)*sp; b.vy=Math.sin(ang)*sp; b.glow=1; b.w=(Math.random()-.5)*8;
@@ -3319,9 +3321,10 @@ function simStep(dt){
         const d=Math.sqrt(d2)||.01,nx=dx/d,ny=dy/d,ov=rr-d; p.x-=nx*ov/2; p.y-=ny*ov/2; q.x+=nx*ov/2; q.y+=ny*ov/2;
         const rv=(q.vx-p.vx)*nx+(q.vy-p.vy)*ny; if(rv<0){ p.vx+=rv*nx; p.vy+=rv*ny; q.vx-=rv*nx; q.vy-=rv*ny; }
       } }
-    if(budget()>0){ starve+=dt; if(starve>0.6){ let best=null,bd=1e9; const hs=mols.filter(m=>m.type==="h"&&!m.busy), os=mols.filter(m=>m.type==="oh"&&!m.busy);
-      for(const h of hs) for(const o of os){ const d=Math.hypot(h.x-o.x,h.y-o.y); if(d<bd){ bd=d; best=[h,o]; } }
-      if(best){ const [h,o]=best,dx=o.x-h.x,dy=o.y-h.y,d=Math.hypot(dx,dy)||1,f=260*dt; h.vx+=dx/d*f; h.vy+=dy/d*f; o.vx-=dx/d*f; o.vy-=dy/d*f; } } } else starve=0;
+    if(budget()>0){ starve+=dt; if(starve>0.25){ const hs=mols.filter(m=>m.type==="h"&&!m.busy), os=mols.filter(m=>m.type==="oh"&&!m.busy), used=new Set();
+      const k=Math.min(budget(),4), f=(budget()>1?900:520)*dt;
+      for(let n=0;n<k;n++){ let best=null,bd=1e9; for(const h of hs){ if(used.has(h)) continue; for(const o of os){ if(used.has(o)) continue; const d=Math.hypot(h.x-o.x,h.y-o.y); if(d<bd){ bd=d; best=[h,o]; } } }
+        if(!best) break; const [h,o]=best; used.add(h); used.add(o); const dx=o.x-h.x,dy=o.y-h.y,d=Math.hypot(dx,dy)||1; h.vx+=dx/d*f; h.vy+=dy/d*f; o.vx-=dx/d*f; o.vy-=dy/d*f; } } } else starve=0;
     for(const r of reactions){ r.t+=dt; const p=r.t/DUR,a=r.a,b=r.b,dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1,ux=dx/d,uy=dy/d;
       if(!r.done){ const damp=Math.exp(-5*dt); b.vx*=damp; b.vy*=damp; b.w*=damp;
         if(p<0.35){ a.vx*=damp; a.vy*=damp; const f=(d-20)*6*dt; a.vx+=ux*f; a.vy+=uy*f; b.vx-=ux*f; b.vy-=uy*f; r.ang=Math.atan2(dy,dx); b.a=lerpAng(b.a,r.ang+Math.PI-1.82,1-Math.exp(-10*dt)); r.sx=a.x; r.sy=a.y; }
@@ -3964,7 +3967,7 @@ function simStep(dt){
     const sb = $("gf-tq-show"); if(sb) sb.onclick = ()=>{ tqShow=true; renderTeacherQuiz(); };
   }
   function chart(recs,colors,w,h){
-    const x0=46,x1=w-12,y0=16,y1=h-36;
+    const x0=52,x1=w-12,y0=16,y1=h-36;
     const pts = recs.map(r=>(r.rows||[]).map(p=>({v:parseFloat(p.v),t:parseFloat(p.t)})).filter(p=>isFinite(p.v)&&isFinite(p.t)).sort((a,b)=>a.v-b.v));
     const all = pts.flat();
     if(!all.length) return `<p class="desc" style="margin:8px 0">기록된 값이 없어요.</p>`;
@@ -3972,12 +3975,13 @@ function simStep(dt){
     const X = v=>x0+v/vmax*(x1-x0), Y = t=>y1-(t-lo)/(hi-lo||1)*(y1-y0);
     let s = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;background:#fff;border-radius:10px;border:1px solid var(--line)"><line x1="${x0}" y1="${y0}" x2="${x0}" y2="${y1}" stroke="#555"/><line x1="${x0}" y1="${y1}" x2="${x1}" y2="${y1}" stroke="#555"/>`;
     const ts = hi-lo>20?10:hi-lo>8?5:2;
-    for(let t=Math.ceil(lo/ts)*ts;t<=hi;t+=ts) s += `<line x1="${x0}" x2="${x1}" y1="${Y(t)}" y2="${Y(t)}" stroke="#eee"/><text x="${x0-5}" y="${Y(t)+4}" font-size="12" text-anchor="end" fill="#666">${t}°</text>`;
+    for(let t=Math.ceil(lo/ts)*ts;t<=hi;t+=ts) s += `<line x1="${x0}" x2="${x1}" y1="${Y(t)}" y2="${Y(t)}" stroke="#eee"/><text x="${x0-5}" y="${Y(t)+4}" font-size="12" text-anchor="end" fill="#666">${t}</text>`;
     const vs = vmax>40?10:5; for(let v=0;v<=vmax;v+=vs) s += `<text x="${X(v)}" y="${y1+15}" font-size="12" text-anchor="middle" fill="#666">${v}</text>`;
     s += `<text x="${(x0+x1)/2}" y="${h-4}" font-size="12" text-anchor="middle" fill="#666">넣은 NaOH 부피 (mL)</text>`;
+    s += `<text x="12" y="${(y0+y1)/2}" font-size="12" text-anchor="middle" fill="#666" transform="rotate(-90 12 ${(y0+y1)/2})">온도 (°C)</text>`;
     pts.forEach((p,i)=>{ if(!p.length) return; const c = colors[i%colors.length];
       s += `<polyline fill="none" stroke="${c}" stroke-width="3" points="${p.map(q=>X(q.v)+","+Y(q.t)).join(" ")}"/>`+p.map(q=>`<circle cx="${X(q.v)}" cy="${Y(q.t)}" r="4.5" fill="${c}"/>`).join("");
-      const mx = p.reduce((a,b)=>b.t>a.t?b:a); s += `<text x="${X(mx.v)}" y="${Y(mx.t)-9}" font-size="12" text-anchor="middle" fill="${c}" font-weight="700">${recs.length>1?recs[i].grp+"조 ":""}최고 ${mx.t}°</text>`; });
+      const mx = p.reduce((a,b)=>b.t>a.t?b:a); s += `<text x="${X(mx.v)}" y="${Y(mx.t)-9}" font-size="12" text-anchor="middle" fill="${c}" font-weight="700">${recs.length>1?recs[i].grp+"조 ":""}최고 ${mx.t} °C</text>`; });
     return s+"</svg>";
   }
 
