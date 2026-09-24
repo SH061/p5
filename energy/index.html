@@ -939,13 +939,11 @@
         <div class="gf-rolebar" id="gf-recrole"></div>
         <div class="gf-live" id="gf-rec-live"></div>
         <div class="gf-setup">
-          <span>묽은 염산 농도</span><select id="gf-rcHp" class="gf-rc"><option value="">선택</option><option>10</option><option>20</option><option>30</option></select>
-          <span>묽은 염산 부피</span><select id="gf-rcHv" class="gf-rc"><option value="">선택</option><option>10</option><option>20</option><option>30</option><option>40</option><option>50</option></select>
-          <span>NaOH 농도</span><select id="gf-rcNp" class="gf-rc"><option value="">선택</option><option>10</option><option>20</option><option>30</option></select>
+          <span>실험 조건</span><b id="gf-rcCond">—</b>
         </div>
-        <p class="gf-hint">농도는 %, 부피는 mL 단위예요.</p>
-        <table class="gf-rec"><thead><tr><th style="width:36px">#</th><th>넣은 NaOH 총 부피 (mL)</th><th>온도 (°C)</th><th style="width:44px"></th></tr></thead><tbody id="gf-recBody"></tbody></table>
-        <div class="gf-ctrls"><button class="btn gf-rc" id="gf-recAddRow">＋ 줄 추가</button><button class="btn primary gf-rc" id="gf-recSave">기록 저장</button><span id="gf-recMsg" class="gf-hint"></span></div>
+        <p class="gf-hint">실험 조건은 실험 화면에서 자동으로 가져와요. <b>이번에 넣은 양</b>만 쓰면 누적 부피는 자동으로 계산돼요. (처음 온도는 0 mL로 적어요)</p>
+        <table class="gf-rec"><thead><tr><th style="width:32px">#</th><th>이번에 넣은 양 (mL)</th><th>누적 부피 (mL)</th><th>온도 (°C)</th><th style="width:44px"></th></tr></thead><tbody id="gf-recBody"></tbody></table>
+        <div class="gf-ctrls"><button class="btn gf-rc" id="gf-recNow">📥 지금 실험 값으로 한 줄 추가</button><button class="btn gf-rc" id="gf-recAddRow">＋ 빈 줄 추가</button><button class="btn primary gf-rc" id="gf-recSave">기록 저장</button><span id="gf-recMsg" class="gf-hint"></span></div>
       </div>
       <div class="gf-next" id="gf-next1"></div>
     </div>
@@ -3170,31 +3168,44 @@ window.GF = (function(){
   }
 
   /* ---------- 실험기록 (관찰자만 작성) ---------- */
-  let rec = {cond:{hp:"",hv:"",np:""}, rows:[{v:"",t:""},{v:"",t:""},{v:"",t:""}]}, recDirty = false;
+  let rec = {cond:{hp:"",hv:"",np:""}, rows:[{a:"0",v:"",t:""},{a:"",v:"",t:""},{a:"",v:"",t:""}]}, recDirty = false;
+  // 이번에 넣은 양(a)을 차례로 더해 누적 부피(v)를 계산 (예전 기록처럼 a가 없으면 v를 그대로 씀)
+  function recCum(rows){ let sum=0; return rows.map(r=>{ const a=parseFloat(r.a);
+    if(r.a!==undefined && r.a!==""){ if(isFinite(a)) sum=Math.round((sum+a)*10)/10; return {...r, v:isFinite(a)?String(sum):""}; }
+    const v=parseFloat(r.v); if(isFinite(v)) sum=v; return {...r}; }); }
+  function recCond(){ return {hp:String(cfg.hp), hv:String(cfg.hv), np:String(cfg.np)}; }
   $("gf-st-exp").onclick = ()=>{ $("gf-st-exp").classList.add("on"); $("gf-st-rec").classList.remove("on"); $("gf-exp-view").classList.remove("hidden"); $("gf-rec-view").classList.add("hidden"); };
   $("gf-st-rec").onclick = ()=>{ $("gf-st-rec").classList.add("on"); $("gf-st-exp").classList.remove("on"); $("gf-rec-view").classList.remove("hidden"); $("gf-exp-view").classList.add("hidden"); };
   async function loadRecord(){
     if(!me || (recDirty && isRec())) return;
     const r = (await DB.list("exp_records",{id:gid()}))[0];
     if(r) rec = {cond:r.cond||rec.cond, rows:(r.rows&&r.rows.length?r.rows:rec.rows)};
-    $("gf-rcHp").value = rec.cond.hp; $("gf-rcHv").value = rec.cond.hv; $("gf-rcNp").value = rec.cond.np;
     renderRecTable();
   }
   function renderRecTable(){
     const ro = !isRec();
+    const cum = recCum(rec.rows);
     $("gf-recBody").innerHTML = rec.rows.map((r,i)=>`<tr><td>${i+1}</td>
-      <td><input data-i="${i}" data-k="v" type="number" step="0.5" inputmode="decimal" value="${esc(r.v)}" ${ro?"disabled":""}></td>
+      <td><input data-i="${i}" data-k="a" type="number" step="0.5" min="0" inputmode="decimal" value="${esc(r.a!==undefined?r.a:"")}" ${ro?"disabled":""}></td>
+      <td class="gf-cum" data-c="${i}" style="text-align:center;font-weight:800">${esc(cum[i].v)}</td>
       <td><input data-i="${i}" data-k="t" type="number" step="0.1" inputmode="decimal" value="${esc(r.t)}" ${ro?"disabled":""}></td>
       <td>${ro?"":`<button class="btn ghost" data-del="${i}" style="padding:5px 9px">✕</button>`}</td></tr>`).join("");
-    $("gf-recBody").querySelectorAll("input").forEach(inp=>inp.oninput=()=>{ rec.rows[+inp.dataset.i][inp.dataset.k]=inp.value; recDirty=true; $("gf-recMsg").textContent="저장하지 않은 내용이 있어요"; });
+    $("gf-recBody").querySelectorAll("input").forEach(inp=>inp.oninput=()=>{ rec.rows[+inp.dataset.i][inp.dataset.k]=inp.value; recDirty=true; $("gf-recMsg").textContent="저장하지 않은 내용이 있어요";
+      const c=recCum(rec.rows); $("gf-recBody").querySelectorAll("[data-c]").forEach(td=>td.textContent=c[+td.dataset.c].v); });
     $("gf-recBody").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{ rec.rows.splice(+b.dataset.del,1); recDirty=true; renderRecTable(); });
   }
-  [["gf-rcHp","hp"],["gf-rcHv","hv"],["gf-rcNp","np"]].forEach(([id,k])=>$(id).onchange=()=>{ rec.cond[k]=$(id).value; recDirty=true; });
-  $("gf-recAddRow").onclick = ()=>{ rec.rows.push({v:"",t:""}); recDirty=true; renderRecTable(); };
+  $("gf-recAddRow").onclick = ()=>{ rec.rows.push({a:"",v:"",t:""}); recDirty=true; renderRecTable(); };
+  // 지금 실험 값으로 한 줄: 지난 줄 누적 부피와의 차이를 '이번에 넣은 양'으로, 현재 온도를 온도로
+  $("gf-recNow").onclick = ()=>{ if(!S) return;
+    const rows = rec.rows.filter(r=>(r.a!==undefined&&r.a!=="")||r.t!=="");
+    const c = recCum(rows), last = c.length ? (parseFloat(c[c.length-1].v)||0) : 0;
+    const add = Math.max(0, Math.round((S.added-last)*10)/10);
+    rows.push({a:String(add), v:"", t:(Math.round(S.Td*10)/10).toFixed(1)});
+    rec.rows = rows; recDirty=true; renderRecTable(); $("gf-recMsg").textContent="저장하지 않은 내용이 있어요"; };
   $("gf-recSave").onclick = async ()=>{
     $("gf-recSave").disabled = true; $("gf-recMsg").textContent = "저장 중…";
     try{
-      await DB.upsert("exp_records",{id:gid(), cls:me.cls, grp:me.grp, cond:rec.cond, rows:rec.rows.filter(r=>r.v!==""||r.t!==""), updated:new Date().toISOString()});
+      await DB.upsert("exp_records",{id:gid(), cls:me.cls, grp:me.grp, cond:recCond(), rows:recCum(rec.rows).filter(r=>r.v!==""||r.t!==""), updated:new Date().toISOString()});
       recDirty = false; $("gf-recMsg").textContent = "저장했어요 ✓";
     }catch(e){ $("gf-recMsg").textContent = "저장 실패 — 다시 눌러 주세요"; }
     $("gf-recSave").disabled = !isRec();
@@ -3202,6 +3213,7 @@ window.GF = (function(){
   function recReadout(){
     if(!S) return;
     const f = x => (Math.round(x*10)/10).toFixed(1);
+    const cd=$("gf-rcCond"); if(cd) cd.textContent = `묽은 염산 ${cfg.hp}% ${cfg.hv} mL · NaOH ${cfg.np}%`;
     $("gf-rec-live").innerHTML = `지금 실험 값 — 넣은 NaOH <b class="num">${f(S.added)} mL</b> · 온도 <b class="num">${f(S.Td)} °C</b>`;
   }
 
@@ -3926,7 +3938,7 @@ function simStep(dt){
     for(const x of recs){
       const c = x.cond||{};
       r += `<div class="gf-g"><h3>${x.grp}조 <small>염산 ${esc(c.hp||"?")}% ${esc(c.hv||"?")} mL · NaOH ${esc(c.np||"?")}%</small></h3>${chart([x],[COLORS[(x.grp-1)%6]],360,220)}
-        <table class="gf-rec"><tr><th>NaOH (mL)</th><th>온도 (°C)</th></tr>${(x.rows||[]).map(p=>`<tr><td>${esc(p.v)}</td><td>${esc(p.t)}</td></tr>`).join("")}</table></div>`;
+        <table class="gf-rec"><tr><th>넣은 양</th><th>누적 NaOH (mL)</th><th>온도 (°C)</th></tr>${(x.rows||[]).map(p=>`<tr><td>${p.a!==undefined&&p.a!==""?"+"+esc(p.a):""}</td><td>${esc(p.v)}</td><td>${esc(p.t)}</td></tr>`).join("")}</table></div>`;
     }
     if(!recs.length) r += `<p class="desc">아직 저장된 실험 기록이 없어요.</p>`;
     $("gf-t-recs").innerHTML = r+"</div></div>";
