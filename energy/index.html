@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<script>/* 리허설 점검용: 주소에 ?rehearsal=1 이 있을 때만, 화면이 가려져도 애니메이션을 계속 돌린다 */
-if(/[?&]rehearsal=1/.test(location.search)){(function(){let q=[],last=0;const ch=new MessageChannel();ch.port1.onmessage=()=>{const n=performance.now();if(n-last>=33&&q.length){last=n;const c=q;q=[];c.forEach(f=>{try{f(n)}catch(e){console.error(e)}})}ch.port2.postMessage(0)};window.requestAnimationFrame=f=>{q.push(f);return q.length};window.cancelAnimationFrame=()=>{};ch.port2.postMessage(0);})();}
-</script>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2266,7 +2263,7 @@ function switchTeacherTab(tab){
   document.getElementById("tab-heatq").classList.toggle("active", tab==="heatq");
   document.getElementById("view-neutral").classList.toggle("hidden", tab!=="neutral");
   document.getElementById("view-heatq").classList.toggle("hidden", tab!=="heatq");
-  if(tab==="neutral"){ const f=document.getElementById("gf-neutral-frame"); if(!f.src) f.src="neutralization.html?v=2"; fitNeutralFrame(); }
+  if(tab==="neutral"){ const f=document.getElementById("gf-neutral-frame"); if(!f.src) f.src="neutralization.html?v=3"; fitNeutralFrame(); }
   if(tab==="groups" || tab==="exprec" || tab==="heatq") GF.teacherRender();
   document.getElementById("view-progress").classList.toggle("hidden", tab!=="progress");
   document.getElementById("view-results").classList.toggle("hidden", tab!=="results");
@@ -3128,8 +3125,8 @@ window.GF = (function(){
       const names = members.map(m=>`<span>${esc(m.name)} ${list.includes(m.id)?"✅":"⏳"}</span>`).join("");
       let h;
       if(groupStage > n) h = `<div class="gf-next-msg">우리 조는 이미 ${STAGE_NAMES[t]} 단계로 넘어갔어요.</div><button class="btn primary" data-go="${t}">${STAGE_NAMES[t]}(으)로 가기 ▶</button>`;
-      else if(stageMax < t) h = `<div class="gf-next-msg">🔒 선생님이 ${STAGE_NAMES[t]} 단계를 열어 주면 넘어갈 수 있어요.</div>`;
       else if(n===2 && !quizDone()) h = `<div class="gf-next-msg">퀴즈를 모두 풀면 다음 단계로 넘어갈 수 있어요.</div>`;
+      else if(stageMax < t) h = `<div class="gf-next-msg">🔒 선생님이 ${STAGE_NAMES[t]} 단계를 열어 주면 넘어갈 수 있어요.</div>`;
       else h = `<div class="gf-next-msg">조원 모두가 [다음 단계로]를 눌러야 함께 넘어가요. (${list.length} / ${members.length}명)</div>
         <div class="gf-ans">${names}</div>
         <button class="btn ${mine?"ghost":"primary"}" data-ready="${t}">${mine?"취소하기":"다음 단계로 ▶"}</button>`;
@@ -3486,8 +3483,12 @@ function simStep(dt){
 
   newExp();
   let last=performance.now();
-  function frame(now){
-    const dt=Math.min(0.05,(now-last)/1000); last=now;
+  // 애니메이션이 멈춰도(창 전환 등) 타이머로 대신 진행, 오류가 나도 다음 장면은 계속
+  let lastTick=0;
+  function frame(){ requestAnimationFrame(frame); try{ tick(performance.now()); }catch(e){ console.error(e); } }
+  setInterval(()=>{ if(performance.now()-lastTick>150){ try{ tick(performance.now()); }catch(e){} } },60);
+  function tick(now){
+    const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now; lastTick=now;
     if(me){
       const n=Math.max(2,Math.ceil(dt/0.01)); for(let i=0;i<n;i++){ macroStep(dt/n); simStep(dt/n); }
       if(state.screen==="exp" && !$("gf-exp-view").classList.contains("hidden")){ drawMacro(dt); drawSim(); expUI(); }
@@ -3495,7 +3496,6 @@ function simStep(dt){
         if(snapT>1){ snapT=0; sendExp({type:"snap",snap:snapshot()}); }
         if(persistT>4){ persistT=0; DB.upsert("group_state",{id:gid(),cls:me.cls,grp:me.grp,exp:snapshot()}).catch(()=>{}); } }
     }
-    requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 

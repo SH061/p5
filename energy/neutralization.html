@@ -256,6 +256,7 @@ function fitSim(){
   const sx=lw/PW, sy=lh/PH;
   PW=lw; PH=lh; PX1=PW-10; PY1=PH-10; simZoom=Z;
   ctx=setupCanvas(cv,w,h); ctx.scale(Z,Z);
+  queueMicrotask(()=>safe(drawSim));
   GX=Math.max(8,Math.round(PW/20)); GY=Math.max(8,Math.round(PH/20)); CW=PW/GX; CH=PH/GY;
   fcv.width=GX; fcv.height=GY;
   field=new Float32Array(GX*GY).fill(S?S.bulk:-1);
@@ -707,14 +708,17 @@ function ui(){
 }
 
 let last=performance.now();
-function frame(now){
-  const raw=Math.min(0.05,(now-last)/1000);last=now;
+// 브라우저가 애니메이션을 잠시 멈춰도(창 전환·가려진 화면 등) 타이머로 대신 그려서 검은 화면이 되지 않게 함
+let lastTick=0;
+const safe=(f)=>{try{f();}catch(e){if(!safe.err){safe.err=1;console.error(e);}}};
+function tick(now){
+  const raw=Math.max(0,Math.min(0.05,(now-last)/1000));last=now;lastTick=now;
   const sp=+$('oSpeed').value,dt=raw*sp;
-  requestAnimationFrame(frame);   // 오류가 나도 다음 장면은 계속 그림
-  const safe=(f)=>{try{f();}catch(e){if(!frame.err){frame.err=1;console.error(e);}}};
   if(!paused){const n=Math.max(2,Math.ceil(dt/0.01));safe(()=>{for(let i=0;i<n;i++){macroStep(dt/n);simStep(dt/n);}});}
   safe(()=>drawMacro(paused?0:dt));safe(drawSim);safe(ui);
 }
+function frame(){ requestAnimationFrame(frame); tick(performance.now()); }
+setInterval(()=>{ if(performance.now()-lastTick>150) tick(performance.now()); },60);
 document.querySelectorAll('[data-ml]').forEach(b=>b.onclick=()=>addNaOH(+b.dataset.ml));
 $('bAdd').onclick=()=>{const v=parseFloat($('inMl').value);if(v>0)addNaOH(v);};
 $('bNew').onclick=newExp;
