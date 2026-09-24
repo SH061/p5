@@ -400,7 +400,8 @@ function simStep(dt){
     }
   }
   // if macro says reaction happened but particles haven't met yet, guide the nearest pair together
-    if(budget()>0){ starve+=dt; if(starve>0.25){ const hs=mols.filter(m=>m.type==='h'&&!m.busy), os=mols.filter(m=>m.type==='oh'&&!m.busy), used=new Set();
+    // 붓는 동안에는 차가운(20 °C) 용액이 먼저 섞여 온도가 내려가고, 다 부은 뒤 반응하며 다시 오르게 함
+    if(budget()>0 && !S.pouring){ starve+=dt; if(starve>0.25){ const hs=mols.filter(m=>m.type==='h'&&!m.busy), os=mols.filter(m=>m.type==='oh'&&!m.busy), used=new Set();
       const k=Math.min(budget(),4), f=(budget()>1?900:520)*dt;
       for(let n=0;n<k;n++){ let best=null,bd=1e9; for(const h of hs){ if(used.has(h)) continue; for(const o of os){ if(used.has(o)) continue; const d=Math.hypot(h.x-o.x,h.y-o.y); if(d<bd){ bd=d; best=[h,o]; } } }
         if(!best) break; const [h,o]=best; used.add(h); used.add(o); const dx=o.x-h.x,dy=o.y-h.y,d=Math.hypot(dx,dy)||1; h.vx+=dx/d*f; h.vy+=dy/d*f; o.vx-=dx/d*f; o.vy-=dy/d*f; } } } else starve=0;
