@@ -3197,7 +3197,7 @@ window.GF = (function(){
   $("gf-recAddRow").onclick = ()=>{ rec.rows.push({a:"",v:"",t:""}); recDirty=true; renderRecTable(); };
   // 지금 실험 값으로 한 줄: 지난 줄 누적 부피와의 차이를 '이번에 넣은 양'으로, 현재 온도를 온도로
   $("gf-recNow").onclick = ()=>{ if(!S) return;
-    const rows = rec.rows.filter(r=>(r.a!==undefined&&r.a!=="")||r.t!=="");
+    const rows = rec.rows.filter(r=>r.t!=="");
     const c = recCum(rows), last = c.length ? (parseFloat(c[c.length-1].v)||0) : 0;
     const add = Math.max(0, Math.round((S.added-last)*10)/10);
     rows.push({a:String(add), v:"", t:(Math.round(S.Td*10)/10).toFixed(1)});
@@ -3205,7 +3205,7 @@ window.GF = (function(){
   $("gf-recSave").onclick = async ()=>{
     $("gf-recSave").disabled = true; $("gf-recMsg").textContent = "저장 중…";
     try{
-      await DB.upsert("exp_records",{id:gid(), cls:me.cls, grp:me.grp, cond:recCond(), rows:recCum(rec.rows).filter(r=>r.v!==""||r.t!==""), updated:new Date().toISOString()});
+      await DB.upsert("exp_records",{id:gid(), cls:me.cls, grp:me.grp, cond:recCond(), rows:recCum(rec.rows).filter(r=>r.t!==""), updated:new Date().toISOString()});
       recDirty = false; $("gf-recMsg").textContent = "저장했어요 ✓";
     }catch(e){ $("gf-recMsg").textContent = "저장 실패 — 다시 눌러 주세요"; }
     $("gf-recSave").disabled = !isRec();
