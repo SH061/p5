@@ -247,10 +247,11 @@
   /* 1번 화면 — 학생 진행 상황: 이름 + 진행률 바 + 문항 수 + 정답률 */
   .stu-grid{ display:flex; flex-direction:column; gap:8px; max-width:none; width:100%; margin:0 auto; }
   .stu-row{ display:flex; align-items:center; gap:14px; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 16px; }
-  .stu-name{ font-weight:700; flex:0 0 auto; min-width:100px; }
+  .stu-name{ font-weight:700; flex:0 0 auto; min-width:230px; }
   .stu-progress-track{ flex:1; height:8px; border-radius:6px; background:var(--panel-2); overflow:hidden; border:1px solid var(--line); min-width:60px; }
   .stu-progress-fill{ height:100%; background:linear-gradient(90deg, var(--accent), var(--warn)); transition:width .3s ease; }
   .stu-count{ font-size:13px; color:var(--text); font-weight:700; white-space:nowrap; flex:0 0 auto; }
+  .stu-del{ padding:4px 10px; font-size:12px; flex:0 0 auto; }
   .stu-accuracy{ font-size:13px; color:var(--accent); font-weight:700; white-space:nowrap; flex:0 0 auto; min-width:64px; text-align:right; }
   .stu-empty, .storage-warning{ color:var(--muted); text-align:center; padding:30px 10px; }
   .storage-warning{ color:var(--bad); }
@@ -849,7 +850,7 @@
   .gf-reveal.ex{ border-color:#ffb383; background:#fff6ef; }
   .gf-reveal.en{ border-color:#9cc0fa; background:#f2f7ff; }
   .gf-reveal h3{ margin:0 0 4px; font-size:18px; }
-  .gf-stagectl{ display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--muted); padding:0 4px; }
+  .gf-stagectl{ display:inline-flex; align-items:center; gap:3px; font-size:12px; color:var(--muted); padding:0; }
   .gf-stagectl button{ padding:6px 9px; border-radius:999px; border:1px solid var(--line); background:var(--panel-2); font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
   .gf-stagectl button.on{ background:var(--accent); color:#fff; border-color:transparent; }
   .gf-groups{ display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:12px; max-width:1400px; margin:14px auto; padding:0 16px; }
@@ -899,6 +900,7 @@
     .teacher-topbar .last-updated{ display:none; }
   }
   @media (max-width:1500px){
+    .gf-stagectl .sl{ display:none; }
     .teacher-topbar .lbl-lg{ display:none; }
     .teacher-topbar .lbl-sm{ display:inline; }
     .teacher-topbar .class-label{ font-weight:800; }
@@ -1014,6 +1016,16 @@
       <button data-stage="3">③ 문제 풀이</button>
     </nav>
   </header>
+
+  <!-- 입장 후 대기 -->
+  <section class="screen" id="screen-wait">
+    <div class="card" style="text-align:center;padding:36px 20px">
+      <div style="font-size:44px">⏳</div>
+      <h2 style="margin:8px 0 14px">입장 완료! 잠시 기다려 주세요</h2>
+      <div id="gf-wait-me" style="display:inline-block;padding:12px 18px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line);font-size:18px;font-weight:800"></div>
+      <p class="desc" style="margin-top:16px">선생님이 시작하면 자동으로 다음 화면으로 넘어가요.<br>반·학번·이름·조·역할이 틀렸다면 손을 들고 선생님께 말해 주세요.</p>
+    </div>
+  </section>
 
   <!-- ① 조별 중화 반응 실험 -->
   <section class="screen" id="screen-exp">
@@ -1233,7 +1245,7 @@
         <button class="pill-tab" id="tab-exprec"><span class="lbl-lg">📈 실험 기록</span><span class="lbl-sm">📈 실험기록</span></button>
         <button class="pill-tab" id="tab-neutral"><span class="lbl-lg">🧪 중화 반응 실험</span><span class="lbl-sm">🧪 중화실험</span></button>
         <button class="pill-tab" id="tab-heatq"><span class="lbl-lg">🔥 발열·흡열 퀴즈</span><span class="lbl-sm">🔥 발열퀴즈</span></button>
-        <span class="gf-stagectl" id="gf-stagectl"><span class="lbl-lg">학생 진행</span><button data-open="1">① 실험</button><button data-open="2">② 퀴즈</button><button data-open="3">③ 문제풀이</button></span>
+        <span class="gf-stagectl" id="gf-stagectl" title="학생 진행 단계"><button data-open="0" title="대기: 학생들이 입장 후 대기 화면에서 기다려요">⏸<span class="sl"> 대기</span></button><button data-open="1" title="① 실험 시작">①<span class="sl"> 실험</span></button><button data-open="2" title="② 퀴즈 열기">②<span class="sl"> 퀴즈</span></button><button data-open="3" title="③ 문제풀이 열기">③<span class="sl"> 문제풀이</span></button></span>
         <button class="btn gate-btn state-unknown" id="btn-gate-toggle">접속 확인 중…</button>
         <span class="spacer"></span>
         <span class="class-label" id="teacher-current-class"></span>
@@ -1809,6 +1821,7 @@ document.getElementById("in-name").addEventListener("input", checkIntroValid);
 document.getElementById("in-group").addEventListener("change", checkIntroValid);
 document.getElementById("in-role").addEventListener("change", checkIntroValid);
 
+try{ if(sessionStorage.getItem("gf-kicked")){ sessionStorage.removeItem("gf-kicked"); setTimeout(()=>{ const e=document.getElementById("gf-intro-err"); if(e) e.textContent="선생님이 입장 정보를 지웠어요. 반·학번·이름·조·역할을 다시 입력해 주세요."; }, 300); } }catch(e){}
 document.getElementById("btn-start").addEventListener("click", async ()=>{
   state.className = classSelect.value;
   const num = document.getElementById("in-num").value.trim();
@@ -2225,6 +2238,7 @@ function selectTeacherClass(cls){
   document.getElementById("teacher-main").classList.remove("hidden");
   switchTeacherTab("progress");
   GF.teacherSelect(cls);
+  if(!window.__progSub){ window.__progSub = true; let t=null; const f=()=>{ clearTimeout(t); t=setTimeout(()=>{ if(teacherTab==="progress" && teacherClass) renderTeacherDashboard(); }, 500); }; ["students","worksheet","settings"].forEach(x=>DB.on(x,f)); }
   renderTeacherDashboard();
   refreshGateButton();
   refreshProblemStopButton();
@@ -2450,7 +2464,9 @@ async function fetchTeacherData(){
   throw lastErr;
 }
 
+let dashSeq = 0;
 async function renderTeacherDashboard(){
+  const mySeq = ++dashSeq;
   const refreshBtn = document.getElementById("btn-teacher-refresh");
   const stamp = document.getElementById("teacher-last-updated");
   refreshBtn.classList.add("loading");
@@ -2458,25 +2474,53 @@ async function renderTeacherDashboard(){
   refreshBtn.innerHTML = '↻<span class="lbl-lg"> 새로고침 중…</span>';
   const body = document.getElementById("teacher-progress-body");
   try{
-    const data = await fetchTeacherData();
+    const [data, studs, stg] = await Promise.all([fetchTeacherData(), DB.list("students",{cls:teacherClass}), getSetting("stage-"+teacherClass).catch(()=>null)]);
+    if(mySeq !== dashSeq) return;   // 더 최근에 시작한 갱신이 있으면 그 결과를 따름
     latestTeacherData = data;
-    const rows = (data && data.rows) || [];
-    if(rows.length===0){
+    const wrows = (data && data.rows) || [];
+    const used = new Set();
+    const list = studs.map(st=>{
+      const w = wrows.find(r=>String(r.name).split(" ")[0]===String(st.num));
+      if(w) used.add(w);
+      return {st, w, num:parseInt(st.num,10)||0, grp:parseInt(st.grp,10)||0};
+    });
+    wrows.filter(r=>!used.has(r)).forEach(w=>list.push({st:null, w, num:studentNumber(w.name), grp:0}));
+    const byGroup = !stg || (stg.max||0) < 3;   // 실험·퀴즈 단계는 조→학번, 문제 풀이 단계는 학번 순
+    list.sort((x,y)=> byGroup ? (x.grp-y.grp)||(x.num-y.num) : (x.num-y.num));
+    if(list.length===0){
       body.innerHTML = '<div class="stu-empty">아직 접속한 학생이 없어요.</div>';
     } else {
-      const sorted = rows.slice().sort((a,b)=> studentNumber(a.name)-studentNumber(b.name));
-      body.innerHTML = sorted.map(r=>{
-        const answered = (r.answers||[]).filter(v=>String(v).trim()!=="").length;
+      body.innerHTML = list.map((it,i)=>{
+        const r = it.w, st = it.st;
+        const answered = r ? (r.answers||[]).filter(v=>String(v).trim()!=="").length : 0;
         const pct = HEADERS.length ? Math.round(answered/HEADERS.length*100) : 0;
-        const acc = (r.accuracy === "" || r.accuracy === null || r.accuracy === undefined)
+        const acc = (!r || r.accuracy === "" || r.accuracy === null || r.accuracy === undefined)
           ? "정답률 -" : "정답률 "+r.accuracy+"%";
+        const label = st ? (st.grp+"조 · "+st.num+" "+st.name+" · "+st.role) : String(r.name);
         return '<div class="stu-row">'
-          + '<div class="stu-name">'+escapeHtml(String(r.name))+'</div>'
+          + '<div class="stu-name">'+escapeHtml(label)+'</div>'
           + '<div class="stu-progress-track"><div class="stu-progress-fill" style="width:'+pct+'%"></div></div>'
-          + '<div class="stu-count">'+answered+' / '+HEADERS.length+'</div>'
+          + '<div class="stu-count">'+(r ? answered+' / '+HEADERS.length : '문제 풀이 전')+'</div>'
           + '<div class="stu-accuracy">'+acc+'</div>'
+          + '<button class="btn ghost stu-del" data-i="'+i+'" title="잘못 들어온 학생 삭제">🗑 삭제</button>'
           + '</div>';
       }).join("");
+      body.querySelectorAll(".stu-del").forEach(btn=>{
+        btn.onclick = async ()=>{
+          const it = list[+btn.dataset.i];
+          if(btn.dataset.armed !== "1"){
+            btn.dataset.armed = "1"; btn.textContent = "정말 삭제?"; btn.classList.add("danger");
+            setTimeout(()=>{ if(btn.isConnected){ btn.dataset.armed=""; btn.textContent="🗑 삭제"; btn.classList.remove("danger"); } }, 4000);
+            return;
+          }
+          btn.disabled = true; btn.textContent = "삭제 중…";
+          try{
+            if(it.st){ await DB.del("quiz_answers",{sid:it.st.id}); await DB.del("students",{id:it.st.id}); }
+            if(it.w) await DB.del("worksheet",{cls:teacherClass, name:it.w.name});
+          }catch(e){ alert("삭제하지 못했어요. 다시 시도해 주세요."); }
+          renderTeacherDashboard();
+        };
+      });
     }
     stamp.textContent = "방금 갱신함"; stamp.classList.add("fresh");
     if(teacherTab === "results") renderTeacherQuestionView();
@@ -3165,7 +3209,7 @@ window.GF = (function(){
 
   for(let i=1;i<=GROUP_COUNT;i++){ const o=document.createElement("option"); o.value=i; o.textContent=i+"조"; $("in-group").appendChild(o); }
 
-  let me = null, members = [], stageMax = 1, curStage = 1, groupStage = 1, groupAnswers = [];
+  let me = null, members = [], stageMax = 0, waiting = false, recShown = false, curStage = 1, groupStage = 1, groupAnswers = [];
   const gid = () => me.cls+"-"+me.grp;
   const numOf = m => parseInt(m.num,10) || 0;
   const controller = () => members.find(m=>m.role===CONTROL_ROLE);
@@ -3201,13 +3245,19 @@ window.GF = (function(){
     await refreshMembers(); await refreshAnswers(); await loadRecord(); await refreshStage(); await refreshGroup();
     startExpSync();
     setInterval(refreshStage, 15000);
-    if(isRec()) $("gf-st-rec").click();
-    goStage(groupStage);
+    if(stageMax < 1) showWait(); else { if(isRec()){ recShown = true; $("gf-st-rec").click(); } goStage(groupStage); }
     setInterval(recReadout, 300);
   }
 
+  function showWait(){
+    waiting = true;
+    $("gf-wait-me").textContent = `${me.cls} ${me.grp}조 · ${me.num} ${me.name} · ${me.role}`;
+    $("stage-nav").classList.add("hidden");
+    showScreen("wait");
+  }
   /* ---------- 단계 이동 ---------- */
   function goStage(n){
+    if(waiting) return;
     if(n > groupStage) return;
     curStage = n;
     if(n === 1){ showScreen("exp"); if(window.__exnoteMaybe) window.__exnoteMaybe(); }
@@ -3229,7 +3279,9 @@ window.GF = (function(){
     if(!me) return;
     try{
       const v = await getSetting("stage-"+me.cls);
-      stageMax = v ? v.max : 1;
+      stageMax = v ? v.max : 0;
+      if(stageMax < 1){ if(!waiting) showWait(); }
+      else if(waiting){ waiting = false; $("stage-nav").classList.remove("hidden"); if(isRec() && !recShown){ recShown = true; $("gf-st-rec").click(); } goStage(groupStage); }
       paintNext();
     }catch(e){}
   }
@@ -3272,6 +3324,7 @@ window.GF = (function(){
   /* ---------- 조원 ---------- */
   async function refreshMembers(){
     members = (await DB.list("students",{cls:me.cls, grp:me.grp})).sort((a,b)=>numOf(a)-numOf(b));
+    if(!members.some(m=>m.id===me.id)){ try{ sessionStorage.setItem("gf-kicked","1"); }catch(e){} location.reload(); return; }
     const chips = members.map(m=>`<span class="${m.role===CONTROL_ROLE?"ctrl":""}">${esc(m.num)} ${esc(m.name)} · ${esc(roleLabel(m))}${m.id===me.id?" (나)":""}</span>`).join("");
     $("gf-members").innerHTML = `<span>${me.grp}조</span>` + chips;
     $("gf-members2").innerHTML = `<span>${me.grp}조</span>` + chips;
@@ -4073,7 +4126,7 @@ function simStep(dt){
   async function tLoad(){
     if(!tCls) return;
     const [st,stage,gs,qa,er] = await Promise.all([DB.list("students",{cls:tCls}), getSetting("stage-"+tCls), DB.list("group_state",{cls:tCls}), DB.list("quiz_answers",{cls:tCls}), DB.list("exp_records",{cls:tCls})]);
-    tData = {st,gs,qa,er,stage:stage?stage.max:1};
+    tData = {st,gs,qa,er,stage:stage?stage.max:0};
     teacherRender();
   }
   function openWatch(g){
