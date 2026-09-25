@@ -3286,7 +3286,8 @@ window.GF = (function(){
     DB.on("exp_records", loadRecord);
     await refreshMembers(); await refreshAnswers(); await loadRecord(); await refreshStage(); await refreshGroup();
     startExpSync();
-    setInterval(refreshStage, 15000);
+    // 실시간 알림이 늦거나 빠져도(느린 와이파이 등) 5초마다 스스로 다시 확인
+    setInterval(()=>{ refreshStage(); refreshGroup(); refreshAnswers(); }, 5000);
     if(stageMax < 1) showWait(); else { if(isRec()){ recShown = true; $("gf-st-rec").click(); } goStage(groupStage); }
     setInterval(recReadout, 300);
   }
