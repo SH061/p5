@@ -761,8 +761,12 @@
   #gf-sim{ position:absolute; left:0; top:0; display:block; border-radius:10px; background:#fbfaf7; }
   /* 핸드폰: 버튼을 누르기 쉽게 */
   @media (max-width:599px){
-    .gf-stage{ grid-template-columns:40% minmax(0,1fr); }
-    #gf-simbox{ height:max(270px, calc(100vh - 580px)); }
+    /* 휴대폰도 한 화면: 위는 실험 장치+입자, 아래 조작부는 칸 안에서만 스크롤 */
+    .gf-stage{ grid-template-columns:36% minmax(0,1fr); grid-template-rows:minmax(0,56fr) minmax(0,44fr); }
+    .gf-colA{ min-height:0; }
+    #gf-macro{ max-height:100%; width:auto; max-width:100%; margin:0 auto; }
+    #gf-simbox{ height:auto; min-height:0; }
+    .gf-colC{ overflow:auto; min-height:0; align-self:stretch; }
     .gf-colC .gf-rolebar{ font-size:12px; padding:6px 8px; margin-bottom:6px; }
     .gf-colC .gf-ctrls .btn{ flex:1 1 28%; padding:12px 6px; font-size:15px; }
     .gf-colC .gf-ctrls input[type=number]{ flex:1 1 20%; padding:12px 6px; font-size:15px; }
@@ -930,6 +934,12 @@
   body.gf-watch .gf-colC .gf-read div{ font-size:14px; padding:10px 12px; }
   body.gf-watch .gf-colC .gf-read b{ font-size:30px; }
   body.gf-watch .gf-colC .gf-msg{ font-size:16px; }
+
+  .simnote{ position:absolute; left:8px; right:8px; bottom:8px; z-index:2; pointer-events:none;
+    background:rgba(255,255,255,.82); border:1px solid rgba(0,0,0,.08); border-radius:9px;
+    padding:5px 9px; font-size:12px; line-height:1.4; color:#3d4a5c; font-weight:600; text-align:center; }
+  .simnote .sn-sm{ display:none; }
+  @media (max-width:599px){ .simnote{ font-size:9.5px; padding:2px 5px; left:3px; right:3px; bottom:3px; } .simnote .sn-lg{ display:none; } .simnote .sn-sm{ display:inline; } }
 </style>
 </head>
 <body>
@@ -978,7 +988,7 @@
       <div id="gf-exp-view">
         <div class="gf-stage" id="gf-stage">
           <div class="gf-colA"><p class="gf-lbl">실험 장치</p><canvas id="gf-macro"></canvas></div>
-          <div class="gf-colB"><p class="gf-lbl">확대해서 본 입자 모습</p><div id="gf-simbox"><canvas id="gf-sim"></canvas></div></div>
+          <div class="gf-colB"><p class="gf-lbl">확대해서 본 입자 모습</p><div id="gf-simbox"><canvas id="gf-sim"></canvas><div class="simnote"><span class="sn-lg">ⓘ 입자 1개는 실제로 셀 수 없이 많은 이온을 나타내요. 실제 용액에는 이온이 빈틈없이 고르게 퍼져 있어요.</span><span class="sn-sm">ⓘ 입자 1개 = 실제로는 셀 수 없이 많은 이온</span></div></div></div>
           <div class="gf-colC">
         <div class="gf-rolebar" id="gf-rolebar"></div>
         <div class="gf-read">
@@ -2337,7 +2347,7 @@ function switchTeacherTab(tab){
   document.getElementById("tab-heatq").classList.toggle("active", tab==="heatq");
   document.getElementById("view-neutral").classList.toggle("hidden", tab!=="neutral");
   document.getElementById("view-heatq").classList.toggle("hidden", tab!=="heatq");
-  if(tab==="neutral"){ const f=document.getElementById("gf-neutral-frame"); if(!f.src) f.src="neutralization.html?v=5"; fitNeutralFrame(); }
+  if(tab==="neutral"){ const f=document.getElementById("gf-neutral-frame"); if(!f.src) f.src="neutralization.html?v=6"; fitNeutralFrame(); }
   if(tab==="groups" || tab==="exprec" || tab==="heatq") GF.teacherRender();
   document.getElementById("view-progress").classList.toggle("hidden", tab!=="progress");
   document.getElementById("view-results").classList.toggle("hidden", tab!=="results");
@@ -3571,7 +3581,8 @@ function simStep(dt){
     // 세로 태블릿: 온도 표시를 실험 장치 아래로 옮겨 양쪽 균형을 맞춤
     const rd=document.querySelector("#gf-stage .gf-read"), A=document.querySelector("#gf-stage .gf-colA"), Cc=document.querySelector("#gf-stage .gf-colC");
     if(rd && A && Cc){ if(portrait && rd.parentNode!==A) A.appendChild(rd); else if(!portrait && rd.parentNode!==Cc) Cc.insertBefore(rd, Cc.children[1]||null); }
-    if(!wide){ st.style.height=""; return; }
+    if(!wide){ st.style.height = Math.max(300, window.innerHeight - st.getBoundingClientRect().top - 12) + "px";
+      const ov = document.scrollingElement.scrollHeight - window.innerHeight; if(ov>0) st.style.height = Math.max(300, parseFloat(st.style.height) - ov - 2) + "px"; return; }
     let hgt = Math.max(360, window.innerHeight - st.getBoundingClientRect().top - 12);
     st.style.height = hgt + "px";
     const over = document.scrollingElement.scrollHeight - window.innerHeight;   // 아래 여백 때문에 생기는 스크롤까지 없앰
