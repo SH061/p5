@@ -3833,7 +3833,7 @@ function simStep(dt){
       ${[0,1,2].map(i=>`<g opacity="0">${T(270+(i-1)*14,52,"H₂",13,"#557",800)}${TR("0 0;0 -30",2,`begin="${i*.6}s"`)}${A("opacity","0;1;0",2,`begin="${i*.6}s"`)}</g>`).join("")}
       ${T(210,112,"묽은 염산",11,"#446")}${T(330,112,"마그네슘",11,"#446")}`},
 
-    {id:"bariumhydroxide", title:"수산화 바륨과 질산 암모늄의 반응", answer:"흡열", eq:"Ba(OH)<sub>2</sub>·8H<sub>2</sub>O + 2NH<sub>4</sub>NO<sub>3</sub> → Ba(NO<sub>3</sub>)<sub>2</sub> + 2NH<sub>3</sub> + 10H<sub>2</sub>O",
+    {id:"bariumhydroxide", title:"수산화 바륨과 질산 암모늄의 반응", answer:"흡열", video:"videos/bariumhydroxide.mp4?v=1", overlay:`<rect x="323" y="279" width="234" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"입자 확대 — 섞이며 주변의 열을 흡수해요",10,"#3d5a80")}`, eq:"Ba(OH)<sub>2</sub>·8H<sub>2</sub>O + 2NH<sub>4</sub>NO<sub>3</sub> → Ba(NO<sub>3</sub>)<sub>2</sub> + 2NH<sub>3</sub> + 10H<sub>2</sub>O",
      sit:"물을 적신 나무판 위에 삼각 플라스크를 놓고, 플라스크 안에서 수산화 바륨과 질산 암모늄을 넣고 흔들어 섞어요.",
      explain:"두 물질이 반응할 때 주변의 열을 많이 흡수해요. 그래서 나무판의 물이 얼어 플라스크가 나무판에 달라붙어요.",
      scene:`<g>${TR("0 0;0 0;0 -22;0 -22;0 0",LOOP,`keyTimes="0;.7;.8;.95;1"`)}
