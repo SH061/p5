@@ -3779,7 +3779,7 @@ function simStep(dt){
   }
   function quizVisual(q){
     return q.video
-      ? `<div class="gf-vwrap" style="background-image:url('${q.video.replace(/\.mp4.*/,'.jpg')}')"><video src="${q.video}" poster="${q.video.replace(/\.mp4.*/,'.jpg')}" autoplay muted loop playsinline disablepictureinpicture disableremoteplayback preload="auto" onplaying="this.classList.add('on')"></video><svg viewBox="0 0 640 300">${quizFrame(q)}</svg></div>${q.credit?`<div class="gf-credit">${q.credit}</div>`:""}`
+      ? `<div class="gf-vwrap" style="background-image:url('${q.video.replace(/\.mp4.*/,'.jpg')}')"><video src="${q.video}" poster="${q.video.replace(/\.mp4.*/,'.jpg')}" autoplay muted loop playsinline disablepictureinpicture disableremoteplayback preload="auto" onplaying="this.classList.add('on')"></video>${/Google Veo/.test(q.credit||"")?"":`<svg viewBox="0 0 640 300">${quizFrame(q)}</svg>`}</div>${q.credit?`<div class="gf-credit">${q.credit}</div>`:""}`
       : `<svg viewBox="0 0 640 300">${quizFrame(q)}</svg>`;
   }
   // 손난로 3D 영상(블렌더 렌더링)을 파일 안에 넣어 둠 — index.html 하나만 열어도 재생되도록
