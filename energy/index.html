@@ -3783,15 +3783,15 @@ function simStep(dt){
       : `<svg viewBox="0 0 640 300">${quizFrame(q)}</svg>`;
   }
   // 손난로 3D 영상(블렌더 렌더링)을 파일 안에 넣어 둠 — index.html 하나만 열어도 재생되도록
-  const HW_VIDEO = "videos/handwarmer.mp4?v=2";
+  const HW_VIDEO = "videos/handwarmer.mp4?v=9";
   // 냉찜질 팩 3D 영상(블렌더 렌더링) — 손으로 눌러 물주머니가 터지고, 질산 암모늄이 녹으며 차가워짐
-  const CP_VIDEO = "videos/coldpack.mp4?v=1";
-  const GS_VIDEO = "videos/combustion.mp4?v=2";
-  const LB_VIDEO = "videos/lunchbox.mp4?v=1";
-  const DI_VIDEO = "videos/dryice.mp4?v=1";
+  const CP_VIDEO = "videos/coldpack.mp4?v=9";
+  const GS_VIDEO = "videos/combustion.mp4?v=9";
+  const LB_VIDEO = "videos/lunchbox.mp4?v=9";
+  const DI_VIDEO = "videos/dryice.mp4?v=9";
   const QUIZ = [
-    {id:"handwarmer", title:"손난로 (핫팩)", answer:"발열", video:HW_VIDEO, credit:"실제 장면: Google Veo로 만든 영상 · 입자 모형: Blender",
-     overlay:`${T(460,32,"철 가루 확대 — 산소와 만나 녹슬어요",11,"#6b5a4c")}`, eq:"4Fe + 3O<sub>2</sub> → 2Fe<sub>2</sub>O<sub>3</sub>",
+    {id:"handwarmer", title:"손난로 (핫팩)", answer:"발열", video:HW_VIDEO, credit:"영상: Google Veo로 제작",
+     eq:"4Fe + 3O<sub>2</sub> → 2Fe<sub>2</sub>O<sub>3</sub>",
      sit:"손난로 봉지를 뜯고 흔들면, 안에 든 철 가루가 공기 중의 산소와 만나 반응해요.",
      explain:"철 가루가 산소와 반응(산화)할 때 열을 방출해요. 그래서 손난로와 손이 따뜻해져요.",
      scene:`<g>${RO("-9 225 235;9 225 235;-9 225 235",.55)}
@@ -3811,8 +3811,8 @@ function simStep(dt){
         ${[[395,130],[425,120],[455,140],[405,165],[440,172],[418,195],[385,190]].map(([x,y],i)=>iron(x,y,12,i*.15)).join("")}
         ${o2(350,90,40,30,0)}${o2(470,95,-30,40,.7)}${o2(360,210,40,-30,1.3)}`,"철 가루 확대")}`},
 
-    {id:"coldpack", title:"냉찜질 팩", answer:"흡열", video:CP_VIDEO, credit:"손 3D 모델: “Female hand” by deep3dstudio, CC BY-NC 4.0 (Sketchfab)",
-     overlay:`<rect x="352" y="279" width="176" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"질산 암모늄 확대 — 물에 녹아 흩어져요",10,"#3d5a80")}`, eq:"NH<sub>4</sub>NO<sub>3</sub>(s) → NH<sub>4</sub><sup>+</sup>(aq) + NO<sub>3</sub><sup>−</sup>(aq)",
+    {id:"coldpack", title:"냉찜질 팩", answer:"흡열", video:CP_VIDEO, credit:"영상: Google Veo로 제작",
+     eq:"NH<sub>4</sub>NO<sub>3</sub>(s) → NH<sub>4</sub><sup>+</sup>(aq) + NO<sub>3</sub><sup>−</sup>(aq)",
      sit:"냉찜질 팩을 손바닥으로 세게 누르면, 안쪽 물주머니가 터지면서 질산 암모늄 알갱이가 물에 녹아요.",
      explain:"질산 암모늄이 물에 녹을 때 주변의 열을 흡수해요. 그래서 팩이 차가워져 붓기를 가라앉히는 데 써요.",
      scene:`<g filter="url(#qShadow)">
@@ -3827,7 +3827,7 @@ function simStep(dt){
         <image href="${HAND.palm}" x="210" y="-22" width="120" height="120" transform="rotate(180 270 38)"/>
       </g>`},
 
-    {id:"combustion", title:"연료의 연소 (가스레인지)", answer:"발열", video:GS_VIDEO, overlay:`<rect x="295" y="279" width="290" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"입자 확대 — 메테인 + 산소 → 이산화 탄소 + 물",10,"#3d5a80")}`, eq:"CH<sub>4</sub> + 2O<sub>2</sub> → CO<sub>2</sub> + 2H<sub>2</sub>O",
+    {id:"combustion", title:"연료의 연소 (가스레인지)", answer:"발열", video:GS_VIDEO, credit:"영상: Google Veo로 제작", eq:"CH<sub>4</sub> + 2O<sub>2</sub> → CO<sub>2</sub> + 2H<sub>2</sub>O",
      sit:"가스레인지를 켜면 연료인 메테인 가스가 공기 중의 산소와 반응하면서 불꽃이 생기고, 냄비의 물이 끓기 시작해요.",
      explain:"연료가 연소할 때 많은 열을 방출해요. 이 열로 음식을 익히고 물을 끓여요.",
      scene:`<g filter="url(#qShadow)"><rect x="150" y="222" width="240" height="44" rx="8" fill="url(#qDark)"/>
@@ -3840,7 +3840,7 @@ function simStep(dt){
         <rect x="150" y="116" width="40" height="10" rx="5" fill="#2b2e33"/><rect x="350" y="116" width="40" height="10" rx="5" fill="#2b2e33"/></g>
       ${steam([220,255,290,320],100,70)}`},
 
-    {id:"dryice", title:"승화 (고체 → 기체) : 드라이아이스", answer:"흡열", video:DI_VIDEO, overlay:`<rect x="276" y="279" width="328" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"이산화 탄소 분자 확대 — 고체에서 떨어져 나와 기체가 돼요",10,"#3d5a80")}`, eq:"CO<sub>2</sub>(s) → CO<sub>2</sub>(g)",
+    {id:"dryice", title:"승화 (고체 → 기체) : 드라이아이스", answer:"흡열", video:DI_VIDEO, credit:"영상: Google Veo로 제작", eq:"CO<sub>2</sub>(s) → CO<sub>2</sub>(g)",
      sit:"그릇에 담아 둔 드라이아이스(고체 이산화 탄소)가 액체를 거치지 않고 바로 기체가 되면서 하얀 연기가 흘러내리고, 덩어리는 점점 작아져요.",
      explain:"고체가 기체로 승화할 때 주변의 열을 흡수해요. 그래서 드라이아이스 주변이 매우 차가워져요.",
      scene:`<g filter="url(#qShadow)"><path d="M165,165 q105,105 210,0z" fill="url(#qGlass)" stroke="#8ea6bf" stroke-width="2.5"/></g>
@@ -3853,7 +3853,7 @@ function simStep(dt){
       ${[0,1,2,3,4,5].map(i=>`<ellipse cx="${190+i*30}" cy="160" rx="30" ry="14" fill="#ffffff" filter="url(#qBlur)" opacity="0">${TR(`0 0;${i<3?-40:40} 70`,3,`begin="${i*.45}s"`)}${A("opacity","0;.95;0",3,`begin="${i*.45}s"`)}</ellipse>`).join("")}
       ${[0,1,2].map(i=>`<ellipse cx="${235+i*35}" cy="120" rx="24" ry="12" fill="#ffffff" filter="url(#qBlur)" opacity="0">${TR("0 0;0 -60",3,`begin="${i*.8}s"`)}${A("opacity","0;.9;0",3,`begin="${i*.8}s"`)}</ellipse>`).join("")}`},
 
-    {id:"lunchbox", title:"발열 도시락", answer:"발열", video:LB_VIDEO, overlay:`<rect x="309" y="279" width="262" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"입자 확대 — 산화 칼슘 + 물 → 수산화 칼슘",10,"#3d5a80")}`, eq:"CaO + H<sub>2</sub>O → Ca(OH)<sub>2</sub>",
+    {id:"lunchbox", title:"발열 도시락", answer:"발열", video:LB_VIDEO, credit:"영상: Google Veo로 제작", eq:"CaO + H<sub>2</sub>O → Ca(OH)<sub>2</sub>",
      sit:"발열 도시락의 끈을 당기면, 도시락 아래 칸에 들어 있는 산화 칼슘과 물이 만나 반응해요.",
      explain:"산화 칼슘과 물이 반응할 때 열을 방출해요. 그 열로 불이 없어도 음식을 데울 수 있어요.",
      scene:`<g filter="url(#qShadow)">
@@ -3869,7 +3869,7 @@ function simStep(dt){
       ${[0,1,2].map(i=>`<circle cx="${205+i*50}" cy="186" r="5" fill="#4d9be6">${A("opacity","0;1;0",1.6,`begin="${i*.4}s"`)}</circle>`).join("")}
       ${steam([200,240,280,320],104,70)}`},
 
-    {id:"melt", title:"융해 (고체 → 액체) : 얼음이 녹을 때", answer:"흡열", video:"videos/melt.mp4?v=1", overlay:`<rect x="295" y="279" width="290" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"물 분자 확대 — 정돈된 배열이 풀리며 열을 흡수해요",10,"#3d5a80")}`, eq:"H<sub>2</sub>O(s) → H<sub>2</sub>O(l)",
+    {id:"melt", title:"융해 (고체 → 액체) : 얼음이 녹을 때", answer:"흡열", video:"videos/melt.mp4?v=9", credit:"영상: Google Veo로 제작", eq:"H<sub>2</sub>O(s) → H<sub>2</sub>O(l)",
      sit:"접시 위에 놓인 얼음이 시간이 지나면서 녹아 물이 되어요.",
      explain:"얼음이 녹는(융해) 동안 주변의 열을 흡수해요. 그래서 얼음 조각상 옆에 있으면 시원하게 느껴져요.",
      scene:`<ellipse cx="270" cy="220" rx="130" ry="26" fill="#f4f4f1" stroke="#c9c9c2" stroke-width="2" filter="url(#qShadow)"/>
@@ -3877,7 +3877,7 @@ function simStep(dt){
       <g>${A("opacity","1;.35;1",LOOP)}${icecube(205,150,34)}${icecube(262,165,30)}</g>
       ${[0,1,2].map(i=>`<ellipse cx="${232+i*30}" cy="196" rx="3" ry="4" fill="#6fb0ee">${A("cy","190;212",1.3,`begin="${i*.4}s"`)}${A("opacity","1;0",1.3,`begin="${i*.4}s"`)}</ellipse>`).join("")}`},
 
-    {id:"freeze", title:"응고 (액체 → 고체) : 물이 얼 때", answer:"발열", video:"videos/freeze.mp4?v=1", overlay:`<rect x="295" y="279" width="290" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"물 분자 확대 — 제자리에 자리 잡으며 열을 내보내요",10,"#3d5a80")}`, eq:"H<sub>2</sub>O(l) → H<sub>2</sub>O(s)",
+    {id:"freeze", title:"응고 (액체 → 고체) : 물이 얼 때", answer:"발열", video:"videos/freeze.mp4?v=9", credit:"영상: Google Veo로 제작", eq:"H<sub>2</sub>O(l) → H<sub>2</sub>O(s)",
      sit:"냉동실에 넣어 둔 얼음 틀 속의 물이 점점 얼어서 얼음이 되어요.",
      explain:"물이 얼음으로 응고할 때 열을 방출해요. 그래서 추운 밤 과수원에서는 과일에 물을 뿌려, 물이 얼면서 내놓는 열로 과일이 얼지 않게 해요.",
      scene:`<rect x="120" y="40" width="300" height="220" rx="10" fill="#e9f3fb" stroke="#b9cfe2" stroke-width="2"/>
