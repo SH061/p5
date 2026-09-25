@@ -867,6 +867,33 @@
   .gf-qd span.no{ background:var(--bad); color:#fff; border-color:transparent; }
   .gf-qd span.cur{ outline:2px solid var(--text); }
   .gf-recwrap{ max-width:1400px; margin:14px auto; padding:0 16px; }
+  /* 교사 조별 활동: 넓은 화면은 3칸, 이름·역할 한 줄, 퀴즈 번호 한 줄 */
+  #gf-t-groups{ max-width:none; }
+  @media (min-width:1100px){ #gf-t-groups{ grid-template-columns:repeat(3,1fr); } }
+  #gf-t-groups .gf-g h3{ flex-wrap:wrap; gap:4px 8px; justify-content:flex-start; }
+  #gf-t-groups .gf-g h3 > small{ margin-left:auto; }
+  #gf-t-groups .gf-g h3, #gf-t-groups .gf-watchbtn{ white-space:nowrap; }
+  #gf-t-groups .gf-mrow{ grid-template-columns:150px 1fr; padding:3px 0; }
+  #gf-t-groups .gf-mrow > span{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #gf-t-groups .gf-mrow small{ display:inline; margin-left:5px; }
+  #gf-t-groups .gf-qd{ gap:2px; }
+  #gf-t-groups .gf-qd span{ width:18px; height:18px; font-size:10px; }
+  /* 실험 기록: 겹쳐 보기 — 왼쪽 조 선택, 오른쪽 그래프 */
+  .gf-ov{ display:grid; grid-template-columns:250px 1fr; gap:12px; align-items:start; }
+  .gf-ov-sel{ display:flex; flex-direction:column; gap:6px; max-height:420px; overflow:auto; }
+  .gf-ov-sel label{ display:grid; grid-template-columns:18px 12px 1fr; gap:6px; align-items:center; padding:6px 8px; border:1px solid var(--line); border-radius:10px; background:#fff; cursor:pointer; font-weight:800; font-size:14px; }
+  .gf-ov-sel label small{ display:block; font-weight:600; font-size:11.5px; color:var(--muted); line-height:1.35; word-break:keep-all; }
+  .gf-ov-sel label.off{ opacity:.5; }
+  .gf-ov-sel i{ width:12px; height:12px; border-radius:3px; display:inline-block; }
+  .gf-ov-btns{ display:flex; gap:6px; } .gf-ov-btns button{ flex:1; padding:5px; font-size:12px; }
+  @media (max-width:900px){ .gf-ov{ grid-template-columns:1fr; } .gf-ov-sel{ flex-direction:row; flex-wrap:wrap; max-height:none; } }
+  .gf-line{ cursor:pointer; }
+  .gf-line:hover polyline{ stroke-width:6; }
+  #gf-zoom{ position:fixed; inset:0; z-index:9000; background:rgba(20,20,20,.45); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .25s; }
+  #gf-zoom.on{ opacity:1; }
+  #gf-zoom .zbox{ width:min(1100px,92vw); max-height:92vh; overflow:auto; background:var(--panel); border-radius:18px; padding:18px 22px; box-shadow:0 20px 60px rgba(0,0,0,.35); transform:scale(.35); transition:transform .35s cubic-bezier(.2,.9,.3,1.15); }
+  #gf-zoom.on .zbox{ transform:scale(1); }
+  #gf-zoom h2{ margin:0 0 4px; font-size:26px; } #gf-zoom .zc{ color:var(--muted); font-weight:700; margin-bottom:10px; }
   .gf-next{ margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); }
   .gf-next:empty{ display:none; }
   .gf-next .btn{ width:100%; margin-top:8px; }
@@ -4183,14 +4210,25 @@ function simStep(dt){
     $("gf-t-groups").innerHTML = h;
     $("gf-t-groups").querySelectorAll("[data-watch]").forEach(el=>el.onclick=()=>openWatch(+el.dataset.watch));
     const recs = tData.er.slice().sort((a,b)=>a.grp-b.grp), COLORS = ["#c0392b","#1f3a5f","#1e6b4f","#a5730a","#6b2142","#2c6e8f"];
-    let r = `<div class="gf-recwrap"><div class="gf-g" style="margin-bottom:12px"><h3>전체 조 겹쳐 보기 <small>넣은 NaOH 부피 – 온도</small></h3>${chart(recs,COLORS,900,340)}</div><div class="gf-groups" style="padding:0;margin:0">`;
+    const colOf = x => COLORS[(x.grp-1)%6];
+    recs.forEach(x=>{ if(!recSeen.has(+x.grp)){ recSeen.add(+x.grp); recSel.add(+x.grp); } });
+    const sel = recs.filter(x=>recSel.has(+x.grp));
+    let r = `<div class="gf-recwrap"><div class="gf-g" style="margin-bottom:12px"><h3>전체 조 겹쳐 보기 <small>넣은 NaOH 부피 – 온도 · 선을 누르면 그 조가 크게 보여요</small></h3>
+      <div class="gf-ov"><div><div class="gf-ov-btns"><button class="btn ghost" id="gf-ov-all">전체 선택</button><button class="btn ghost" id="gf-ov-none">전체 해제</button></div>
+      <div class="gf-ov-sel" style="margin-top:6px">${recs.map(x=>`<label class="${recSel.has(+x.grp)?"":"off"}"><input type="checkbox" data-g="${x.grp}" ${recSel.has(+x.grp)?"checked":""}><i style="background:${colOf(x)}"></i><span>${x.grp}조<small>${esc(condText(x))}</small></span></label>`).join("")||`<p class="desc">기록이 없어요.</p>`}</div></div>
+      <div>${sel.length?chart(sel,sel.map(colOf),900,380,true):`<p class="desc" style="margin:40px 0;text-align:center">왼쪽에서 볼 조를 선택하세요.</p>`}</div></div></div><div class="gf-groups" style="padding:0;margin:0">`;
     for(const x of recs){
       const c = x.cond||{};
-      r += `<div class="gf-g"><h3>${x.grp}조 <small>염산 ${esc(c.hp||"?")}% ${esc(c.hv||"?")} mL · NaOH ${esc(c.np||"?")}%</small></h3>${chart([x],[COLORS[(x.grp-1)%6]],360,220)}
+      r += `<div class="gf-g"><h3>${x.grp}조 <small>${esc(condText(x))}</small></h3>${chart([x],[COLORS[(x.grp-1)%6]],360,220)}
         <table class="gf-rec"><tr><th>넣은 양</th><th>누적 NaOH (mL)</th><th>온도 (°C)</th></tr>${(x.rows||[]).map(p=>`<tr><td>${p.a!==undefined&&p.a!==""?"+"+esc(p.a):""}</td><td>${esc(p.v)}</td><td>${esc(p.t)}</td></tr>`).join("")}</table></div>`;
     }
     if(!recs.length) r += `<p class="desc">아직 저장된 실험 기록이 없어요.</p>`;
     $("gf-t-recs").innerHTML = r+"</div></div>";
+    $("gf-t-recs").querySelectorAll(".gf-ov-sel input").forEach(cb=>cb.onchange=()=>{ const g=+cb.dataset.g; if(cb.checked) recSel.add(g); else recSel.delete(g); teacherRender(); });
+    const ab=$("gf-ov-all"), nb=$("gf-ov-none");
+    if(ab) ab.onclick=()=>{ recs.forEach(x=>recSel.add(+x.grp)); teacherRender(); };
+    if(nb) nb.onclick=()=>{ recSel.clear(); teacherRender(); };
+    $("gf-t-recs").querySelectorAll(".gf-line").forEach(el=>el.onclick=()=>{ const x=recs.find(y=>+y.grp===+el.dataset.g); if(x) zoomRec(x, colOf(x)); });
     renderTeacherQuiz();
   }
   // 교사용 퀴즈 설명 화면: 한 문항씩 크게 + 반 전체 응답 분포(이름 없이 인원수만) + 정답 공개
@@ -4212,8 +4250,26 @@ function simStep(dt){
     $("gf-tq-next").onclick = ()=>{ if(tqQ<QUIZ.length-1){ tqQ++; tqShow=false; renderTeacherQuiz(); } };
     const sb = $("gf-tq-show"); if(sb) sb.onclick = ()=>{ tqShow=true; renderTeacherQuiz(); };
   }
-  function chart(recs,colors,w,h){
-    const x0=52,x1=w-12,y0=16,y1=h-36;
+  const recSel = new Set(), recSeen = new Set();
+  function condText(x){
+    const c = x.cond||{}, vs = (x.rows||[]).map(p=>parseFloat(p.v)).filter(isFinite), nv = vs.length?Math.max(...vs):0;
+    return `HCl ${c.hp||"?"}% ${c.hv||"?"} mL, NaOH ${c.np||"?"}% ${+nv.toFixed(1)} mL`;
+  }
+  function zoomRec(x, col){
+    let z = $("gf-zoom"); if(z) z.remove();
+    z = document.createElement("div"); z.id = "gf-zoom";
+    const pts = (x.rows||[]).map(p=>({v:parseFloat(p.v),t:parseFloat(p.t)})).filter(p=>isFinite(p.v)&&isFinite(p.t));
+    const mx = pts.length ? pts.reduce((a,b)=>b.t>a.t?b:a) : null;
+    z.innerHTML = `<div class="zbox"><div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h2 style="color:${col}">${x.grp}조 온도 변화</h2><div class="zc">${esc(condText(x))}${mx?` · 최고 ${mx.t} °C (NaOH ${mx.v} mL)`:""}</div></div><button class="btn ghost" id="gf-zoom-x">닫기 ✕</button></div>${chart([x],[col],1000,480,false,true)}</div>`;
+    document.body.appendChild(z);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>z.classList.add("on")));
+    const onKey=e=>{ if(e.key==="Escape") close(); };
+    const close=()=>{ z.classList.remove("on"); setTimeout(()=>z.remove(),260); document.removeEventListener("keydown",onKey); };
+    z.onclick=e=>{ if(e.target===z || e.target.id==="gf-zoom-x") close(); };
+    document.addEventListener("keydown",onKey);
+  }
+  function chart(recs,colors,w,h,overlay,big){
+    const x0=52,x1=w-(big?40:12),y0=big?30:16,y1=h-36;
     const pts = recs.map(r=>(r.rows||[]).map(p=>({v:parseFloat(p.v),t:parseFloat(p.t)})).filter(p=>isFinite(p.v)&&isFinite(p.t)).sort((a,b)=>a.v-b.v));
     const all = pts.flat();
     if(!all.length) return `<p class="desc" style="margin:8px 0">기록된 값이 없어요.</p>`;
@@ -4225,9 +4281,13 @@ function simStep(dt){
     const vs = vmax>40?10:5; for(let v=0;v<=vmax;v+=vs) s += `<text x="${X(v)}" y="${y1+15}" font-size="12" text-anchor="middle" fill="#666">${v}</text>`;
     s += `<text x="${(x0+x1)/2}" y="${h-4}" font-size="12" text-anchor="middle" fill="#666">넣은 NaOH 부피 (mL)</text>`;
     s += `<text x="12" y="${(y0+y1)/2}" font-size="12" text-anchor="middle" fill="#666" transform="rotate(-90 12 ${(y0+y1)/2})">온도 (°C)</text>`;
-    pts.forEach((p,i)=>{ if(!p.length) return; const c = colors[i%colors.length];
-      s += `<polyline fill="none" stroke="${c}" stroke-width="3" points="${p.map(q=>X(q.v)+","+Y(q.t)).join(" ")}"/>`+p.map(q=>`<circle cx="${X(q.v)}" cy="${Y(q.t)}" r="4.5" fill="${c}"/>`).join("");
-      const mx = p.reduce((a,b)=>b.t>a.t?b:a); s += `<text x="${X(mx.v)}" y="${Y(mx.t)-9}" font-size="12" text-anchor="middle" fill="${c}" font-weight="700">${recs.length>1?recs[i].grp+"조 ":""}최고 ${mx.t} °C</text>`; });
+    pts.forEach((p,i)=>{ if(!p.length) return; const c = colors[i%colors.length], line = p.map(q=>X(q.v)+","+Y(q.t)).join(" ");
+      if(overlay) s += `<g class="gf-line" data-g="${recs[i].grp}"><polyline fill="none" stroke="transparent" stroke-width="18" points="${line}"/>`;
+      s += `<polyline fill="none" stroke="${c}" stroke-width="${big?4:3}" points="${line}"/>`+p.map(q=>`<circle cx="${X(q.v)}" cy="${Y(q.t)}" r="${big?6:4.5}" fill="${c}"/>`).join("");
+      if(big) s += p.map(q=>`<text x="${X(q.v)}" y="${Y(q.t)-12}" font-size="15" text-anchor="middle" fill="#333" font-weight="700">${q.t.toFixed(1)}</text>`).join("");
+      if(overlay) s += `</g>`;
+      // 여러 조를 겹칠 때는 최고 온도 글자가 겹치므로 쓰지 않음 (선을 누르면 크게 보임)
+      if(!big && recs.length===1){ const mx = p.reduce((a,b)=>b.t>a.t?b:a); s += `<text x="${X(mx.v)}" y="${Y(mx.t)-9}" font-size="12" text-anchor="middle" fill="${c}" font-weight="700">최고 ${mx.t} °C</text>`; } });
     return s+"</svg>";
   }
 
