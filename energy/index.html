@@ -3972,7 +3972,7 @@ function simStep(dt){
       </g>
       <path d="M150,110 q-12,20 0,40 M390,110 q12,20 0,40" stroke="#b8a48e" stroke-width="3" fill="none" stroke-linecap="round">${A("opacity","1;.2;1",.5)}</path>`},
 
-    {id:"rust", title:"철의 부식", answer:"발열", video:"videos/rust.mp4?v=1", overlay:`<rect x="309" y="279" width="262" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"입자 확대 — 철 원자에 산소가 붙어 녹이 돼요",10,"#3d5a80")}`, eq:"4Fe + 3O<sub>2</sub> → 2Fe<sub>2</sub>O<sub>3</sub>",
+    {id:"rust", title:"철의 부식", answer:"발열", video:"videos/rust.mp4?v=9", credit:"영상: Google Veo로 제작", eq:"4Fe + 3O<sub>2</sub> → 2Fe<sub>2</sub>O<sub>3</sub>",
      sit:"비와 공기에 오랫동안 노출된 철 못과 철 사슬이 산소, 물과 천천히 반응해서 녹이 슬어요.",
      explain:"철이 산소와 반응(산화)할 때 열을 방출해요. 너무 천천히 일어나서 잘 느껴지지 않을 뿐이에요. 같은 반응을 빠르게 일어나게 한 것이 손난로예요.",
      scene:`${[0,1,2,3].map(i=>{const x=165+i*52;return `<g filter="url(#qShadow)"><ellipse cx="${x+22}" cy="110" rx="26" ry="14" fill="none" stroke="#7d8692" stroke-width="10"/><ellipse cx="${x+22}" cy="110" rx="26" ry="14" fill="none" stroke="#9a4a1c" stroke-width="10" opacity="0">${LATER(i*.3)}</ellipse></g>`;}).join("")}
