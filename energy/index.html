@@ -940,6 +940,16 @@
     padding:5px 9px; font-size:12px; line-height:1.4; color:#3d4a5c; font-weight:600; text-align:center; }
   .simnote .sn-sm{ display:none; }
   @media (max-width:599px){ .simnote{ font-size:9.5px; padding:2px 5px; left:3px; right:3px; bottom:3px; } .simnote .sn-lg{ display:none; } .simnote .sn-sm{ display:inline; } }
+
+  .exnote-ov{ position:fixed; inset:0; z-index:9000; background:rgba(24,23,21,.5); display:flex; align-items:center; justify-content:center; padding:12px; }
+  .exnote-ov.hidden{ display:none; }
+  .exnote{ background:#fff; border-radius:18px; max-width:680px; width:100%; max-height:92vh; overflow:auto; padding:20px 22px; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+  .exnote h3{ margin:0 0 10px; font-size:20px; }
+  .exnote ol{ margin:0 0 14px; padding-left:20px; }
+  .exnote li{ font-size:14.5px; line-height:1.6; margin-bottom:7px; color:#333; }
+  .exnote .btn{ width:100%; padding:13px; font-size:16px; }
+  .exnote-open{ font-size:12px; font-weight:800; padding:5px 11px; border-radius:999px; border:1px solid #e0a15a; background:#fff6ea; color:#9c5b12; cursor:pointer; }
+  @media (max-width:599px){ .exnote{ padding:14px 14px; } .exnote h3{ font-size:17px; } .exnote li{ font-size:13px; line-height:1.5; margin-bottom:5px; } }
 </style>
 </head>
 <body>
@@ -953,6 +963,18 @@
   <div class="gf-watch-bar"><button class="btn ghost" id="gf-watch-prev">◀ 이전 조</button><b id="gf-watch-title">실험 화면</b><button class="btn ghost" id="gf-watch-next">다음 조 ▶</button><span style="flex:1"></span><button class="btn" id="gf-watch-close">✕ 닫기</button></div>
   <iframe id="gf-watch-frame" title="조별 실험 화면"></iframe>
 </div>
+<div class="exnote-ov hidden" id="exnote-ov"><div class="exnote">
+  <h3>⚠️ 실험 전에 꼭 읽어 주세요</h3>
+  <ol>
+    <li><b>농도</b> — 실제 실험에서는 30%처럼 진한 산·염기는 쓰지 않아요. 이 실험은 시뮬레이션이라 비교를 위해 넣어 둔 값이에요.</li>
+    <li><b>열 손실</b> — 실제로는 비커·공기·온도계로 열이 빠져나가요. 이 시뮬레이션도 열 손실을 가정했어요. 최고 온도에 이른 뒤 <b>온도가 서서히 내려가는 모습</b>까지 관찰해 보세요.</li>
+    <li><b>처음 온도</b> — 묽은 염산과 수산화 나트륨 수용액의 처음 온도는 둘 다 <b>20 °C</b>로 같다고 가정해요.</li>
+    <li><b>온도 읽기</b> — 넣자마자 읽지 말고, 반응이 다 일어나 <b>온도가 더 이상 오르지 않을 때</b> 읽어요.</li>
+    <li><b>지시약</b> — <b>BTB</b>: 산성 노란색 → 중성 초록색 → 염기성 파란색. <b>페놀프탈레인</b>: 산성·중성에서 무색, 염기성에서 붉은색 (실제로는 중화점을 아주 조금 지나 pH 약 8.2부터 붉어져요).</li>
+    <li><b>안전</b> — 실제 실험에서는 보안경·실험용 장갑을 끼고, 용액이 피부에 묻으면 즉시 흐르는 물로 충분히 씻은 뒤 선생님께 알려요. 뷰렛 콕은 천천히 열고, 남은 용액은 정해진 곳에 버려요.</li>
+  </ol>
+  <button class="btn primary" id="exnote-ok">확인했어요, 실험 시작!</button>
+</div></div>
 <div id="app-root" class="hidden">
 <main id="app">
   <header class="top">
@@ -983,7 +1005,7 @@
   <!-- ① 조별 중화 반응 실험 -->
   <section class="screen" id="screen-exp">
     <div class="card gf-card">
-      <div class="gf-members" id="gf-members"></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div class="gf-members" id="gf-members" style="flex:1"></div><button class="exnote-open" type="button">⚠️ 유의사항</button></div>
       <div class="gf-subtabs"><button class="on" id="gf-st-exp">실험 화면</button><button id="gf-st-rec">실험기록</button></div>
       <div id="gf-exp-view">
         <div class="gf-stage" id="gf-stage">
@@ -2347,7 +2369,7 @@ function switchTeacherTab(tab){
   document.getElementById("tab-heatq").classList.toggle("active", tab==="heatq");
   document.getElementById("view-neutral").classList.toggle("hidden", tab!=="neutral");
   document.getElementById("view-heatq").classList.toggle("hidden", tab!=="heatq");
-  if(tab==="neutral"){ const f=document.getElementById("gf-neutral-frame"); if(!f.src) f.src="neutralization.html?v=6"; fitNeutralFrame(); }
+  if(tab==="neutral"){ const f=document.getElementById("gf-neutral-frame"); if(!f.src) f.src="neutralization.html?v=7"; fitNeutralFrame(); }
   if(tab==="groups" || tab==="exprec" || tab==="heatq") GF.teacherRender();
   document.getElementById("view-progress").classList.toggle("hidden", tab!=="progress");
   document.getElementById("view-results").classList.toggle("hidden", tab!=="results");
@@ -3175,7 +3197,7 @@ window.GF = (function(){
   function goStage(n){
     if(n > groupStage) return;
     curStage = n;
-    if(n === 1) showScreen("exp");
+    if(n === 1){ showScreen("exp"); if(window.__exnoteMaybe) window.__exnoteMaybe(); }
     else if(n === 2){ quizKey=""; renderQuiz(); showScreen("heatquiz"); }
     else openWorksheet();
     paintNav();
@@ -3316,7 +3338,7 @@ window.GF = (function(){
   }
   
   let UP = 10;
-  const ROOM=20, MOLU=0.000274, DH=57000, CP=4.18, POUR=2.0, BUR=100, DUR=1.6, V0=50, COOL=0.0006;
+  const ROOM=20, MOLU=0.000274, DH=57000, CP=4.18, POUR=2.0, BUR=100, DUR=1.6, V0=50, COOL=0.005;
   const cfg = {hp:10, hv:20, np:10, ind:"btb"};
   let stir = true, S, mols, heats, flashes, reactions, texts, pReacted, spawnedOH, idc=0, KEref, field, starve=0, splash=[];
   let GX=19, GY=28, CW=PW/GX, CH=PH/GY; const RAD={w:10,h:8,oh:11,na:8,cl:13};
@@ -4191,6 +4213,18 @@ function simStep(dt){
   if(!w) return; const [cls, grp] = w.split("|");
   const go = ()=>{ if(window.GF && GF.watch) GF.watch(cls, grp); else setTimeout(go, 100); };
   window.addEventListener("load", ()=>setTimeout(go, 300));
+})();
+</script>
+
+<script>
+(function(){
+  const ov=document.getElementById("exnote-ov"); if(!ov) return;
+  const KEY="exnoteSeen";
+  const open=()=>ov.classList.remove("hidden"), close=()=>{ ov.classList.add("hidden"); try{ sessionStorage.setItem(KEY,"1"); }catch(e){} };
+  document.getElementById("exnote-ok").onclick=close;
+  ov.addEventListener("click",e=>{ if(e.target===ov) close(); });
+  document.querySelectorAll(".exnote-open").forEach(b=>b.onclick=open);
+  window.__exnoteMaybe=()=>{ if(document.body.classList.contains("gf-watch")) return; let seen=false; try{ seen=sessionStorage.getItem(KEY)==="1"; }catch(e){} if(!seen) open(); };
 })();
 </script>
 </body>
