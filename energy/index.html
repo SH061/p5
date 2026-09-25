@@ -4315,14 +4315,15 @@ function simStep(dt){
   const ov=document.getElementById("exnote-ov"); if(!ov) return;
   const KEY="exnoteSeen";
   const rov=document.getElementById("recnote-ov"), RKEY="recnoteSeen";
-  const recSeen=()=>{ try{ return sessionStorage.getItem(RKEY)==="1"; }catch(e){ return false; } };
+  let exSeenMem=false, recSeenMem=false;   // 입장할 때마다(페이지를 새로 열 때마다) 다시 보여줌
+  const recSeen=()=>recSeenMem;
   window.__recnoteMaybe=()=>{ if(!rov || recSeen() || document.body.classList.contains("gf-watch")) return; if(window.GF && GF.isRec && GF.isRec() && ov.classList.contains("hidden")) rov.classList.remove("hidden"); };
-  if(rov){ document.getElementById("recnote-ok").onclick=()=>{ rov.classList.add("hidden"); try{ sessionStorage.setItem(RKEY,"1"); }catch(e){} }; }
-  const open=()=>ov.classList.remove("hidden"), close=()=>{ ov.classList.add("hidden"); try{ sessionStorage.setItem(KEY,"1"); }catch(e){} setTimeout(()=>window.__recnoteMaybe&&window.__recnoteMaybe(),150); };
+  if(rov){ document.getElementById("recnote-ok").onclick=()=>{ rov.classList.add("hidden"); recSeenMem=true; }; }
+  const open=()=>ov.classList.remove("hidden"), close=()=>{ ov.classList.add("hidden"); exSeenMem=true; setTimeout(()=>window.__recnoteMaybe&&window.__recnoteMaybe(),150); };
   document.getElementById("exnote-ok").onclick=close;
   ov.addEventListener("click",e=>{ if(e.target===ov) close(); });
   document.querySelectorAll(".exnote-open:not(.rec-open)").forEach(b=>b.onclick=open);
-  window.__exnoteMaybe=()=>{ if(document.body.classList.contains("gf-watch")) return; let seen=false; try{ seen=sessionStorage.getItem(KEY)==="1"; }catch(e){} if(!seen) open(); };
+  window.__exnoteMaybe=()=>{ if(document.body.classList.contains("gf-watch")) return; if(!exSeenMem) open(); };
 })();
 </script>
 </body>
