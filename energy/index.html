@@ -941,6 +941,15 @@
   body.gf-watch .gf-members span{ font-size:20px; font-weight:800; padding:6px 14px; }
   body.gf-watch .gf-members span:first-child{ background:var(--accent); color:#fff; border-color:transparent; }
   body.gf-watch .exnote-open{ font-size:15px; }
+  body.gf-watch .gf-colC{ display:flex; flex-direction:column; min-height:0; }
+  #gf-watch-rec{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; margin-top:10px; border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:10px; }
+  #gf-watch-rec .wr-h{ font-weight:800; font-size:16px; margin-bottom:6px; }
+  #gf-watch-rec .wr-h small{ font-weight:600; font-size:12px; color:var(--muted); margin-left:4px; }
+  #gf-watch-rec .wr-tb{ flex:1 1 auto; min-height:0; overflow:auto; }
+  #gf-watch-rec table{ width:100%; border-collapse:collapse; font-size:15px; }
+  #gf-watch-rec th{ position:sticky; top:0; background:var(--panel-2); font-size:12.5px; color:var(--muted); padding:5px 4px; }
+  #gf-watch-rec td{ text-align:center; padding:5px 4px; border-top:1px solid var(--line); font-weight:700; }
+  #gf-watch-rec .wr-empty{ color:var(--muted); text-align:center; margin:16px 0; }
 
   .simnote{ position:absolute; left:8px; right:8px; bottom:8px; z-index:2; pointer-events:none;
     background:rgba(255,255,255,.82); border:1px solid rgba(0,0,0,.08); border-radius:9px;
@@ -4222,6 +4231,19 @@ function simStep(dt){
     await refreshMembers();
     startExpSync();
     showScreen("exp"); $("gf-exp-view").classList.remove("hidden"); $("gf-rec-view").classList.add("hidden");
+    const box = document.createElement("div"); box.id = "gf-watch-rec";
+    document.querySelector("#gf-stage .gf-colC").appendChild(box);
+    const renderRec = async ()=>{
+      let r = null; try{ r = (await DB.list("exp_records",{id:gid()}))[0]; }catch(e){}
+      const rows = (r && r.rows || []).filter(x=>x.t!==undefined && x.t!=="");
+      const rc = members.find(m=>m.role===RECORD_ROLE);
+      const when = r && r.updated ? new Date(r.updated).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"}) : "";
+      box.innerHTML = `<div class="wr-h">📝 관찰 기록 <small>${rc?esc(rc.name):"관찰자 없음"}${when?" · "+when+" 저장":""}</small></div>`
+        + (rows.length ? `<div class="wr-tb"><table><thead><tr><th>#</th><th>넣은 양</th><th>누적 NaOH</th><th>온도</th></tr></thead><tbody>`
+          + rows.map((x,i)=>`<tr><td>${i+1}</td><td>${x.a!==undefined&&x.a!==""?esc(x.a)+" mL":"-"}</td><td>${esc(x.v)} mL</td><td>${esc(x.t)} °C</td></tr>`).join("")
+          + `</tbody></table></div>` : `<p class="wr-empty">아직 저장된 기록이 없어요.<br><small>관찰자가 [기록 저장]을 누르면 여기에 나타나요.</small></p>`);
+    };
+    DB.on("exp_records", renderRec); renderRec(); setInterval(renderRec, 10000);
     setTimeout(()=>{ layoutExp(); fitSim(); }, 60);
     setInterval(recReadout, 300);
   }
