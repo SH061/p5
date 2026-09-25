@@ -910,6 +910,9 @@
   #view-heatq .gf-sit{ font-size:19px; }
   #view-heatq .gf-eq{ font-size:24px; }
   .gf-tq-nav{ display:flex; align-items:center; justify-content:center; gap:14px; margin:6px 0 10px; }
+  /* 교사 발열·흡열 퀴즈: 낮은 해상도에서도 영상·응답 수·정답 버튼이 한 화면에 들어오게 영상 크기를 화면 높이에 맞춤 */
+  #gf-t-quiz .gf-anim{ max-width:min(100%, calc((100vh - 460px) * 16 / 9)); margin:0 auto; }
+  #gf-t-quiz .gf-qtitle{ margin-bottom:6px; }
   .gf-tq-nav b{ font-size:18px; min-width:80px; text-align:center; }
   .gf-tq-stat{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
   .gf-tq-stat div{ border-radius:14px; padding:12px; font-size:18px; font-weight:800; }
