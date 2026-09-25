@@ -1226,10 +1226,8 @@
 
     <!-- 반 선택 -->
     <div id="teacher-class-picker">
-      <div style="max-width:900px; margin:0 auto; padding:14px 16px 0; text-align:right;">
-        <button class="btn ghost" id="btn-teacher-close">닫기 ✕</button>
-      </div>
       <div class="class-picker-card">
+        <button class="btn ghost" id="btn-teacher-close" style="position:absolute;top:12px;right:12px;padding:6px 12px;font-size:14px">닫기 ✕</button>
         <p class="desc" style="text-align:center; margin-bottom:14px;">확인할 반을 선택하세요</p>
         <select id="teacher-class-select"></select>
         <button class="btn primary" id="btn-confirm-class">확인</button>
@@ -2209,6 +2207,10 @@ async function tryGateSubmit(){
 }
 document.getElementById("btn-teacher-close").addEventListener("click", ()=>{
   teacherPanel.classList.remove("on");
+});
+// 반 선택 카드 바깥을 눌러도 닫힘
+document.getElementById("teacher-class-picker").addEventListener("click", e=>{
+  if(!e.target.closest(".class-picker-card")) teacherPanel.classList.remove("on");
 });
 document.getElementById("btn-teacher-close2").addEventListener("click", ()=>{
   teacherPanel.classList.remove("on");
@@ -3324,7 +3326,7 @@ window.GF = (function(){
   /* ---------- 조원 ---------- */
   async function refreshMembers(){
     members = (await DB.list("students",{cls:me.cls, grp:me.grp})).sort((a,b)=>numOf(a)-numOf(b));
-    if(!members.some(m=>m.id===me.id)){ try{ sessionStorage.setItem("gf-kicked","1"); }catch(e){} location.reload(); return; }
+    if(!String(me.id).startsWith("__") && !members.some(m=>m.id===me.id)){ try{ sessionStorage.setItem("gf-kicked","1"); }catch(e){} location.reload(); return; }
     const chips = members.map(m=>`<span class="${m.role===CONTROL_ROLE?"ctrl":""}">${esc(m.num)} ${esc(m.name)} · ${esc(roleLabel(m))}${m.id===me.id?" (나)":""}</span>`).join("");
     $("gf-members").innerHTML = `<span>${me.grp}조</span>` + chips;
     $("gf-members2").innerHTML = `<span>${me.grp}조</span>` + chips;
