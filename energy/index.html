@@ -834,6 +834,7 @@
   .gf-vwrap video::-webkit-media-controls-overlay-play-button{ display:none !important; -webkit-appearance:none; }
   .gf-credit{ font-size:10.5px; color:var(--muted); text-align:right; padding:3px 8px; background:#fff; }
   .gf-vwrap svg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .gf-vwrap svg text{ paint-order:stroke; stroke:rgba(255,255,255,.9); stroke-width:3.2px; stroke-linejoin:round; }
   .gf-sit{ font-size:15px; line-height:1.6; margin:10px 0; }
   .gf-two{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .gf-two button{ padding:16px 8px; border-radius:14px; font:inherit; font-size:18px; font-weight:900; cursor:pointer; }
@@ -3782,14 +3783,14 @@ function simStep(dt){
       : `<svg viewBox="0 0 640 300">${quizFrame(q)}</svg>`;
   }
   // 손난로 3D 영상(블렌더 렌더링)을 파일 안에 넣어 둠 — index.html 하나만 열어도 재생되도록
-  const HW_VIDEO = "videos/handwarmer.mp4?v=1";
+  const HW_VIDEO = "videos/handwarmer.mp4?v=2";
   // 냉찜질 팩 3D 영상(블렌더 렌더링) — 손으로 눌러 물주머니가 터지고, 질산 암모늄이 녹으며 차가워짐
   const CP_VIDEO = "videos/coldpack.mp4?v=1";
   const GS_VIDEO = "videos/combustion.mp4?v=2";
   const LB_VIDEO = "videos/lunchbox.mp4?v=1";
   const DI_VIDEO = "videos/dryice.mp4?v=1";
   const QUIZ = [
-    {id:"handwarmer", title:"손난로 (핫팩)", answer:"발열", video:HW_VIDEO, credit:"손 3D 모델: “Hand Low-Poly Stylized VR (Rigged)” by OKacin, CC BY 4.0 (Sketchfab)",
+    {id:"handwarmer", title:"손난로 (핫팩)", answer:"발열", video:HW_VIDEO, credit:"실제 장면: Google Veo로 만든 영상 · 입자 모형: Blender",
      overlay:`${T(460,32,"철 가루 확대 — 산소와 만나 녹슬어요",11,"#6b5a4c")}`, eq:"4Fe + 3O<sub>2</sub> → 2Fe<sub>2</sub>O<sub>3</sub>",
      sit:"손난로 봉지를 뜯고 흔들면, 안에 든 철 가루가 공기 중의 산소와 만나 반응해요.",
      explain:"철 가루가 산소와 반응(산화)할 때 열을 방출해요. 그래서 손난로와 손이 따뜻해져요.",
