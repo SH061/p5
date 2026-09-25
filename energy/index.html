@@ -3751,7 +3751,7 @@ function simStep(dt){
       <g>${A("opacity","1;.35;1",LOOP)}${icecube(205,150,34)}${icecube(262,165,30)}</g>
       ${[0,1,2].map(i=>`<ellipse cx="${232+i*30}" cy="196" rx="3" ry="4" fill="#6fb0ee">${A("cy","190;212",1.3,`begin="${i*.4}s"`)}${A("opacity","1;0",1.3,`begin="${i*.4}s"`)}</ellipse>`).join("")}`},
 
-    {id:"freeze", title:"응고 (액체 → 고체) : 물이 얼 때", answer:"발열", eq:"H<sub>2</sub>O(l) → H<sub>2</sub>O(s)",
+    {id:"freeze", title:"응고 (액체 → 고체) : 물이 얼 때", answer:"발열", video:"videos/freeze.mp4?v=1", overlay:`<rect x="295" y="279" width="290" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"물 분자 확대 — 제자리에 자리 잡으며 열을 내보내요",10,"#3d5a80")}`, eq:"H<sub>2</sub>O(l) → H<sub>2</sub>O(s)",
      sit:"냉동실에 넣어 둔 얼음 틀 속의 물이 점점 얼어서 얼음이 되어요.",
      explain:"물이 얼음으로 응고할 때 열을 방출해요. 그래서 추운 밤 과수원에서는 과일에 물을 뿌려, 물이 얼면서 내놓는 열로 과일이 얼지 않게 해요.",
      scene:`<rect x="120" y="40" width="300" height="220" rx="10" fill="#e9f3fb" stroke="#b9cfe2" stroke-width="2"/>
