@@ -602,7 +602,7 @@ function drawMacro(dt){
   // liquid
   const col=cfg.ind==='none'?[150,190,235,0.18]:indRGBA(S.bulk);
   c.save();c.beginPath();c.moveTo(bx0,surf);c.lineTo(bx0,by1-10);c.quadraticCurveTo(bx0,by1,bx0+10,by1);c.lineTo(bx1-10,by1);c.quadraticCurveTo(bx1,by1,bx1,by1-10);c.lineTo(bx1,surf);c.closePath();c.clip();
-  c.fillStyle=`rgba(${col[0]|0},${col[1]|0},${col[2]|0},${Math.max(col[3],0.08)})`;c.fillRect(bx0,surf,bx1-bx0,by1-surf);
+  c.fillStyle="rgba(150,190,235,0.10)"; c.fillRect(bx0,surf,bx1-bx0,by1-surf); /* 무색 용액(물) 바탕 */ c.fillStyle=`rgba(${col[0]|0},${col[1]|0},${col[2]|0},${col[3]})`;c.fillRect(bx0,surf,bx1-bx0,by1-surf);
   const f=Math.min(1,S.U/(cfg.np*1.5));
   if(cfg.ind!=='none'&&f>0.03){
     const pc=indRGBA(1),rad=14+30*f;
