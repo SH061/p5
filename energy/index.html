@@ -3784,7 +3784,7 @@ function simStep(dt){
       ${[[180,90],[170,160],[190,210],[365,85],[372,150],[355,205]].map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="4" fill="#9fb3c8">${A("cx",`${x};${x<270?224:316}`,2.2,`begin="${i*.35}s"`)}${A("opacity","1;0",2.2,`begin="${i*.35}s"`)}</circle>`).join("")}
       ${[[222,130],[226,175],[229,210],[318,125],[315,170],[312,205]].map(([x,y],i)=>`<ellipse cx="${x}" cy="${y}" rx="4.5" ry="0" fill="#5aa5ee" stroke="#fff" stroke-width=".8">${A("ry","0;6;6;6",LOOP,`keyTimes="0;.4;.8;1" begin="${i*.25}s"`)}${A("cy",`${y};${y};${y};${y+22}`,LOOP,`keyTimes="0;.4;.8;1" begin="${i*.25}s"`)}</ellipse>`).join("")}`},
 
-    {id:"photosynthesis", title:"광합성", answer:"흡열", meter:"흡수한 빛에너지", eq:"6CO<sub>2</sub> + 6H<sub>2</sub>O → C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> + 6O<sub>2</sub>",
+    {id:"photosynthesis", title:"광합성", answer:"흡열", meter:"흡수한 빛에너지", video:"videos/photosynthesis.mp4?v=1", overlay:`<rect x="272" y="279" width="337" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"입자 확대 — 빛에너지로 CO₂ + H₂O → 포도당 + O₂",10,"#3d5a80")}`, eq:"6CO<sub>2</sub> + 6H<sub>2</sub>O → C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> + 6O<sub>2</sub>",
      sit:"햇빛을 받은 식물의 잎에서 이산화 탄소와 물로 포도당과 산소를 만들어요.",
      explain:"광합성은 빛에너지를 흡수해야 일어나는 반응이에요. 흡수한 에너지는 포도당 속에 저장돼요.",
      scene:`<circle cx="150" cy="70" r="46" fill="url(#qSun)"/>
