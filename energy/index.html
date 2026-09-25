@@ -780,11 +780,15 @@
   }
   /* 세로로 든 태블릿: 폭이 좁으니 양옆 칸을 줄이고 가운데 입자 화면을 넓게 */
   @media (min-width:600px) and (orientation:portrait){
-    .gf-stage{ grid-template-columns:minmax(0,25%) minmax(0,1fr) minmax(0,27%); gap:8px; }
-    #gf-macro{ width:100%; height:auto; max-height:62%; }
-    .gf-colA .gf-read{ flex-direction:column; gap:6px; margin-top:10px; }
-    .gf-colA .gf-read div{ padding:8px 10px; font-size:13px; }
-    .gf-colA .gf-read b{ font-size:24px; }
+    /* 왼쪽: 실험 장치 + 온도 + 조작 / 오른쪽: 입자 모습(위아래 전체) */
+    .gf-stage{ grid-template-columns:minmax(0,40%) minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); grid-template-areas:"a b" "c b"; gap:8px; }
+    .gf-colA{ display:grid; grid-template-columns:44% 1fr; column-gap:8px; align-items:start; }
+    .gf-colA > .gf-lbl{ grid-column:1 / -1; }
+    #gf-macro{ width:100%; height:auto; max-height:none; }
+    .gf-colA .gf-read{ flex-direction:column; gap:6px; margin-top:0; }
+    .gf-colA .gf-read div{ padding:7px 10px; font-size:12.5px; }
+    .gf-colA .gf-read b{ font-size:22px; }
+    .gf-colC{ overflow:auto; }
     .gf-colC .gf-ctrls .btn{ flex:1 1 30%; padding:10px 4px; font-size:14px; }
     .gf-colC .gf-ctrls input[type=number]{ flex:1 1 40%; }
     .gf-colC .gf-setup{ grid-template-columns:1fr; }
