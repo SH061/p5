@@ -870,6 +870,9 @@
   /* 교사 조별 활동: 넓은 화면은 3칸, 이름·역할 한 줄, 퀴즈 번호 한 줄 */
   #gf-t-groups{ max-width:none; }
   @media (min-width:1100px){ #gf-t-groups{ grid-template-columns:repeat(3,1fr); } }
+  @media (min-width:900px) and (max-width:1099px){ #gf-t-groups{ grid-template-columns:repeat(3,1fr); gap:8px; padding:0 8px; margin:8px auto; }
+    #gf-t-groups .gf-g{ padding:10px; } #gf-t-groups .gf-g h3{ font-size:16px; margin-bottom:3px; } #gf-t-groups .gf-g h3 > small{ font-size:11px; }
+    #gf-t-groups .gf-mrow{ grid-template-columns:1fr; gap:2px; padding:2px 0; font-size:13px; } #gf-t-groups .gf-next-msg{ font-size:12px; margin:0 !important; } }
   #gf-t-groups .gf-g h3{ flex-wrap:wrap; gap:4px 8px; justify-content:flex-start; }
   #gf-t-groups .gf-g h3 > small{ margin-left:auto; }
   #gf-t-groups .gf-g h3, #gf-t-groups .gf-watchbtn{ white-space:nowrap; }
@@ -4285,10 +4288,10 @@ function simStep(dt){
     pts.forEach((p,i)=>{ if(!p.length) return; const c = colors[i%colors.length], line = p.map(q=>X(q.v)+","+Y(q.t)).join(" ");
       if(overlay) s += `<g class="gf-line" data-g="${recs[i].grp}"><polyline fill="none" stroke="transparent" stroke-width="18" points="${line}"/>`;
       s += `<polyline fill="none" stroke="${c}" stroke-width="${big?4:3}" points="${line}"/>`+p.map(q=>`<circle cx="${X(q.v)}" cy="${Y(q.t)}" r="${big?6:4.5}" fill="${c}"/>`).join("");
-      if(big) s += p.map(q=>`<text x="${X(q.v)}" y="${Y(q.t)-12}" font-size="15" text-anchor="middle" fill="#333" font-weight="700">${q.t.toFixed(1)}</text>`).join("");
+      if(big) s += p.map(q=>`<text x="${X(q.v)}" y="${Y(q.t)-12}" font-size="15" text-anchor="${X(q.v)>x1-30?"end":"middle"}" fill="#333" font-weight="700">${q.t.toFixed(1)}</text>`).join("");
       if(overlay) s += `</g>`;
       // 여러 조를 겹칠 때는 최고 온도 글자가 겹치므로 쓰지 않음 (선을 누르면 크게 보임)
-      if(!big && recs.length===1){ const mx = p.reduce((a,b)=>b.t>a.t?b:a); s += `<text x="${X(mx.v)}" y="${Y(mx.t)-9}" font-size="12" text-anchor="middle" fill="${c}" font-weight="700">최고 ${mx.t} °C</text>`; } });
+      if(!big && recs.length===1){ const mx = p.reduce((a,b)=>b.t>a.t?b:a), ax = X(mx.v)>x1-40?"end":X(mx.v)<x0+40?"start":"middle"; s += `<text x="${X(mx.v)}" y="${Y(mx.t)-9}" font-size="12" text-anchor="${ax}" fill="${c}" font-weight="700">최고 ${mx.t} °C</text>`; } });
     return s+"</svg>";
   }
 
