@@ -884,6 +884,8 @@
   /* 화학 반응식이 좁은 화면에서 넘치지 않게 */
   .gf-eq{ overflow-wrap:anywhere; }
   @media (max-width:599px){ .gf-eq, #view-heatq .gf-eq{ font-size:14.5px; padding:8px 6px; letter-spacing:0; } }
+
+  .pointer-toggle.on{ background:rgba(204,120,92,.16); color:var(--accent); border-color:var(--accent); font-weight:800; }
 </style>
 </head>
 <body>
@@ -1143,6 +1145,7 @@
         <span class="spacer"></span>
         <span class="class-label" id="teacher-current-class"></span>
         <button class="btn ps-btn state-running" id="btn-problemstop-toggle">문제풀기 시작!</button>
+        <button class="btn ghost pointer-toggle" id="btn-pointer-toggle" title="PPT 포인터(리모컨)로 문항 넘기기: 다음 버튼 = 정답 공개 → 정답 탭 → 다음 문항, 이전 버튼 = 이전 문항">🖱 포인터 OFF</button>
         <button class="btn ghost accuracy-toggle on" id="btn-accuracy-toggle">정답률 공개</button>
         <button class="btn ghost" id="btn-change-class">반 변경</button>
         <span class="refresh-wrap">
@@ -4018,6 +4021,57 @@ function simStep(dt){
   }
 
   return {register, enter, onScreen, teacherSelect, teacherRender, demo:DB.demo};
+})();
+</script>
+
+<script>
+/* ============================================================
+   PPT 포인터(프레젠터) 모드 — 교사 화면 전용, 켜고 끌 수 있음
+   포인터의 "다음" 버튼은 PageDown/→/↓/Space, "이전" 버튼은 PageUp/←/↑ 키를 보낸다.
+   다음: (문항별 결과) 정답 공개 → 정답 탭 → 다음 문항 / (발열·흡열 퀴즈) 정답 보기 → 다음 문항
+   이전: 이전 문항
+   ============================================================ */
+(function(){
+  const btn = document.getElementById("btn-pointer-toggle");
+  let on = false;
+  try{ on = localStorage.getItem("pointerMode")==="1"; }catch(e){}
+  function paint(){ btn.classList.toggle("on", on); btn.textContent = on ? "🖱 포인터 ON" : "🖱 포인터 OFF"; }
+  paint();
+  btn.addEventListener("click", ()=>{ on=!on; try{ localStorage.setItem("pointerMode", on?"1":"0"); }catch(e){} paint(); btn.blur(); });
+  const vis = id => { const e=document.getElementById(id); return e && !e.classList.contains("hidden") && e.offsetParent!==null; };
+  const click = el => { if(el && !el.disabled){ el.click(); return true; } return false; };
+  function next(){
+    if(vis("view-results")){
+      const gate = document.getElementById("reveal-gate");
+      if(gate && !gate.classList.contains("hidden")) return click(document.getElementById("btn-reveal"));
+      const tabs = [...document.querySelectorAll("#view-results button")].filter(b=>b.offsetParent && /^(정답|모범답안)$/.test(b.textContent.trim()));
+      const t = tabs.find(b=>!b.classList.contains("active"));
+      if(t) return click(t);
+      return click(document.getElementById("btn-tq-next"));
+    }
+    if(vis("view-heatq")){
+      if(click(document.getElementById("gf-tq-show"))) return true;
+      return click(document.getElementById("gf-tq-next"));
+    }
+    return false;
+  }
+  function prev(){
+    if(vis("view-results")) return click(document.getElementById("btn-tq-prev"));
+    if(vis("view-heatq")) return click(document.getElementById("gf-tq-prev"));
+    return false;
+  }
+  document.addEventListener("keydown", e=>{
+    if(!on) return;
+    const panel = document.getElementById("teacher-panel");
+    if(!panel || !panel.classList.contains("on")) return;
+    const t = e.target; if(t && (t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.tagName==="SELECT"||t.isContentEditable)) return;
+    const k = e.key;
+    let done = false;
+    if(["PageDown","ArrowRight","ArrowDown"," ","Spacebar"].includes(k)) done = next();
+    else if(["PageUp","ArrowLeft","ArrowUp"].includes(k)) done = prev();
+    else if(["b","B","."].includes(k)) done = true;   // 포인터의 "화면 검게" 버튼은 무시
+    if(done){ e.preventDefault(); e.stopPropagation(); }
+  }, true);
 })();
 </script>
 </body>
