@@ -3773,7 +3773,7 @@ function simStep(dt){
       ${[[210,165],[245,175],[280,160],[230,145],[270,190]].map(([x,y],i)=>`<ellipse cx="${x}" cy="${y}" rx="11" ry="7" fill="#d7ecff" stroke="#9ec6ea">${A("rx","11;11;0;11",LOOP,`keyTimes="0;.2;.75;1" begin="${i*.2}s"`)}${A("ry","7;7;0;7",LOOP,`keyTimes="0;.2;.75;1" begin="${i*.2}s"`)}</ellipse>`).join("")}
       ${[0,1,2,3,4,5].map(i=>`<circle cx="${205+i*16}" cy="140" r="3.5" fill="#9fb3c8">${TR("0 0;"+(i%2?8:-8)+" -80",2.4,`begin="${i*.35}s"`)}${A("opacity","0;1;0",2.4,`begin="${i*.35}s"`)}</circle>`).join("")}`},
 
-    {id:"condense", title:"액화 (기체 → 액체) : 차가운 컵의 물방울", answer:"발열", eq:"H<sub>2</sub>O(g) → H<sub>2</sub>O(l)",
+    {id:"condense", title:"액화 (기체 → 액체) : 차가운 컵의 물방울", answer:"발열", video:"videos/condense.mp4?v=1", overlay:`<rect x="290" y="279" width="300" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"수증기 분자 확대 — 차가운 벽에 모이며 열을 내보내요",10,"#3d5a80")}`, eq:"H<sub>2</sub>O(g) → H<sub>2</sub>O(l)",
      sit:"얼음물이 담긴 컵을 두면, 공기 중의 수증기가 차가운 컵 바깥쪽에 닿아 물방울로 맺혀요.",
      explain:"수증기가 물로 액화할 때 열을 방출해요. 구름이 만들어질 때도 같은 현상이 일어나요.",
      scene:`<ellipse cx="270" cy="242" rx="70" ry="8" fill="#000" opacity=".08"/>
@@ -3798,7 +3798,7 @@ function simStep(dt){
       <g opacity="0">${T(262,285,"H₂O ↑",13,"#2c6fd0",800)}${A("opacity","0;1;0",2.2)}</g>
       ${[0,1,2].map(i=>`<g opacity="0">${T(335+i*10,70,"O₂",14,"#2a8a4a",800)}${TR("0 0;30 -45",2.6,`begin="${i*.8}s"`)}${A("opacity","0;1;0",2.6,`begin="${i*.8}s"`)}</g>`).join("")}`},
 
-    {id:"deposition", title:"승화 (기체 → 고체) : 창문에 성에가 생길 때", answer:"발열", eq:"H<sub>2</sub>O(g) → H<sub>2</sub>O(s)",
+    {id:"deposition", title:"승화 (기체 → 고체) : 창문에 성에가 생길 때", answer:"발열", video:"videos/deposition.mp4?v=1", overlay:`<rect x="281" y="279" width="318" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"수증기 분자 확대 — 바로 얼음 결정이 되며 열을 내보내요",10,"#3d5a80")}`, eq:"H<sub>2</sub>O(g) → H<sub>2</sub>O(s)",
      sit:"추운 겨울 아침, 공기 중의 수증기가 액체를 거치지 않고 바로 얼음 결정이 되어 유리창에 성에(서리)가 생겨요.",
      explain:"기체가 고체로 승화할 때 열을 방출해요. 눈이 만들어질 때도 같은 현상이 일어나요.",
      scene:`<g filter="url(#qShadow)"><rect x="160" y="45" width="220" height="210" rx="6" fill="url(#qWood)"/>
