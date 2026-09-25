@@ -3763,7 +3763,7 @@ function simStep(dt){
       ${[0,1,2,3,4].map(i=>`<text x="${175+i*45}" y="${105-(i%2)*10}" font-size="14" fill="#9cc6e8">❄${LATER(i*.2)}</text>`).join("")}
       ${T(270,215,"물 → 얼음",14,"#446")}`},
 
-    {id:"evaporate", title:"기화 (액체 → 기체) : 손 소독제가 마를 때", answer:"흡열", eq:"C<sub>2</sub>H<sub>5</sub>OH(l) → C<sub>2</sub>H<sub>5</sub>OH(g)",
+    {id:"evaporate", title:"기화 (액체 → 기체) : 손 소독제가 마를 때", answer:"흡열", video:"videos/evaporate.mp4?v=1", overlay:`<rect x="281" y="279" width="318" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"에탄올 분자 확대 — 표면에서 떨어져 나가며 열을 흡수해요",10,"#3d5a80")}`, eq:"C<sub>2</sub>H<sub>5</sub>OH(l) → C<sub>2</sub>H<sub>5</sub>OH(g)",
      sit:"손바닥에 알코올 손 소독제를 바르면, 잠시 뒤 알코올이 증발해 기체가 되면서 손이 금방 말라요.",
      explain:"액체가 기체로 기화(증발)할 때 피부의 열을 흡수해요. 그래서 손이 시원하게 느껴져요.",
      scene:`<g filter="url(#qShadow)"><rect x="378" y="118" width="46" height="100" rx="10" fill="#e8f3fb" stroke="#8ea6bf" stroke-width="2"/>
