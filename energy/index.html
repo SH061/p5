@@ -554,6 +554,18 @@
   .done-chips .c2{ color:#0f6e56; }
   .done-foot{ margin-top:12px; font-size:9.5px; color:var(--muted-soft, #8e8b82); }
 
+  @media (min-width:600px){
+    .done-card{ max-width:min(560px, 70vw); margin-top:2vh; }
+    .done-inner{ padding:34px 30px 30px; }
+    .done-badge{ font-size:20px; padding:9px 24px; }
+    .done-sub{ font-size:15px; }
+    .done-gauge{ width:min(300px, 34vh); height:min(300px, 34vh); margin:22px auto 12px; }
+    .done-gauge .hole{ inset:18px; }
+    .done-gauge .spark{ font-size:24px; }
+    .done-pct{ font-size:17px; } .done-pct b{ font-size:76px; } .done-pct span{ font-size:14px; }
+    .done-msg{ font-size:26px; margin-top:16px; } .done-tip{ font-size:17px; }
+    .done-chips span{ font-size:14px; padding:6px 16px; } .done-foot{ font-size:12px; }
+  }
   /* ===== 교사 "문제 풀이 결과" ===== */
   #view-awards{ width:100%; }
   .aw-tabs{ display:flex; gap:12px; margin-bottom:14px; }
@@ -756,23 +768,28 @@
     .gf-colC .gf-ctrls input[type=number]{ flex:1 1 20%; padding:12px 6px; font-size:15px; }
     .gf-seg button{ padding:9px 2px; font-size:13px; }
   }
-  /* 세로 태블릿: 조작부를 두 칸으로 */
-  @media (min-width:600px) and (max-width:999px){
-    main#app:has(#screen-exp.on){ max-width:980px; }
-    #gf-simbox{ height:max(380px, calc(100vh - 600px)); }
-    .gf-colC{ display:grid; grid-template-columns:1fr 1fr; column-gap:16px; align-items:start; }
-    .gf-colC > .gf-rolebar, .gf-colC > .gf-legend, .gf-colC > .gf-msg{ grid-column:1 / -1; }
-    .gf-colC .gf-ctrls .btn{ padding:11px 12px; font-size:15px; }
-  }
-  /* 컴퓨터 화면: 왼쪽 실험 장치·입자, 오른쪽 조작 버튼 → 한 화면에 다 보이게 */
-  /* 컴퓨터·가로 태블릿: 교사 화면처럼 세 칸, 화면 높이에 맞춤 */
-  @media (min-width:1000px){
-    main#app:has(#screen-exp.on){ max-width:none; padding-left:18px; padding-right:18px; }
-    .gf-stage{ grid-template-columns:auto minmax(0,1fr) 320px; grid-template-areas:"a b c"; align-items:stretch; }
-    .gf-colA{ display:flex; flex-direction:column; }
+  /* 태블릿·컴퓨터(폭 600px 이상): 세 칸 [실험 장치 | 입자 모습(가운데, 가장 크게) | 온도·조작] — 화면 높이에 딱 맞춰 스크롤 없음 */
+  @media (min-width:600px){
+    main#app:has(#screen-exp.on){ max-width:none; padding-left:14px; padding-right:14px; }
+    .gf-stage{ grid-template-columns:auto minmax(0,1fr) minmax(260px,300px); grid-template-areas:"a b c"; align-items:stretch; }
+    .gf-colA{ display:flex; flex-direction:column; min-height:0; }
     #gf-macro{ width:auto; height:calc(100% - 22px); max-width:none; }
     #gf-simbox{ height:auto; }
+    .gf-colB, .gf-colC{ min-height:0; }
     .gf-colC{ overflow:auto; }
+  }
+  /* 세로로 든 태블릿: 폭이 좁으니 양옆 칸을 줄이고 가운데 입자 화면을 넓게 */
+  @media (min-width:600px) and (orientation:portrait){
+    .gf-stage{ grid-template-columns:minmax(0,25%) minmax(0,1fr) minmax(0,27%); gap:8px; }
+    #gf-macro{ width:100%; height:auto; max-height:62%; }
+    .gf-colA .gf-read{ flex-direction:column; gap:6px; margin-top:10px; }
+    .gf-colA .gf-read div{ padding:8px 10px; font-size:13px; }
+    .gf-colA .gf-read b{ font-size:24px; }
+    .gf-colC .gf-ctrls .btn{ flex:1 1 30%; padding:10px 4px; font-size:14px; }
+    .gf-colC .gf-ctrls input[type=number]{ flex:1 1 40%; }
+    .gf-colC .gf-setup{ grid-template-columns:1fr; }
+    .gf-colC .gf-seg button{ padding:7px 2px; font-size:12.5px; }
+    .gf-colC .gf-legend{ font-size:11px; }
   }
   .gf-lbl{ font-size:11.5px; color:var(--muted); margin:0 0 3px; font-weight:700; }
   .gf-read{ display:flex; gap:6px; margin-top:8px; }
@@ -802,7 +819,11 @@
   .gf-anim{ border:1px solid var(--line); border-radius:14px; overflow:hidden; background:#fff; }
   .gf-anim svg{ display:block; width:100%; height:auto; }
   .gf-vwrap{ position:relative; aspect-ratio:640/300; background:#fff6f2; }
-  .gf-vwrap video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .gf-vwrap{ background-size:cover; background-position:center; }
+  .gf-vwrap video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity .25s; }
+  .gf-vwrap video.on{ opacity:1; }
+  .gf-vwrap video::-webkit-media-controls, .gf-vwrap video::-webkit-media-controls-start-playback-button,
+  .gf-vwrap video::-webkit-media-controls-overlay-play-button{ display:none !important; -webkit-appearance:none; }
   .gf-credit{ font-size:10.5px; color:var(--muted); text-align:right; padding:3px 8px; background:#fff; }
   .gf-vwrap svg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
   .gf-sit{ font-size:15px; line-height:1.6; margin:10px 0; }
@@ -886,6 +907,25 @@
   @media (max-width:599px){ .gf-eq, #view-heatq .gf-eq{ font-size:14.5px; padding:8px 6px; letter-spacing:0; } }
 
   .pointer-toggle.on{ background:rgba(204,120,92,.16); color:var(--accent); border-color:var(--accent); font-weight:800; }
+
+  /* 교사: 조별 실험 화면 보기 */
+  .gf-g-watch{ cursor:pointer; transition:box-shadow .15s, border-color .15s; }
+  .gf-g-watch:hover{ border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-dim); }
+  .gf-watchbtn{ font-size:11.5px; font-weight:800; color:var(--accent-active); background:var(--accent-dim); border-radius:999px; padding:2px 9px; margin-left:4px; vertical-align:middle; }
+  .gf-watch-ov{ position:fixed; inset:0; z-index:9999; background:rgba(24,23,21,.55); display:flex; flex-direction:column; padding:1.5vh 1.2vw; gap:8px; }
+  .gf-watch-ov.hidden{ display:none; }
+  .gf-watch-bar{ display:flex; align-items:center; gap:10px; background:var(--bg); border-radius:12px; padding:8px 12px; }
+  .gf-watch-bar b{ font-size:18px; }
+  #gf-watch-frame{ flex:1; width:100%; border:0; border-radius:12px; background:var(--bg); }
+  /* 관전 화면(iframe 안): 조작 부분은 숨기고 실험 모습만 크게 */
+  body.gf-watch header.top, body.gf-watch #stage-nav, body.gf-watch .gf-subtabs,
+  body.gf-watch .gf-colC .gf-rolebar, body.gf-watch .gf-colC .gf-ctrls, body.gf-watch .gf-colC .gf-setup,
+  body.gf-watch .gf-next, body.gf-watch #problemstop-overlay{ display:none !important; }
+  body.gf-watch main#app{ padding-top:8px; }
+  body.gf-watch .gf-colC .gf-read{ flex-direction:column; gap:8px; }
+  body.gf-watch .gf-colC .gf-read div{ font-size:14px; padding:10px 12px; }
+  body.gf-watch .gf-colC .gf-read b{ font-size:30px; }
+  body.gf-watch .gf-colC .gf-msg{ font-size:16px; }
 </style>
 </head>
 <body>
@@ -895,6 +935,10 @@
   <div id="gate-message">시간을 확인하고 있어요…</div>
 </div>
 
+<div id="gf-watch-ov" class="gf-watch-ov hidden">
+  <div class="gf-watch-bar"><button class="btn ghost" id="gf-watch-prev">◀ 이전 조</button><b id="gf-watch-title">실험 화면</b><button class="btn ghost" id="gf-watch-next">다음 조 ▶</button><span style="flex:1"></span><button class="btn" id="gf-watch-close">✕ 닫기</button></div>
+  <iframe id="gf-watch-frame" title="조별 실험 화면"></iframe>
+</div>
 <div id="app-root" class="hidden">
 <main id="app">
   <header class="top">
@@ -3341,8 +3385,12 @@ function simStep(dt){
       if(m.y<PY0+m.r){m.y=PY0+m.r;m.vy=Math.abs(m.vy);} if(m.y>PY1-m.r){m.y=PY1-m.r;m.vy=-Math.abs(m.vy);}
     }
     let bud=budget(); const n=mols.length;
-    for(let i=0;i<n;i++){ const p=mols[i];
-      for(let j=i+1;j<n;j++){ const q=mols[j]; if(p.busy&&q.busy) continue;
+    // 가까운 입자끼리만 비교(격자 나누기) — 입자가 많아도 느려지지 않게
+    const CS=40, GC=Math.ceil(PW/CS)+2, cells=new Map();
+    for(let i=0;i<n;i++){ const k=((mols[i].x/CS)|0)+((mols[i].y/CS)|0)*GC; const a=cells.get(k); if(a) a.push(i); else cells.set(k,[i]); }
+    for(let i=0;i<n;i++){ const p=mols[i]; const cx=(p.x/CS)|0, cy=(p.y/CS)|0;
+      for(let gy=cy-1;gy<=cy+1;gy++) for(let gx=cx-1;gx<=cx+1;gx++){ const arr=cells.get(gx+gy*GC); if(!arr) continue;
+      for(const j of arr){ if(j<=i) continue; const q=mols[j]; if(p.busy&&q.busy) continue;
         const dx=q.x-p.x, dy=q.y-p.y; if(Math.abs(dx)>40||Math.abs(dy)>40) continue;
         if(p.busy||q.busy){ const s=p.busy?p:q,o=p.busy?q:p,ddx=o.x-s.x,ddy=o.y-s.y,rr=s.r+o.r+6,d=Math.hypot(ddx,ddy);
           if(d<rr&&d>0){ const nx=ddx/d,ny=ddy/d; o.x=s.x+nx*rr; o.y=s.y+ny*rr; const vn=o.vx*nx+o.vy*ny; if(vn<0){ o.vx-=2*vn*nx; o.vy-=2*vn*ny; } } continue; }
@@ -3351,7 +3399,7 @@ function simStep(dt){
         if(d2>=rr*rr) continue;
         const d=Math.sqrt(d2)||.01,nx=dx/d,ny=dy/d,ov=rr-d; p.x-=nx*ov/2; p.y-=ny*ov/2; q.x+=nx*ov/2; q.y+=ny*ov/2;
         const rv=(q.vx-p.vx)*nx+(q.vy-p.vy)*ny; if(rv<0){ p.vx+=rv*nx; p.vy+=rv*ny; q.vx-=rv*nx; q.vy-=rv*ny; }
-      } }
+      } } }
     // 붓는 동안에는 차가운(20 °C) 용액이 먼저 섞여 온도가 내려가고, 다 부은 뒤 반응하며 다시 오르게 함
     if(budget()>0 && !S.pouring){ starve+=dt; if(starve>0.25){ const hs=mols.filter(m=>m.type==="h"&&!m.busy), os=mols.filter(m=>m.type==="oh"&&!m.busy), used=new Set();
       const k=Math.min(budget(),4), f=(budget()>1?900:520)*dt;
@@ -3482,6 +3530,18 @@ function simStep(dt){
     const want=Math.floor((S.added*cfg.np)/UP+1e-6);
     while(spawnedOH<want) spawnBase();
     S.pAcc=(S.added*cfg.np)/UP-spawnedOH;
+    S.hpend=0;
+    if(budget()>2) settleParticles();
+  }
+  // 밀린 반응을 애니메이션 없이 바로 반영 (중간에 들어온 학생·교사 화면이 현재 모습부터 보이게)
+  function settleParticles(){
+    let k=budget();
+    while(k>0){
+      const h=mols.find(m=>m.type==="h"&&!m.busy&&!m.dead), o=mols.find(m=>m.type==="oh"&&!m.busy&&!m.dead);
+      if(!h||!o) break;
+      h.dead=true; o.type="w"; o.r=RAD.w; pReacted++; k--;
+    }
+    mols=mols.filter(m=>!m.dead);
   }
   async function startExpSync(){
     sendExp = DB.channel("exp-"+gid(), msg=>{
@@ -3502,8 +3562,16 @@ function simStep(dt){
   let simZoom=1;
   function layoutExp(){
     const st=$("gf-stage"); if(!st) return;
-    const wide=window.matchMedia("(min-width:1000px)").matches;
-    st.style.height = wide ? Math.max(420, window.innerHeight - st.getBoundingClientRect().top - 16) + "px" : "";
+    const wide=window.matchMedia("(min-width:600px)").matches;
+    const portrait=wide && window.matchMedia("(orientation:portrait)").matches;
+    // 세로 태블릿: 온도 표시를 실험 장치 아래로 옮겨 양쪽 균형을 맞춤
+    const rd=document.querySelector("#gf-stage .gf-read"), A=document.querySelector("#gf-stage .gf-colA"), Cc=document.querySelector("#gf-stage .gf-colC");
+    if(rd && A && Cc){ if(portrait && rd.parentNode!==A) A.appendChild(rd); else if(!portrait && rd.parentNode!==Cc) Cc.insertBefore(rd, Cc.children[1]||null); }
+    if(!wide){ st.style.height=""; return; }
+    let hgt = Math.max(360, window.innerHeight - st.getBoundingClientRect().top - 12);
+    st.style.height = hgt + "px";
+    const over = document.scrollingElement.scrollHeight - window.innerHeight;   // 아래 여백 때문에 생기는 스크롤까지 없앰
+    if(over > 0) st.style.height = Math.max(360, hgt - over - 2) + "px";
   }
   function fitSim(){
     const box=$("gf-simbox"), cv=$("gf-sim"); if(!box || !box.clientWidth) return;
@@ -3538,7 +3606,9 @@ function simStep(dt){
   function tick(now){
     const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now; lastTick=now;
     if(me){
-      const n=Math.max(2,Math.ceil(dt/0.01)); for(let i=0;i<n;i++){ macroStep(dt/n); simStep(dt/n); }
+      const viewing = state.screen==="exp" && !$("gf-exp-view").classList.contains("hidden");
+      const n=Math.min(4,Math.max(2,Math.ceil(dt/0.01)));
+      for(let i=0;i<n;i++){ macroStep(dt/n); if(viewing || isCtrl()) simStep(dt/n); }
       if(state.screen==="exp" && !$("gf-exp-view").classList.contains("hidden")){ drawMacro(dt); drawSim(); expUI(); }
       if(isCtrl()){ snapT+=dt; persistT+=dt;
         if(snapT>1){ snapT=0; sendExp({type:"snap",snap:snapshot()}); }
@@ -3659,7 +3729,7 @@ function simStep(dt){
   }
   function quizVisual(q){
     return q.video
-      ? `<div class="gf-vwrap"><video src="${q.video}" autoplay muted loop playsinline preload="auto"></video><svg viewBox="0 0 640 300">${quizFrame(q)}</svg></div>${q.credit?`<div class="gf-credit">${q.credit}</div>`:""}`
+      ? `<div class="gf-vwrap" style="background-image:url('${q.video.replace(/\.mp4.*/,'.jpg')}')"><video src="${q.video}" poster="${q.video.replace(/\.mp4.*/,'.jpg')}" autoplay muted loop playsinline disablepictureinpicture disableremoteplayback preload="auto" onplaying="this.classList.add('on')"></video><svg viewBox="0 0 640 300">${quizFrame(q)}</svg></div>${q.credit?`<div class="gf-credit">${q.credit}</div>`:""}`
       : `<svg viewBox="0 0 640 300">${quizFrame(q)}</svg>`;
   }
   // 손난로 3D 영상(블렌더 렌더링)을 파일 안에 넣어 둠 — index.html 하나만 열어도 재생되도록
@@ -3956,6 +4026,17 @@ function simStep(dt){
     tData = {st,gs,qa,er,stage:stage?stage.max:1};
     teacherRender();
   }
+  function openWatch(g){
+    const ov = $("gf-watch-ov");
+    $("gf-watch-title").textContent = `${g}조 실험 화면 (실시간)`;
+    $("gf-watch-frame").src = `index.html?t=1&watch=${encodeURIComponent(tCls+"|"+g)}&v=${Date.now()}`;
+    ov.dataset.g = g; ov.classList.remove("hidden");
+  }
+  function closeWatch(){ $("gf-watch-ov").classList.add("hidden"); $("gf-watch-frame").src = "about:blank"; }
+  $("gf-watch-close").onclick = closeWatch;
+  $("gf-watch-prev").onclick = ()=>openWatch(((+$("gf-watch-ov").dataset.g + GROUP_COUNT - 2) % GROUP_COUNT) + 1);
+  $("gf-watch-next").onclick = ()=>openWatch((+$("gf-watch-ov").dataset.g % GROUP_COUNT) + 1);
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !$("gf-watch-ov").classList.contains("hidden")) closeWatch(); });
   function teacherRender(){
     document.querySelectorAll("#gf-stagectl [data-open]").forEach(b=>b.classList.toggle("on", +b.dataset.open===tData.stage));
     let h = "";
@@ -3963,7 +4044,7 @@ function simStep(dt){
       const ms = tData.st.filter(s=>+s.grp===g).sort((a,b)=>numOf(a)-numOf(b));
       const gs = tData.gs.find(x=>+x.grp===g), qi = (gs&&gs.quiz_idx)||0, stg = (gs&&gs.stage)||1;
       const nextT = stg+1, readyN = ms.filter(m=>tData.qa.some(a=>a.qid==="__ready"+nextT&&a.sid===m.id)).length;
-      h += `<div class="gf-g"><h3>${g}조 <small>${ms.length}명 · ${STAGE_NAMES[stg]} · 퀴즈 ${Math.min(qi,QUIZ.length)} / ${QUIZ.length}</small></h3>
+      h += `<div class="gf-g gf-g-watch" data-watch="${g}" title="눌러서 ${g}조 실험 화면 보기"><h3>${g}조 <span class="gf-watchbtn">🔍 실험 화면 보기</span> <small>${ms.length}명 · ${STAGE_NAMES[stg]} · 퀴즈 ${Math.min(qi,QUIZ.length)} / ${QUIZ.length}</small></h3>
         <div class="gf-gbar"><i style="width:${Math.min(1,qi/QUIZ.length)*100}%"></i></div>
         ${stg<3&&ms.length?`<div class="gf-next-msg" style="margin:0 0 4px">다음 단계 준비 ${readyN} / ${ms.length}명</div>`:""}`;
       if(!ms.length) h += `<p class="desc" style="margin:6px 0 0">아직 입장한 학생이 없어요.</p>`;
@@ -3974,6 +4055,7 @@ function simStep(dt){
       h += `</div>`;
     }
     $("gf-t-groups").innerHTML = h;
+    $("gf-t-groups").querySelectorAll("[data-watch]").forEach(el=>el.onclick=()=>openWatch(+el.dataset.watch));
     const recs = tData.er.slice().sort((a,b)=>a.grp-b.grp), COLORS = ["#c0392b","#1f3a5f","#1e6b4f","#a5730a","#6b2142","#2c6e8f"];
     let r = `<div class="gf-recwrap"><div class="gf-g" style="margin-bottom:12px"><h3>전체 조 겹쳐 보기 <small>넣은 NaOH 부피 – 온도</small></h3>${chart(recs,COLORS,900,340)}</div><div class="gf-groups" style="padding:0;margin:0">`;
     for(const x of recs){
@@ -4023,7 +4105,18 @@ function simStep(dt){
     return s+"</svg>";
   }
 
-  return {register, enter, onScreen, teacherSelect, teacherRender, demo:DB.demo};
+  // 교사용 관전: 한 조의 실험 화면을 조작 없이 실시간으로 봄 (index.html?t=1&watch=반|조)
+  async function watch(cls, grp){
+    me = {id:"__teacher_watch", cls, grp:String(grp), num:"", name:"선생님", role:"교사"};
+    document.body.classList.add("gf-watch");
+    DB.on("students", refreshMembers);
+    await refreshMembers();
+    startExpSync();
+    showScreen("exp"); $("gf-exp-view").classList.remove("hidden"); $("gf-rec-view").classList.add("hidden");
+    setTimeout(()=>{ layoutExp(); fitSim(); }, 60);
+    setInterval(recReadout, 300);
+  }
+  return {register, enter, onScreen, teacherSelect, teacherRender, watch, demo:DB.demo};
 })();
 </script>
 
@@ -4075,6 +4168,14 @@ function simStep(dt){
     else if(["b","B","."].includes(k)) done = true;   // 포인터의 "화면 검게" 버튼은 무시
     if(done){ e.preventDefault(); e.stopPropagation(); }
   }, true);
+})();
+</script>
+
+<script>
+(function(){ const w = new URLSearchParams(location.search).get("watch");
+  if(!w) return; const [cls, grp] = w.split("|");
+  const go = ()=>{ if(window.GF && GF.watch) GF.watch(cls, grp); else setTimeout(go, 100); };
+  window.addEventListener("load", ()=>setTimeout(go, 300));
 })();
 </script>
 </body>
