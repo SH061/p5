@@ -965,15 +965,18 @@
   body.gf-watch header.top, body.gf-watch #stage-nav, body.gf-watch .gf-subtabs,
   body.gf-watch .gf-colC .gf-rolebar, body.gf-watch .gf-colC .gf-ctrls, body.gf-watch .gf-colC .gf-setup,
   body.gf-watch .gf-next, body.gf-watch #problemstop-overlay{ display:none !important; }
-  body.gf-watch main#app{ padding-top:8px; }
+  body.gf-watch main#app{ padding-top:8px; padding-bottom:0 !important; margin-bottom:0 !important; }
+  body.gf-watch #screen-exp .gf-card{ margin:0 !important; }
+  body.gf-watch #screen-exp{ padding-bottom:0 !important; margin-bottom:0 !important; }
   body.gf-watch .gf-colC .gf-read{ flex-direction:column; gap:8px; }
   body.gf-watch .gf-colC .gf-read div{ font-size:14px; padding:10px 12px; }
   body.gf-watch .gf-colC .gf-read b{ font-size:30px; }
   body.gf-watch .gf-colC .gf-msg{ font-size:16px; }
-  body.gf-watch .gf-members{ gap:8px; margin-bottom:6px; }
-  body.gf-watch .gf-members span{ font-size:20px; font-weight:800; padding:6px 14px; }
+  body.gf-watch #screen-exp .gf-card > div:first-child{ flex-wrap:nowrap !important; }
+  body.gf-watch .gf-members{ gap:clamp(4px,.6vw,8px); margin-bottom:6px; flex-wrap:nowrap; min-width:0; overflow:hidden; }
+  body.gf-watch .gf-members span{ font-size:clamp(12px,1.45vw,20px); font-weight:800; padding:clamp(3px,.4vw,6px) clamp(7px,.9vw,14px); white-space:nowrap; flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; }
   body.gf-watch .gf-members span:first-child{ background:var(--accent); color:#fff; border-color:transparent; }
-  body.gf-watch .exnote-open{ font-size:15px; }
+  body.gf-watch .exnote-open{ font-size:clamp(12px,1.1vw,15px); white-space:nowrap; flex:0 0 auto; }
   body.gf-watch .gf-colC{ display:flex; flex-direction:column; min-height:0; }
   #gf-watch-rec{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; margin-top:10px; border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:10px; }
   #gf-watch-rec .wr-h{ font-weight:800; font-size:16px; margin-bottom:6px; }
