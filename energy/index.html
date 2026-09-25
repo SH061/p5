@@ -3807,7 +3807,7 @@ function simStep(dt){
       ${[[174,58,1,1],[366,58,-1,1],[174,242,1,-1],[366,242,-1,-1]].map(([x,y,sx,sy],c)=>[0,1,2,3].map(k=>{const a=(k*22+8)*Math.PI/180,len=70+k*8,ex=x+sx*Math.cos(a)*len,ey=y+sy*Math.sin(a)*len;return `<path d="M${x},${y} L${ex.toFixed(1)},${ey.toFixed(1)} M${((x+ex)/2).toFixed(1)},${((y+ey)/2).toFixed(1)} l${sx*14},${sy*-4} M${((x+ex*2)/3).toFixed(1)},${((y+ey*2)/3).toFixed(1)} l${sx*-4},${sy*14}" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" fill="none" stroke-dasharray="130" stroke-dashoffset="130">${A("stroke-dashoffset","130;130;0;0",LOOP,`keyTimes="0;.15;.75;1" begin="${(c*.2+k*.1).toFixed(2)}s"`)}</path>`;}).join("")).join("")}
       ${[[150,120],[395,100],[140,200],[400,190]].map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="4" fill="#9fb3c8">${A("cx",`${x};${x<270?180:360}`,2.4,`begin="${i*.5}s"`)}${A("opacity","1;0",2.4,`begin="${i*.5}s"`)}</circle>`).join("")}`},
 
-    {id:"bakingsoda", title:"탄산수소 나트륨의 열분해", answer:"흡열", meter:"흡수한 열에너지", eq:"2NaHCO<sub>3</sub> → Na<sub>2</sub>CO<sub>3</sub> + H<sub>2</sub>O + CO<sub>2</sub>",
+    {id:"bakingsoda", title:"탄산수소 나트륨의 열분해", answer:"흡열", meter:"흡수한 열에너지", video:"videos/bakingsoda.mp4?v=1", overlay:`<rect x="248" y="279" width="384" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"입자 확대 — 열을 흡수해 Na₂CO₃ + H₂O + CO₂로 나뉘어요",10,"#3d5a80")}`, eq:"2NaHCO<sub>3</sub> → Na<sub>2</sub>CO<sub>3</sub> + H<sub>2</sub>O + CO<sub>2</sub>",
      sit:"시험관에 탄산수소 나트륨(베이킹 소다)을 넣고 알코올램프로 계속 가열하면 기체가 나와 석회수를 뿌옇게 만들어요. 가열을 멈추면 기체도 멈춰요.",
      explain:"열분해는 열을 계속 흡수해야 일어나는 반응이에요. 빵이 부푸는 것도 이 반응에서 생긴 이산화 탄소 때문이에요.",
      scene:`<rect x="128" y="40" width="8" height="220" fill="#6f7a88"/><rect x="100" y="256" width="80" height="10" rx="3" fill="#4d5560"/>
