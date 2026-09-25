@@ -3889,7 +3889,7 @@ function simStep(dt){
       ${[0,1,2,3,4].map(i=>`<text x="${175+i*45}" y="${105-(i%2)*10}" font-size="14" fill="#9cc6e8">❄${LATER(i*.2)}</text>`).join("")}
       ${T(270,215,"물 → 얼음",14,"#446")}`},
 
-    {id:"evaporate", title:"기화 (액체 → 기체) : 손 소독제가 마를 때", answer:"흡열", video:"videos/evaporate.mp4?v=1", overlay:`<rect x="281" y="279" width="318" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"에탄올 분자 확대 — 표면에서 떨어져 나가며 열을 흡수해요",10,"#3d5a80")}`, eq:"C<sub>2</sub>H<sub>5</sub>OH(l) → C<sub>2</sub>H<sub>5</sub>OH(g)",
+    {id:"evaporate", title:"기화 (액체 → 기체) : 손 소독제가 마를 때", answer:"흡열", video:"videos/evaporate.mp4?v=9", credit:"영상: Google Veo로 제작", eq:"C<sub>2</sub>H<sub>5</sub>OH(l) → C<sub>2</sub>H<sub>5</sub>OH(g)",
      sit:"손바닥에 알코올 손 소독제를 바르면, 잠시 뒤 알코올이 증발해 기체가 되면서 손이 금방 말라요.",
      explain:"액체가 기체로 기화(증발)할 때 피부의 열을 흡수해요. 그래서 손이 시원하게 느껴져요.",
      scene:`<g filter="url(#qShadow)"><rect x="378" y="118" width="46" height="100" rx="10" fill="#e8f3fb" stroke="#8ea6bf" stroke-width="2"/>
@@ -3899,7 +3899,7 @@ function simStep(dt){
       ${[[210,165],[245,175],[280,160],[230,145],[270,190]].map(([x,y],i)=>`<ellipse cx="${x}" cy="${y}" rx="11" ry="7" fill="#d7ecff" stroke="#9ec6ea">${A("rx","11;11;0;11",LOOP,`keyTimes="0;.2;.75;1" begin="${i*.2}s"`)}${A("ry","7;7;0;7",LOOP,`keyTimes="0;.2;.75;1" begin="${i*.2}s"`)}</ellipse>`).join("")}
       ${[0,1,2,3,4,5].map(i=>`<circle cx="${205+i*16}" cy="140" r="3.5" fill="#9fb3c8">${TR("0 0;"+(i%2?8:-8)+" -80",2.4,`begin="${i*.35}s"`)}${A("opacity","0;1;0",2.4,`begin="${i*.35}s"`)}</circle>`).join("")}`},
 
-    {id:"condense", title:"액화 (기체 → 액체) : 차가운 컵의 물방울", answer:"발열", video:"videos/condense.mp4?v=1", overlay:`<rect x="290" y="279" width="300" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"수증기 분자 확대 — 차가운 벽에 모이며 열을 내보내요",10,"#3d5a80")}`, eq:"H<sub>2</sub>O(g) → H<sub>2</sub>O(l)",
+    {id:"condense", title:"액화 (기체 → 액체) : 차가운 컵의 물방울", answer:"발열", video:"videos/condense.mp4?v=9", credit:"영상: Google Veo로 제작", eq:"H<sub>2</sub>O(g) → H<sub>2</sub>O(l)",
      sit:"얼음물이 담긴 컵을 두면, 공기 중의 수증기가 차가운 컵 바깥쪽에 닿아 물방울로 맺혀요.",
      explain:"수증기가 물로 액화할 때 열을 방출해요. 구름이 만들어질 때도 같은 현상이 일어나요.",
      scene:`<ellipse cx="270" cy="242" rx="70" ry="8" fill="#000" opacity=".08"/>
@@ -3924,7 +3924,7 @@ function simStep(dt){
       <g opacity="0">${T(262,285,"H₂O ↑",13,"#2c6fd0",800)}${A("opacity","0;1;0",2.2)}</g>
       ${[0,1,2].map(i=>`<g opacity="0">${T(335+i*10,70,"O₂",14,"#2a8a4a",800)}${TR("0 0;30 -45",2.6,`begin="${i*.8}s"`)}${A("opacity","0;1;0",2.6,`begin="${i*.8}s"`)}</g>`).join("")}`},
 
-    {id:"deposition", title:"승화 (기체 → 고체) : 창문에 성에가 생길 때", answer:"발열", video:"videos/deposition.mp4?v=1", overlay:`<rect x="281" y="279" width="318" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"수증기 분자 확대 — 바로 얼음 결정이 되며 열을 내보내요",10,"#3d5a80")}`, eq:"H<sub>2</sub>O(g) → H<sub>2</sub>O(s)",
+    {id:"deposition", title:"승화 (기체 → 고체) : 창문에 성에가 생길 때", answer:"발열", video:"videos/deposition.mp4?v=9", credit:"영상: Google Veo로 제작", eq:"H<sub>2</sub>O(g) → H<sub>2</sub>O(s)",
      sit:"추운 겨울 아침, 공기 중의 수증기가 액체를 거치지 않고 바로 얼음 결정이 되어 유리창에 성에(서리)가 생겨요.",
      explain:"기체가 고체로 승화할 때 열을 방출해요. 눈이 만들어질 때도 같은 현상이 일어나요.",
      scene:`<g filter="url(#qShadow)"><rect x="160" y="45" width="220" height="210" rx="6" fill="url(#qWood)"/>
@@ -3933,7 +3933,7 @@ function simStep(dt){
       ${[[174,58,1,1],[366,58,-1,1],[174,242,1,-1],[366,242,-1,-1]].map(([x,y,sx,sy],c)=>[0,1,2,3].map(k=>{const a=(k*22+8)*Math.PI/180,len=70+k*8,ex=x+sx*Math.cos(a)*len,ey=y+sy*Math.sin(a)*len;return `<path d="M${x},${y} L${ex.toFixed(1)},${ey.toFixed(1)} M${((x+ex)/2).toFixed(1)},${((y+ey)/2).toFixed(1)} l${sx*14},${sy*-4} M${((x+ex*2)/3).toFixed(1)},${((y+ey*2)/3).toFixed(1)} l${sx*-4},${sy*14}" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" fill="none" stroke-dasharray="130" stroke-dashoffset="130">${A("stroke-dashoffset","130;130;0;0",LOOP,`keyTimes="0;.15;.75;1" begin="${(c*.2+k*.1).toFixed(2)}s"`)}</path>`;}).join("")).join("")}
       ${[[150,120],[395,100],[140,200],[400,190]].map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="4" fill="#9fb3c8">${A("cx",`${x};${x<270?180:360}`,2.4,`begin="${i*.5}s"`)}${A("opacity","1;0",2.4,`begin="${i*.5}s"`)}</circle>`).join("")}`},
 
-    {id:"bakingsoda", title:"탄산수소 나트륨의 열분해", answer:"흡열", meter:"흡수한 열에너지", video:"videos/bakingsoda.mp4?v=2", overlay:`<rect x="248" y="279" width="384" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"입자 확대 — 열을 흡수해 Na₂CO₃ + H₂O + CO₂로 나뉘어요",10,"#3d5a80")}`, eq:"2NaHCO<sub>3</sub> → Na<sub>2</sub>CO<sub>3</sub> + H<sub>2</sub>O + CO<sub>2</sub>",
+    {id:"bakingsoda", title:"탄산수소 나트륨의 열분해", answer:"흡열", meter:"흡수한 열에너지", video:"videos/bakingsoda.mp4?v=9", credit:"영상: Google Veo로 제작", eq:"2NaHCO<sub>3</sub> → Na<sub>2</sub>CO<sub>3</sub> + H<sub>2</sub>O + CO<sub>2</sub>",
      sit:"시험관에 탄산수소 나트륨(베이킹 소다)을 넣고 알코올램프로 계속 가열하면 기체가 나와 석회수를 뿌옇게 만들어요. 가열을 멈추면 기체도 멈춰요.",
      explain:"열분해는 열을 계속 흡수해야 일어나는 반응이에요. 빵이 부푸는 것도 이 반응에서 생긴 이산화 탄소 때문이에요.",
      scene:`<rect x="128" y="40" width="8" height="220" fill="#6f7a88"/><rect x="100" y="256" width="80" height="10" rx="3" fill="#4d5560"/>
@@ -3959,7 +3959,7 @@ function simStep(dt){
       ${[0,1,2].map(i=>`<g opacity="0">${T(270+(i-1)*14,52,"H₂",13,"#557",800)}${TR("0 0;0 -30",2,`begin="${i*.6}s"`)}${A("opacity","0;1;0",2,`begin="${i*.6}s"`)}</g>`).join("")}
       ${T(210,112,"묽은 염산",11,"#446")}${T(330,112,"마그네슘",11,"#446")}`},
 
-    {id:"bariumhydroxide", title:"수산화 바륨과 질산 암모늄의 반응", answer:"흡열", video:"videos/bariumhydroxide.mp4?v=1", overlay:`<rect x="323" y="279" width="234" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"입자 확대 — 섞이며 주변의 열을 흡수해요",10,"#3d5a80")}`, eq:"Ba(OH)<sub>2</sub>·8H<sub>2</sub>O + 2NH<sub>4</sub>NO<sub>3</sub> → Ba(NO<sub>3</sub>)<sub>2</sub> + 2NH<sub>3</sub> + 10H<sub>2</sub>O",
+    {id:"bariumhydroxide", title:"수산화 바륨과 질산 암모늄의 반응", answer:"흡열", video:"videos/bariumhydroxide.mp4?v=9", credit:"영상: Google Veo로 제작", eq:"Ba(OH)<sub>2</sub>·8H<sub>2</sub>O + 2NH<sub>4</sub>NO<sub>3</sub> → Ba(NO<sub>3</sub>)<sub>2</sub> + 2NH<sub>3</sub> + 10H<sub>2</sub>O",
      sit:"물을 적신 나무판 위에 삼각 플라스크를 놓고, 플라스크 안에서 수산화 바륨과 질산 암모늄을 넣고 흔들어 섞어요.",
      explain:"두 물질이 반응할 때 주변의 열을 많이 흡수해요. 그래서 나무판의 물이 얼어 플라스크가 나무판에 달라붙어요.",
      scene:`<g>${TR("0 0;0 0;0 -22;0 -22;0 0",LOOP,`keyTimes="0;.7;.8;.95;1"`)}
@@ -3982,7 +3982,7 @@ function simStep(dt){
       ${T(400,110,"오랜 시간",12,"#6b5a4c")}
       ${o2(140,150,40,20,0)}${o2(390,220,-40,-20,1)}`},
 
-    {id:"electrolysis", title:"물의 전기 분해", answer:"흡열", meter:"흡수한 전기에너지", video:"videos/electrolysis.mp4?v=1", overlay:`<rect x="295" y="279" width="290" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"물 분자 확대 — 전기에너지로 H₂와 O₂로 나뉘어요",10,"#3d5a80")}`, eq:"2H<sub>2</sub>O → 2H<sub>2</sub> + O<sub>2</sub>",
+    {id:"electrolysis", title:"물의 전기 분해", answer:"흡열", meter:"흡수한 전기에너지", video:"videos/electrolysis.mp4?v=9", credit:"영상: Google Veo로 제작", eq:"2H<sub>2</sub>O → 2H<sub>2</sub> + O<sub>2</sub>",
      sit:"수산화 나트륨을 조금 녹인 물에 전류를 흘려 주면, 두 전극에서 수소와 산소 기체가 2 : 1의 부피로 모여요.",
      explain:"물의 전기 분해는 전기에너지를 흡수해야 일어나는 반응이에요. 전류를 끊으면 반응도 멈춰요.",
      scene:`${beaker(170,120,200,125,150)}
@@ -3994,7 +3994,7 @@ function simStep(dt){
       <g filter="url(#qShadow)"><rect x="385" y="175" width="60" height="36" rx="5" fill="#333"/><rect x="445" y="186" width="6" height="14" fill="#333"/>${T(415,198,"전원",12,"#fff")}</g>
       <path d="M237,245 L237,262 L400,262 L400,211" stroke="#333" stroke-width="3" fill="none"/><path d="M313,245 L313,255 L430,255 L430,211" stroke="#e5484d" stroke-width="3" fill="none"/>`},
 
-    {id:"cacl2", title:"염화 칼슘이 물에 녹을 때", answer:"발열", video:"videos/cacl2.mp4?v=1", overlay:`<rect x="286" y="279" width="309" height="17" rx="8" fill="#fff" opacity=".85"/>${T(440,291,"입자 확대 — Ca²⁺와 Cl⁻로 흩어지며 열을 내보내요",10,"#3d5a80")}`, eq:"CaCl<sub>2</sub>(s) → Ca<sup>2+</sup>(aq) + 2Cl<sup>−</sup>(aq)",
+    {id:"cacl2", title:"염화 칼슘이 물에 녹을 때", answer:"발열", video:"videos/cacl2.mp4?v=9", credit:"영상: Google Veo로 제작", eq:"CaCl<sub>2</sub>(s) → Ca<sup>2+</sup>(aq) + 2Cl<sup>−</sup>(aq)",
      sit:"물이 든 비커에 염화 칼슘 알갱이를 넣고 저으면 알갱이가 물에 녹아요. (겨울철 눈을 녹일 때 도로에 뿌리는 물질이에요.)",
      explain:"염화 칼슘이 물에 녹을 때 열을 방출해요. 그래서 도로에 뿌리면 눈이 빨리 녹아요.",
      scene:`${beaker(195,110,150,140,150)}
