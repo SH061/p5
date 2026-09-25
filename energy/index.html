@@ -963,6 +963,18 @@
   <div class="gf-watch-bar"><button class="btn ghost" id="gf-watch-prev">◀ 이전 조</button><b id="gf-watch-title">실험 화면</b><button class="btn ghost" id="gf-watch-next">다음 조 ▶</button><span style="flex:1"></span><button class="btn" id="gf-watch-close">✕ 닫기</button></div>
   <iframe id="gf-watch-frame" title="조별 실험 화면"></iframe>
 </div>
+<div class="exnote-ov hidden" id="recnote-ov"><div class="exnote">
+  <h3>📝 실험 기록 방법 (관찰자)</h3>
+  <ol>
+    <li><b>처음 온도</b>부터 기록해요. 실험 전에 <b>[📥 지금 실험 값으로 한 줄 추가]</b>를 눌러 0 mL · 20.0 °C를 적어요.</li>
+    <li>실험자가 NaOH를 넣으면, <b>온도가 더 이상 오르지 않을 때까지 기다린 뒤</b> [📥 지금 실험 값으로 한 줄 추가]를 눌러요.</li>
+    <li>버튼을 누르면 <b>이번에 넣은 양</b>과 <b>지금 온도</b>가 자동으로 들어가고, <b>누적 부피</b>는 저절로 계산돼요.</li>
+    <li>값이 이상하면 칸을 눌러 직접 고칠 수 있고, 잘못 넣은 줄은 ✕로 지워요.</li>
+    <li>기록이 끝나면(또는 중간중간) <b>[기록 저장]</b>을 꼭 눌러요. 저장해야 선생님 화면 그래프에 나타나요.</li>
+    <li>위의 <b>[실험 화면]</b> 탭을 눌러 실험 모습을 보고, 다시 <b>[실험기록]</b> 탭으로 돌아와 기록해요.</li>
+  </ol>
+  <button class="btn primary" id="recnote-ok">알겠어요, 기록 시작!</button>
+</div></div>
 <div class="exnote-ov hidden" id="exnote-ov"><div class="exnote">
   <h3>⚠️ 실험 전에 꼭 읽어 주세요</h3>
   <ol>
@@ -1047,7 +1059,7 @@
         </div>
       </div>
       <div id="gf-rec-view" class="hidden">
-        <div class="gf-rolebar" id="gf-recrole"></div>
+        <div style="display:flex;gap:8px;align-items:flex-start"><div class="gf-rolebar" id="gf-recrole" style="flex:1"></div><button class="exnote-open rec-open" type="button" onclick="document.getElementById('recnote-ov').classList.remove('hidden')">📝 기록 방법</button></div>
         <div class="gf-live" id="gf-rec-live"></div>
         <div class="gf-setup">
           <span>실험 조건</span><b id="gf-rcCond">—</b>
@@ -3283,7 +3295,7 @@ window.GF = (function(){
     const v=parseFloat(r.v); if(isFinite(v)) sum=v; return {...r}; }); }
   function recCond(){ return {hp:String(cfg.hp), hv:String(cfg.hv), np:String(cfg.np)}; }
   $("gf-st-exp").onclick = ()=>{ $("gf-st-exp").classList.add("on"); $("gf-st-rec").classList.remove("on"); $("gf-exp-view").classList.remove("hidden"); $("gf-rec-view").classList.add("hidden"); };
-  $("gf-st-rec").onclick = ()=>{ $("gf-st-rec").classList.add("on"); $("gf-st-exp").classList.remove("on"); $("gf-rec-view").classList.remove("hidden"); $("gf-exp-view").classList.add("hidden"); };
+  $("gf-st-rec").onclick = ()=>{ setTimeout(()=>window.__recnoteMaybe&&window.__recnoteMaybe(),100); $("gf-st-rec").classList.add("on"); $("gf-st-exp").classList.remove("on"); $("gf-rec-view").classList.remove("hidden"); $("gf-exp-view").classList.add("hidden"); };
   async function loadRecord(){
     if(!me || (recDirty && isRec())) return;
     const r = (await DB.list("exp_records",{id:gid()}))[0];
@@ -4153,7 +4165,7 @@ function simStep(dt){
     setTimeout(()=>{ layoutExp(); fitSim(); }, 60);
     setInterval(recReadout, 300);
   }
-  return {register, enter, onScreen, teacherSelect, teacherRender, watch, demo:DB.demo};
+  return {register, enter, onScreen, teacherSelect, teacherRender, watch, isRec:()=>isRec(), demo:DB.demo};
 })();
 </script>
 
@@ -4220,10 +4232,14 @@ function simStep(dt){
 (function(){
   const ov=document.getElementById("exnote-ov"); if(!ov) return;
   const KEY="exnoteSeen";
-  const open=()=>ov.classList.remove("hidden"), close=()=>{ ov.classList.add("hidden"); try{ sessionStorage.setItem(KEY,"1"); }catch(e){} };
+  const rov=document.getElementById("recnote-ov"), RKEY="recnoteSeen";
+  const recSeen=()=>{ try{ return sessionStorage.getItem(RKEY)==="1"; }catch(e){ return false; } };
+  window.__recnoteMaybe=()=>{ if(!rov || recSeen() || document.body.classList.contains("gf-watch")) return; if(window.GF && GF.isRec && GF.isRec() && ov.classList.contains("hidden")) rov.classList.remove("hidden"); };
+  if(rov){ document.getElementById("recnote-ok").onclick=()=>{ rov.classList.add("hidden"); try{ sessionStorage.setItem(RKEY,"1"); }catch(e){} }; }
+  const open=()=>ov.classList.remove("hidden"), close=()=>{ ov.classList.add("hidden"); try{ sessionStorage.setItem(KEY,"1"); }catch(e){} setTimeout(()=>window.__recnoteMaybe&&window.__recnoteMaybe(),150); };
   document.getElementById("exnote-ok").onclick=close;
   ov.addEventListener("click",e=>{ if(e.target===ov) close(); });
-  document.querySelectorAll(".exnote-open").forEach(b=>b.onclick=open);
+  document.querySelectorAll(".exnote-open:not(.rec-open)").forEach(b=>b.onclick=open);
   window.__exnoteMaybe=()=>{ if(document.body.classList.contains("gf-watch")) return; let seen=false; try{ seen=sessionStorage.getItem(KEY)==="1"; }catch(e){} if(!seen) open(); };
 })();
 </script>
