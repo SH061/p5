@@ -362,6 +362,9 @@ function finishReaction(r){
 let eddies=[],eddyT=0;
 function stirFlow(dt){eddyT-=dt;if(eddyT>0)return;eddyT=1+Math.random()*1.2;const R=Math.min(PW,PH);eddies=Array.from({length:5},()=>({x:PX0+Math.random()*(PX1-PX0),y:PY0+Math.random()*(PY1-PY0),s:(Math.random()<.5?-1:1)*(260+Math.random()*220),r:R*(0.14+Math.random()*0.12)}));}
 function simStep(dt){
+  // 염기성(OH⁻가 남음)인데 화면에 OH⁻ 입자가 하나도 없으면 1개를 보여 줌 (입자 1개 단위보다 적게 남은 경우)
+  if(!S.pouring && S.queue<=1e-9 && S.added*cfg.np > S.H0*1.001 && reactions.length===0
+     && !mols.some(m=>m.type==='h'&&!m.dead) && !mols.some(m=>m.type==='oh'&&!m.dead)) spawnBase();
   const stir=$('oStir').checked;
   if(stir)stirFlow(dt);
   const cx=PW/2,cy=PH/2;
