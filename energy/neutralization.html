@@ -243,9 +243,17 @@ function seg(id,key,opts,fmt){
   function paint(){for(const b of g.children)b.classList.toggle('on',String(cfg[key])===b.dataset.v);}
   paint();
 }
-seg('gHp','hp',[10,20,30],v=>v+'%');
+// 농도는 2% 단위로 − / + 버튼으로 조절 (10~30%)
+function stepper(id,key){
+  const g=$(id);g.innerHTML='';
+  const val=document.createElement('button');val.className='on';val.style.cursor='default';val.style.minWidth='64px';
+  const paint=()=>{val.textContent=cfg[key]+'%';};
+  const mkBtn=(t,d)=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{const v=Math.min(30,Math.max(10,cfg[key]+d*2));if(v!==cfg[key]){cfg[key]=v;paint();newExp();}};return b;};
+  g.append(mkBtn('−',-1),val,mkBtn('+',1));paint();
+}
+stepper('gHp','hp');
 seg('gHv','hv',[10,20,30,40,50],v=>v+' mL');
-seg('gNp','np',[10,20,30],v=>v+'%');
+stepper('gNp','np');
 seg('gInd','ind',['btb','php','none'],v=>({btb:'BTB',php:'페놀프탈레인',none:'없음'})[v]);
 
 // ---- state ----
