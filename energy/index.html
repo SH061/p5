@@ -3466,8 +3466,25 @@ window.GF = (function(){
     for(const v of opts){ const b=document.createElement("button"); b.textContent=f(v); b.dataset.v=v; b.className="gf-ctl";
       b.onclick=()=>{ if(!isCtrl()) return; if(key==="ind") act({t:"ind",v}); else act({t:"new",cfg:{...cfg,[key]:v}}); }; g.appendChild(b); }
   }
-  function paintSegs(){ for(const [id,key] of [["gf-gHp","hp"],["gf-gHv","hv"],["gf-gNp","np"],["gf-gInd","ind"]]) for(const b of $(id).children) b.classList.toggle("on", String(cfg[key])===b.dataset.v); }
-  seg("gf-gHp","hp",[10,20,30],v=>v+"%"); seg("gf-gHv","hv",[10,20,30,40,50],v=>v+""); seg("gf-gNp","np",[10,20,30],v=>v+"%");
+  // 농도는 2% 단위로 − / + 버튼으로 조절한다 (10~30%). 조작 권한은 기존 seg와 동일(isCtrl).
+  const PCT_MIN=10, PCT_MAX=30, PCT_STEP=2;
+  function stepper(id,key){
+    const g=$(id); g.innerHTML="";
+    const mkBtn=(txt,d)=>{ const b=document.createElement("button"); b.textContent=txt; b.className="gf-ctl";
+      b.onclick=()=>{ if(!isCtrl()) return; const v=Math.min(PCT_MAX,Math.max(PCT_MIN,(+cfg[key])+d*PCT_STEP)); if(v!==+cfg[key]) act({t:"new",cfg:{...cfg,[key]:v}}); }; return b; };
+    const val=document.createElement("button"); val.className="on gf-val"; val.style.flex="1.6"; val.style.cursor="default";
+    g.append(mkBtn("−",-1),val,mkBtn("+",1));
+  }
+  function paintSegs(){
+    for(const [id,key] of [["gf-gHp","hp"],["gf-gHv","hv"],["gf-gNp","np"],["gf-gInd","ind"]]){
+      const pct=(key==="hp"||key==="np");
+      for(const b of $(id).children){
+        if(pct){ if(b.classList.contains("gf-val")) b.textContent=cfg[key]+"%"; }
+        else b.classList.toggle("on", String(cfg[key])===b.dataset.v);
+      }
+    }
+  }
+  stepper("gf-gHp","hp"); seg("gf-gHv","hv",[10,20,30,40,50],v=>v+""); stepper("gf-gNp","np");
   seg("gf-gInd","ind",["btb","php","none"],v=>({btb:"BTB",php:"페놀프탈레인",none:"없음"})[v]);
 
   function mk(type,x,y,vx,vy){ return {id:idc++,type,x,y,vx,vy,a:Math.random()*6.283,w:(Math.random()-.5)*3,r:RAD[type],glow:0,busy:false,dead:false}; }
