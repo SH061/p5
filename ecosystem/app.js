@@ -251,6 +251,7 @@ async function doLogin(){
       return;
     }
     await DB.upsert("lesson_players", {id:playerId(cls,num), lesson_id:LESSON_ID, cls, num, name, seen:nowIso()});
+    idStore.set("sc:reset:" + cls, String((lv && lv.resetAt) || ""));   // 새로 들어온 시점의 기록을 기준으로 삼음
   }catch(e){
     btn.disabled = false; btn.textContent = "시작하기";
     msg.textContent = "연결에 실패했어요. 와이파이를 확인하고 다시 눌러 주세요.";
@@ -280,13 +281,17 @@ async function loadMine(){
   S.mine = {}; rows.forEach(r => S.mine[r.qid] = r);
 }
 async function pullLive(){
-  if(!S.cls) return;
+  if(!S.cls || !S.num) return;
   try{ applyLive((await getSetting(liveId(S.cls))) || {}); }catch(e){}
 }
 function liveKey(v){
   return [v.phase, v.listen ? "listen" : "", v.qid, v.tab, (v.revealed||[]).length, JSON.stringify(v.mvp||[]), v.awardStep, JSON.stringify(v.essayMvp||{})].join("|");
 }
 function applyLive(v){
+  // 선생님이 [이 반 기록 지우기]를 했으면: 이 폰에 남은 답·점수·쓰던 글을 비우고 처음 입장 화면으로
+  const rk = "sc:reset:" + S.cls, rs = String(v.resetAt || ""), seen = idStore.get(rk);
+  if(seen === null) idStore.set(rk, rs);
+  else if(rs !== seen){ idStore.set(rk, rs); wipeStudent(); return; }
   const k = liveKey(v);
   S.live = v;
   if(k === S.lastKey) return;
@@ -294,6 +299,12 @@ function applyLive(v){
   if(S.lastKey && v.phase === "essay" && S.lastKey.startsWith("essay|")){ S.lastKey = k; return; }
   S.lastKey = k;
   renderStudent();
+}
+function wipeStudent(){
+  stopTimer();
+  Object.assign(S, {num:"", name:"", live:{}, mine:{}, lastKey:"", drafts:{}, rankCache:null, submitting:false});
+  idStore.set("sc:num", ""); idStore.set("sc:name", "");
+  renderLogin("선생님이 기록을 새로 시작했어요. 반·학번·이름을 다시 입력해 주세요.");
 }
 function myScore(){
   const rev = S.live.revealed || [];
@@ -597,18 +608,43 @@ function onData(){
 // ============================================================
 // 탭
 // ============================================================
+// 상단에는 QR · [📚 학습내용 ▾] · 진행 상황만 두고, 수업 흐름(슬라이드·퀴즈·확장질문·순위)은 학습내용 메뉴 안에 순서대로 모은다
+const LESSON_TABS = TABS.filter(t => t.id !== "qr" && t.id !== "progress");
 function buildTabs(){
-  $("t-tabs").innerHTML = TABS.map(t => `<button data-tab="${t.id}" class="${t.game?"game":""}">${t.label}</button>`).join("") +
+  $("t-tabs").innerHTML =
+    `<button data-tab="qr">QR</button>` +
+    `<button id="tab-menu" class="menu">📚 학습내용 ▾</button>` +
+    `<button data-tab="progress">진행 상황</button>` +
     `<button id="tab-full" class="full">⛶ 전체화면</button>`;
-  $("t-tabs").querySelectorAll("button[data-tab]").forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+  const menu = document.createElement("div");
+  menu.id = "t-menu"; menu.className = "t-menu hidden";
+  menu.innerHTML = LESSON_TABS.map((t,i) => `<button data-tab="${t.id}" class="${t.game?"game":""}"><span class="no">${i+1}</span>${t.label}</button>`).join("");
+  document.body.appendChild(menu);
+  document.querySelectorAll("button[data-tab]").forEach(b => b.onclick = () => { closeMenu(); switchTab(b.dataset.tab); });
+  $("tab-menu").onclick = e => {
+    e.stopPropagation();
+    if(!menu.classList.contains("hidden")) return closeMenu();
+    const r = $("tab-menu").getBoundingClientRect();
+    menu.style.left = r.left + "px"; menu.style.top = (r.bottom + 6) + "px";
+    menu.classList.remove("hidden");
+  };
+  document.addEventListener("click", e => { if(!menu.contains(e.target)) closeMenu(); });
   $("tab-full").onclick = () => { toggleFull(); $("tab-full").blur(); };
   paintFull();
+}
+function closeMenu(){ const m = $("t-menu"); if(m) m.classList.add("hidden"); }
+function paintMenu(id){
+  const b = $("tab-menu"); if(!b) return;
+  const t = LESSON_TABS.find(x => x.id === id);
+  b.classList.toggle("active", !!t);
+  b.textContent = t ? `📚 ${t.label} ▾` : "📚 학습내용 ▾";
 }
 function viewOf(id){ return (id === "qA" || id === "qB") ? "tv-quiz" : "tv-" + id; }
 function switchTab(id){
   if(!TABS.some(t => t.id === id)) id = "qr";
   T.tab = id; sess.set("tab", id);
-  $("t-tabs").querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.tab === id));
+  document.querySelectorAll("#t-tabs button[data-tab], #t-menu button").forEach(b => b.classList.toggle("active", b.dataset.tab === id));
+  paintMenu(id);
   document.querySelectorAll(".t-view").forEach(v => v.classList.toggle("hidden", v.id !== viewOf(id)));
   const tab = TABS.find(t => t.id === id);
   if(/^s\d$/.test(id)){
@@ -740,10 +776,18 @@ const HOOKS = {
     $("web-c2").style.opacity = step >= 3 ? 1 : 0;
   },
   balance(step){
-    const S3 = [[30,60,100],[30,85,100],[45,85,72],[45,55,72],[30,55,100],[30,60,100]];
+    // 단계별 개체수(밑변 폭 %): [알락꼬리마도요, 칠게, 규조류]. 평소에는 34·67·100 → 세 단이 하나의 삼각형으로 이어짐
+    const W = [[34,67,100],[34,88,100],[50,88,76],[50,52,76],[34,52,100],[34,67,100]];
     const AR = [["","",""],["","▲",""],["▲","","▼"],["","▼",""],["▼","","▲"],["","",""]];
     const s = Math.min(step, 5);
-    [3,2,1].forEach((lv,k) => { const b = $("bal-"+lv); b.style.width = S3[s][k] + "%"; b.textContent = AR[s][k]; });
+    [3,2,1].forEach((lv,k) => {
+      const b = $("bal-"+lv), w = W[s][k], t = Math.max(w - 33, 1);   // 윗변 = 밑변 - 33 → 옆면 기울기가 늘 같음
+      b.style.clipPath = `polygon(${50-t/2}% 0,${50+t/2}% 0,${50+w/2}% 100%,${50-w/2}% 100%)`;
+      b.innerHTML = AR[s][k] ? `<span class="ar">${AR[s][k]}</span>` : "";
+      // 개체수가 바뀐 단은 잠깐 밝게 빛나서 눈에 띄게
+      if(b.dataset.w && +b.dataset.w !== w){ b.classList.remove("chg"); void b.offsetWidth; b.classList.add("chg"); }
+      b.dataset.w = w;
+    });
     document.querySelectorAll(".bal-step").forEach(e => { const n = +e.dataset.bs; e.classList.toggle("on", n <= s); e.classList.toggle("cur", n === s); });
   },
   human(step){
@@ -1230,8 +1274,9 @@ async function resetClass(){
     await DB.drop("lesson_answers", {lesson_id:LESSON_ID, cls:T.cls});
     await DB.drop("lesson_players", {lesson_id:LESSON_ID, cls:T.cls});
   }catch(e){ toast("지우지 못했어요: " + (e.message || e)); }
-  T.qstage = {}; T.qi = {A:0, B:0}; T.awardStep = 0; T.rankMode = "board"; T.bots = null;
-  await pushLive({phase:"wait", revealed:[], mvp:[], essayMvp:{}, qid:null, awardStep:0, tab:"수업 준비 중"});
+  T.qstage = {}; T.qi = {A:0, B:0}; T.awardStep = 0; T.rankMode = "board"; T.bots = null; T.lastCounts = {};
+  // resetAt이 바뀌면 학생 핸드폰도 풀던 답·점수·쓰던 글을 비우고 입장 화면으로 돌아간다. 입장은 다시 열어 둔다.
+  await pushLive({phase:"wait", revealed:[], mvp:[], essayMvp:{}, qid:null, awardStep:0, tab:"수업 준비 중", listen:false, entry:true, resetAt:Date.now()});
   await refreshData(); renderProgress(); toast("지웠어요.");
 }
 
