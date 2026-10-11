@@ -196,7 +196,7 @@ function sPaint(html, game, login){
 }
 function classOptions(sel){
   let h = '<option value="">반 선택</option>';
-  for(let i=1;i<=CLASS_COUNT;i++){ const c = i+"반"; h += `<option value="${c}" ${c===sel?"selected":""}>1학년 ${i}반</option>`; }
+  for(let i=1;i<=CLASS_COUNT;i++){ const c = i+"반"; h += `<option value="${c}" ${c===sel?"selected":""}>${i}반</option>`; }
   return h;
 }
 function renderLogin(msg){
@@ -243,9 +243,16 @@ async function doLogin(){
   if(!name){ msg.textContent = "이름을 입력해 주세요."; return; }
   const btn = $("in-go"); btn.disabled = true; btn.textContent = "연결 중…";
   try{
+    // 선생님이 입장을 막았으면 새 학생은 못 들어오고, 이미 들어왔던 학생(폰 꺼짐 등)만 다시 들어올 수 있다
+    const lv = await getSetting(liveId(cls));
+    if(lv && lv.entry === false && !(await DB.list("lesson_players", {id:playerId(cls,num)})).length){
+      btn.disabled = false; btn.textContent = "시작하기";
+      msg.textContent = "🔒 지금은 입장이 닫혀 있어요. 선생님께 말씀해 주세요.";
+      return;
+    }
     await DB.upsert("lesson_players", {id:playerId(cls,num), lesson_id:LESSON_ID, cls, num, name, seen:nowIso()});
   }catch(e){
-    btn.disabled = false; btn.textContent = "들어가기 🚀";
+    btn.disabled = false; btn.textContent = "시작하기";
     msg.textContent = "연결에 실패했어요. 와이파이를 확인하고 다시 눌러 주세요.";
     console.error(e); return;
   }
@@ -277,7 +284,7 @@ async function pullLive(){
   try{ applyLive((await getSetting(liveId(S.cls))) || {}); }catch(e){}
 }
 function liveKey(v){
-  return [v.phase, v.qid, v.tab, (v.revealed||[]).length, JSON.stringify(v.mvp||[]), v.awardStep, JSON.stringify(v.essayMvp||{})].join("|");
+  return [v.phase, v.listen ? "listen" : "", v.qid, v.tab, (v.revealed||[]).length, JSON.stringify(v.mvp||[]), v.awardStep, JSON.stringify(v.essayMvp||{})].join("|");
 }
 function applyLive(v){
   const k = liveKey(v);
@@ -302,6 +309,7 @@ function stopTimer(){ if(S.raf) cancelAnimationFrame(S.raf); S.raf = 0; }
 function renderStudent(){
   stopTimer(); paintScore();
   const v = S.live || {}, ph = v.phase || "wait", q = qById(v.qid);
+  if(v.listen) return renderListen();
   if(ph === "question" && q) return S.mine[q.id] ? renderAnswered(q) : renderQuestion(q);
   if(ph === "closed" && q) return S.mine[q.id] ? renderAnswered(q) : renderTimeUp();
   if(ph === "reveal" && q) return renderReveal(q);
@@ -317,6 +325,14 @@ function renderWait(){
       <p class="s-sub">문제가 열리면 이 화면이 저절로 바뀌어요.</p>
       <div class="now">📺 지금: ${esc(v.tab || "수업 준비 중")}</div>
     </div>`, false);
+}
+// 선생님이 [수업듣기!]를 켜면: 핸드폰은 내려놓고 수업 듣기
+function renderListen(){
+  sPaint(`<div class="wait-box">
+      <div class="hero-emoji">📵</div>
+      <h2 class="s-title" style="margin-top:14px">핸드폰을 내려놓고<br>수업을 들어요</h2>
+      <p class="s-sub">화면을 엎어 두고 선생님 설명에 집중해 주세요.<br>문제가 시작되면 이 화면이 저절로 바뀌어요.</p>
+    </div>`, true);
 }
 function qTag(q){ const st = setOf(q.id); return `${QUIZ[st].title} · ${QUIZ[st].items.indexOf(q)+1}번`; }
 function renderQuestion(q){
@@ -503,7 +519,7 @@ async function checkPass(){
 }
 function openClassPicker(){
   const last = pref.get("lastClass", "");
-  let h = ""; for(let i=1;i<=CLASS_COUNT;i++){ const c = i+"반"; h += `<option value="${c}" ${c===last?"selected":""}>1학년 ${i}반</option>`; }
+  let h = ""; for(let i=1;i<=CLASS_COUNT;i++){ const c = i+"반"; h += `<option value="${c}" ${c===last?"selected":""}>${i}반</option>`; }
   $("m-class-select").innerHTML = h;
   $("m-class").classList.remove("hidden");
 }
@@ -546,11 +562,15 @@ async function startTeacher(cls){
     DB.on("lesson_players", scheduleRefresh);
     setInterval(refreshData, 4000);
   }
+  paintGates();
   await refreshData();
   switchTab(sess.get("tab") || "qr");
 }
 function pushLive(patch){
+  // 학생이 핸드폰으로 할 일이 생기면(문제·확장질문·순위) [수업듣기!]는 저절로 꺼진다
+  if(["question","essay","board","award"].includes(patch.phase)) patch = Object.assign({}, patch, {listen:false});
   T.live = Object.assign({}, T.live, patch, {nonce:(T.live.nonce||0)+1, at:Date.now()});
+  paintGates();
   return setSetting(liveId(T.cls), T.live).catch(e => { console.error(e); toast("⚠️ 학생 화면에 전달이 안 됐어요. 인터넷을 확인하세요."); });
 }
 let refreshTimer = 0;
@@ -1263,6 +1283,24 @@ function initTools(){
   $("tool-sound").onclick = () => { T.sound = !T.sound; pref.set("sound", T.sound?"1":"0"); paint(); $("tool-sound").blur(); };
   $("tool-mask").onclick = () => { T.mask = !T.mask; pref.set("mask", T.mask?"1":"0"); paint(); $("tool-mask").blur(); if(T.tab === "rank") renderRank(); };
   paint();
+  $("tool-listen").onclick = () => {
+    const on = !T.live.listen;
+    pushLive({listen:on}); $("tool-listen").blur();
+    toast(on ? "🎧 학생 핸드폰이 '수업 듣는 중' 화면으로 바뀌었어요" : "🎧 수업듣기를 껐어요");
+  };
+  $("tool-entry").onclick = () => {
+    const open = T.live.entry === false;
+    pushLive({entry:open}); $("tool-entry").blur();
+    toast(open ? "🚪 입장을 열었어요" : "🔒 입장을 닫았어요 (이미 들어온 학생은 다시 들어올 수 있어요)");
+  };
+}
+// [수업듣기!]·[입장가능!] 버튼 모양을 지금 반의 상태에 맞춘다
+function paintGates(){
+  const l = $("tool-listen"), e = $("tool-entry"), open = T.live.entry !== false;
+  l.classList.toggle("on", !!T.live.listen);
+  l.textContent = T.live.listen ? "🎧 수업듣기! ON" : "🎧 수업듣기!";
+  e.classList.toggle("on", open); e.classList.toggle("off", !open);
+  e.textContent = open ? "🚪 입장가능!" : "🔒 입장마감";
 }
 // PPT 포인터: 다음 = PageDown/→/↓/Space, 이전 = PageUp/←/↑, 화면 검게(B, .)는 무시
 document.addEventListener("keydown", e => {

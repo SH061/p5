@@ -164,6 +164,10 @@ html.teacher body{ overflow:hidden; height:100vh; }
 .t-tools{ display:flex; gap:.35rem; align-items:center; }
 .t-tool{ border:1px solid var(--color-hairline-dark); background:transparent; color:var(--color-on-dark); border-radius:var(--r-util); padding:.3rem .6rem; font-size:.78rem; font-weight:400; white-space:nowrap; }
 .t-tool.on{ background:var(--color-on-dark); color:var(--color-ink); border-color:var(--color-on-dark); }
+.t-gate{ font-weight:600; }
+.t-gate.listen.on{ background:var(--color-primary); border-color:var(--color-primary); color:#fff; }
+.t-gate.entry.on{ background:#34c759; border-color:#34c759; color:#fff; }
+.t-gate.entry.off{ background:#ff3b30; border-color:#ff3b30; color:#fff; }
 .t-live{ font-size:.78rem; font-weight:400; color:var(--color-on-dark-2); padding:.3rem .5rem; white-space:nowrap; }
 .t-live i{ display:inline-block; width:.5em; height:.5em; border-radius:50%; background:var(--color-primary-on-dark); margin-right:.4em; vertical-align:middle; }
 .t-main{ position:relative; flex:1; min-height:0; }
@@ -307,14 +311,15 @@ html.teacher body{ overflow:hidden; height:100vh; }
 .web-tools{ display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; }
 
 /* 생태피라미드 */
-.pyr{ flex:1.15; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.35rem; position:relative; min-height:0; }
-.pyr .lvl{ position:relative; height:17%; min-height:3rem; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:1.69rem; cursor:pointer; clip-path:polygon(7% 0,93% 0,100% 100%,0 100%); transition:filter .2s, transform .2s; }
+.pyr{ flex:none; width:100%; max-width:62rem; aspect-ratio:1.6; align-self:center; display:flex; flex-direction:column; gap:.3rem; position:relative; }
+.pyr .lvl{ position:relative; flex:1; width:100%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:1.69rem; cursor:pointer; transition:filter .2s, transform .2s; }
 .pyr .lvl:hover{ filter:brightness(1.08); }
-.pyr .lvl.sel{ transform:scale(1.05); }
-.pyr .lvl.l4{ width:30%; background:#7c3aed; clip-path:polygon(50% 0,50% 0,100% 100%,0 100%); padding-top:1.4rem; }
-.pyr .lvl.l3{ width:50%; background:#ea580c; }
-.pyr .lvl.l2{ width:70%; background:#ca8a04; }
-.pyr .lvl.l1{ width:90%; background:#15803d; }
+.pyr .lvl.sel{ filter:brightness(1.12) saturate(1.1); }
+/* 하나의 큰 삼각형을 4단으로 자른 모양: 각 단 위·아래 변의 폭이 이어짐 */
+.pyr .lvl.l4{ background:#7c3aed; clip-path:polygon(50% 0,50% 0,62.5% 100%,37.5% 100%); padding-top:1.6rem; }
+.pyr .lvl.l3{ background:#ea580c; clip-path:polygon(37.5% 0,62.5% 0,75% 100%,25% 100%); }
+.pyr .lvl.l2{ background:#ca8a04; clip-path:polygon(25% 0,75% 0,87.5% 100%,12.5% 100%); }
+.pyr .lvl.l1{ background:#15803d; clip-path:polygon(12.5% 0,87.5% 0,100% 100%,0 100%); }
 .pyr-info{ min-height:5.5rem; background:var(--color-canvas); border:1px solid var(--color-hairline); border-radius:var(--r-card); padding:.9rem 1.1rem; font-size:1.69rem; line-height:1.47; }
 .pyr-info .chips{ display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.4rem; }
 .pyr-info .chip{ font-size:1.56rem; }
