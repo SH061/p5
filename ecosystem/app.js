@@ -598,8 +598,9 @@ function fwSvg(edges, opts){
   }
   for(const [id, n] of Object.entries(FW_NODES)){
     const cls = opts.sim && id === "crab" ? "gone" : starving.includes(id) ? "starve" : "";
-    const w = n.short.length * 11 + 16;
-    h += `<g class="${cls}"><rect x="${n.x - w/2}" y="${n.y - 11}" width="${w}" height="24" rx="8"/><text x="${n.x}" y="${n.y + 5}" text-anchor="middle">${n.short}</text></g>`;
+    const label = cls === "gone" ? `✕ ${n.short} (사라짐)` : n.short;   // 사라진 생물은 취소선 대신 글자로 또렷하게
+    const w = label.length * 11 + 16;
+    h += `<g class="${cls}"><rect x="${n.x - w/2}" y="${n.y - 11}" width="${w}" height="24" rx="8"/><text x="${n.x}" y="${n.y + 5}" text-anchor="middle">${label}</text></g>`;
   }
   return h + `</svg>`;
 }
