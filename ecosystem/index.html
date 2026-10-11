@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>순천만 생태계 탐험</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============================================================
+     학생 화면 (내용은 app.js가 그때그때 그려 넣음)
+============================================================ -->
+<div id="student-app">
+  <header class="s-top">
+    <div class="logo">🌾 순천만 생태계 탐험</div>
+    <div class="me" id="s-me"></div>
+    <div class="score-chip hidden" id="s-score">0점</div>
+  </header>
+  <main class="s-screen" id="s-screen"></main>
+</div>
+
+<!-- ============================================================
+     선생님 화면
+============================================================ -->
+<div id="teacher-app" class="hidden">
+  <header class="t-top">
+    <div class="t-brand">🌾 순천만 생태계</div>
+    <button class="t-cls" id="t-cls" title="반 바꾸기">-반</button>
+    <nav class="t-tabs" id="t-tabs"></nav>
+    <div class="t-tools">
+      <span class="t-live" id="t-live"><i></i>접속 0명</span>
+      <button class="t-tool" id="tool-pointer">🖱 포인터 OFF</button>
+      <button class="t-tool" id="tool-sound">🔊 소리</button>
+      <button class="t-tool" id="tool-mask">👤 이름</button>
+    </div>
+  </header>
+  <main class="t-main">
+
+    <!-- ===== QR ===== -->
+    <section class="t-view" id="tv-qr">
+      <div class="qr-view">
+        <h2>📱 핸드폰으로 접속해요</h2>
+        <div class="qr-box" id="qr-box"><img id="qr-img" src="images/qr.png" alt="접속 QR 코드"></div>
+        <div class="url" id="qr-url"></div>
+        <p>핸드폰이 꺼졌으면 다시 찍고, <b>같은 반·학번·이름</b>으로 들어오세요. 점수는 그대로 이어져요.</p>
+      </div>
+    </section>
+
+    <!-- ===== ① 순천만 줌아웃 ===== -->
+    <section class="t-view slides" id="tv-s1">
+
+      <div class="page" data-key="intro">
+        <div class="p-head"><span class="p-kicker">① 순천만 줌아웃</span><h2 class="p-title">🌾 순천만은 어떤 곳일까?</h2></div>
+        <div class="p-body">
+          <div class="col w2"><figure class="ph" data-img="intro-bay.jpg" data-emo="🏞️" data-cap="용산전망대에서 본 순천만"></figure></div>
+          <div class="col">
+            <div class="fact" data-step="1"><span class="ic">🌊</span><div>동천·이사천의 <b>민물</b>과 <b>바닷물</b>이 만나는 <b>하구 갯벌</b></div></div>
+            <div class="fact" data-step="2"><span class="ic">📏</span><div>갯벌 약 <b>22.6㎢</b>, 갈대 군락 약 <b>5.4㎢</b></div></div>
+            <div class="fact" data-step="3"><span class="ic">🏅</span><div><b>2006년</b> 국내 연안습지 최초 람사르 습지<br><b>2021년</b> '한국의 갯벌'로 유네스코 세계자연유산</div></div>
+            <div class="callout" data-step="4">🔍 오늘은 카메라를 <u>짱뚱어 한 마리</u>에서 시작해 순천만 전체까지 <b>줌아웃</b> 해 볼게요!</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" data-key="zoom" data-steps="4">
+        <div class="p-head"><span class="p-kicker">① 순천만 줌아웃</span><h2 class="p-title">🔍 개체 → 개체군 → 군집 → 생태계</h2></div>
+        <div class="p-body">
+          <div class="zoom-wrap L1" id="zoom-wrap">
+            <div class="bg-sky"></div><div class="bg-mud"></div><div class="bg-water"></div>
+            <div class="zoom-world L1" id="zoom-world"></div>
+            <div class="zoom-cap" id="zoom-cap">개체: 짱뚱어 한 마리</div>
+          </div>
+          <div class="col">
+            <div class="zlevels">
+              <div class="zlv" data-lv="1"><div class="n">1</div><div><h4>개체</h4><p>생물 하나하나 — 짱뚱어 한 마리</p></div></div>
+              <div class="zlv" data-lv="2"><div class="n">2</div><div><h4>개체군</h4><p><b>같은 종</b>의 개체 무리 — 순천만의 짱뚱어 무리</p></div></div>
+              <div class="zlv" data-lv="3"><div class="n">3</div><div><h4>군집</h4><p>일정한 지역에 사는 <b>모든 개체군</b>의 무리 — 짱뚱어·칠게·갈대·도요새…</p></div></div>
+              <div class="zlv" data-lv="4"><div class="n">4</div><div><h4>생태계</h4><p>군집의 생물이 <b>주변 환경(빛·물·온도·토양·공기)</b>과 영향을 주고받으며 살아가는 체계</p></div></div>
+            </div>
+            <div class="callout gold" id="zoom-sum" style="opacity:0;transition:opacity .5s">줌인하면 거꾸로! 생태계 ⊃ 군집 ⊃ 개체군 ⊃ 개체<br><small>→ 생태계 = <b>생물요소</b> + <b>비생물요소</b></small></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" data-key="parts">
+        <div class="p-head"><span class="p-kicker">① 순천만 줌아웃</span><h2 class="p-title">🧩 순천만 생태계의 구성요소</h2></div>
+        <div class="p-body">
+          <div class="col w2">
+            <h3 class="grp-title">🌱 생물요소</h3>
+            <div class="role pro" data-step="1"><span class="ic">🌾</span><div><h4>생산자</h4><p>빛에너지로 <b>광합성</b>을 하여 양분(유기물)을 만든다.</p>
+              <div class="ex"><span class="chip">갈대</span><span class="chip">칠면초</span><span class="chip">퉁퉁마디(함초)</span><span class="chip">갯벌 표면의 규조류</span><span class="chip">식물플랑크톤</span></div></div></div>
+            <div class="role con" data-step="2"><span class="ic">🦀</span><div><h4>소비자</h4><p>다른 생물을 먹어 양분을 얻는다.</p>
+              <div class="ex"><span class="chip">짱뚱어</span><span class="chip">칠게</span><span class="chip">농게</span><span class="chip">꼬막</span><span class="chip">도요새</span><span class="chip">저어새</span><span class="chip">흑두루미</span><span class="chip">수달</span><span class="chip">삵</span></div></div></div>
+            <div class="role dec" data-step="3"><span class="ic">🦠</span><div><h4>분해자</h4><p>죽은 생물과 배설물을 분해해 양분을 얻고, 무기물로 되돌린다.</p>
+              <div class="ex"><span class="chip">갯벌 속 세균</span><span class="chip">곰팡이</span></div></div></div>
+            <div class="tip" data-step="3">💡 갯지렁이와 게는 유기물 찌꺼기를 먹어 분해를 <b>돕지만</b>, 교과서 기준 분해자는 <b>세균과 곰팡이</b>예요. 갯벌이 갈색으로 보이는 이유 중 하나는 표면의 <b>규조류</b>!</div>
+          </div>
+          <div class="col" data-step="4">
+            <h3 class="grp-title">🌤️ 비생물요소 (환경)</h3>
+            <div class="abio">
+              <div class="a"><span class="ic">☀️</span><b class="lb">빛</b><div>썰물 때 드러난 갯벌에서 규조류가 광합성</div></div>
+              <div class="a"><span class="ic">🌊</span><b class="lb">물</b><div>하루 두 번 밀물·썰물로 갯벌이 잠기고 드러남</div></div>
+              <div class="a"><span class="ic">🌡️</span><b class="lb">온도</b><div>계절에 따라 크게 변함</div></div>
+              <div class="a"><span class="ic">🟫</span><b class="lb">토양</b><div>고운 진흙이 쌓인 펄갯벌, 강 쪽과 바다 쪽의 <b>염분</b>이 다름</div></div>
+              <div class="a"><span class="ic">💨</span><b class="lb">공기</b><div>산소·이산화 탄소</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-nav"><div class="slide-dots"></div><button class="sn-prev">◀</button><button class="sn-next">▶</button></div>
+    </section>
+
+    <!-- ===== ② 상호작용 ===== -->
+    <section class="t-view slides" id="tv-s2">
+
+      <div class="page" data-key="ia">
+        <div class="p-head"><span class="p-kicker">② 상호작용</span><h2 class="p-title">🔄 생태계 구성요소는 서로 영향을 주고받는다</h2></div>
+        <div class="p-body">
+          <div class="ia-stage">
+            <svg viewBox="0 0 800 470" aria-label="생물요소와 비생물요소의 상호작용">
+              <defs>
+                <marker id="ah-sky" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0071e3"/></marker>
+                <marker id="ah-grn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1d1d1f"/></marker>
+                <marker id="ah-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#86868b"/></marker>
+              </defs>
+              <circle cx="270" cy="250" r="125" fill="#f5f5f7" stroke="#1d1d1f" stroke-width="5"/>
+              <text x="270" y="238" text-anchor="middle" font-size="40" font-weight="600" fill="#1d1d1f">생물요소</text>
+              <text x="270" y="280" text-anchor="middle" font-size="21" font-weight="600" fill="#6e6e73">생산자·소비자·분해자</text>
+              <circle cx="590" cy="250" r="125" fill="#f5f5f7" stroke="#0071e3" stroke-width="5"/>
+              <text x="590" y="238" text-anchor="middle" font-size="40" font-weight="600" fill="#1d1d1f">비생물요소</text>
+              <text x="590" y="280" text-anchor="middle" font-size="21" font-weight="600" fill="#0071e3">빛·물·온도·토양·공기</text>
+              <g data-step="1">
+                <path d="M 540 128 Q 430 40 320 128" fill="none" stroke="#0071e3" stroke-width="9" marker-end="url(#ah-sky)"/>
+                <text x="430" y="52" text-anchor="middle" font-size="25" font-weight="600" fill="#0071e3">① 비생물요소 → 생물요소</text>
+              </g>
+              <g data-step="2">
+                <path d="M 320 372 Q 430 460 540 372" fill="none" stroke="#1d1d1f" stroke-width="9" marker-end="url(#ah-grn)"/>
+                <text x="430" y="462" text-anchor="middle" font-size="25" font-weight="600" fill="#1d1d1f">② 생물요소 → 비생물요소</text>
+              </g>
+              <g data-step="3">
+                <path d="M 160 175 C 40 150, 40 350, 160 325" fill="none" stroke="#86868b" stroke-width="9" marker-start="url(#ah-red)" marker-end="url(#ah-red)"/>
+                <text x="78" y="120" text-anchor="middle" font-size="25" font-weight="600" fill="#86868b">③ 생물요소 ↔</text>
+                <text x="78" y="150" text-anchor="middle" font-size="25" font-weight="600" fill="#86868b">생물요소</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ia-legend">
+            <div class="it" data-step="1" style="border-color:#0071e3"><b class="no">①</b><span>환경이 생물의 생활 방식·서식 장소에 영향 → 생물은 환경에 <b>적응</b></span></div>
+            <div class="it" data-step="2" style="border-color:#1d1d1f"><b class="no">②</b><span>생물도 환경을 바꾼다 (예: 식물의 광합성 → 공기 중 산소 증가)</span></div>
+            <div class="it" data-step="3" style="border-color:#86868b"><b class="no">③</b><span>생물끼리도 먹고 먹히거나 경쟁하며 영향을 주고받는다</span></div>
+            <div class="callout" data-step="4">한쪽 방향이 아니라 <b>모든 구성요소가 서로</b> → <u>상호작용</u></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" data-key="abio2bio">
+        <div class="p-head"><span class="p-kicker">② 상호작용</span><h2 class="p-title">① 비생물요소 → 생물요소 <small style="font-size:.55em;color:var(--muted)">순천만에서 찾기</small></h2></div>
+        <div class="p-body">
+          <div class="col">
+            <div class="case" data-step="1">
+              <figure class="ph" data-img="chilmyeoncho.jpg" data-emo="🌿" data-cap="칠면초 군락"></figure>
+              <div class="txt"><span class="tag" style="background:var(--mud)">토양 (염분)</span>
+                <div class="salinity"><div class="river">🌾 강 쪽<br>염분 낮음</div><div class="mid">→</div><div class="sea">🌿 바다 쪽<br>염분 높음</div></div>
+                <p>강 쪽에는 <b>갈대</b>, 바다 쪽에는 <b>칠면초</b>가 많다.</p></div>
+            </div>
+            <div class="case" data-step="2">
+              <figure class="ph" data-img="mudskipper.jpg" data-emo="🐟" data-cap="짱뚱어"></figure>
+              <div class="txt"><span class="tag" style="background:var(--salt)">온도</span>
+                <h4>짱뚱어의 겨울잠</h4><p>추워지면 갯벌 구멍 속에서 <b>겨울잠</b>을 자고 봄에 나온다.</p></div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="case" data-step="3">
+              <figure class="ph" data-img="hooded-crane.jpg" data-emo="🐦" data-cap="흑두루미"></figure>
+              <div class="txt"><span class="tag" style="background:var(--salt)">온도</span>
+                <h4>흑두루미의 겨울나기</h4><p>번식지(러시아·중국 북부)가 얼어붙는 겨울에 <b>순천만으로 내려온다.</b></p></div>
+            </div>
+            <div class="case" data-step="4">
+              <figure class="ph" data-img="fiddler-crab.jpg" data-emo="🦀" data-cap="농게"></figure>
+              <div class="txt"><span class="tag" style="background:var(--sky)">물 (밀물·썰물)</span>
+                <h4>농게·칠게의 하루</h4><p><b>썰물</b> 때 구멍에서 나와 먹이를 먹고, <b>밀물</b> 때 구멍으로 들어간다.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" data-key="bio2abio">
+        <div class="p-head"><span class="p-kicker">② 상호작용</span><h2 class="p-title">② 생물요소 → 비생물요소</h2></div>
+        <div class="p-body">
+          <div class="col">
+            <div class="case" data-step="1">
+              <figure class="ph" data-img="reed.jpg" data-emo="🌾" data-cap="순천만 갈대밭"></figure>
+              <div class="txt"><div class="flow"><span class="box bioB">갈대</span>→<span class="box abioB">물 · 토양</span></div>
+                <h4>갈대가 순천만을 바꾼다</h4>
+                <p>질소·인 같은 오염물질을 흡수해 <b>물을 깨끗하게</b> 하고, 흙을 붙잡아 <b>퇴적물이 쌓이게</b> 한다.</p></div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="case" data-step="2">
+              <figure class="ph" data-img="mudflat.jpg" data-emo="🕳️" data-cap="게 구멍이 뚫린 갯벌"></figure>
+              <div class="txt"><div class="flow"><span class="box bioB">게 · 갯지렁이</span>→<span class="box abioB">토양 · 공기</span></div>
+                <h4>갯벌에 숨구멍을 뚫는다</h4>
+                <p>갯벌에 구멍을 뚫어 <b>갯벌 속까지 산소를 공급</b>한다.</p></div>
+            </div>
+            <div class="callout gold" data-step="3">생물은 환경에 적응하기만 하는 게 아니라, <b>환경을 바꾸기도</b> 해요!</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" data-key="bio2bio">
+        <div class="p-head"><span class="p-kicker">② 상호작용</span><h2 class="p-title">③ 생물요소 ↔ 생물요소</h2></div>
+        <div class="p-body">
+          <div class="col">
+            <div class="case" data-step="1">
+              <figure class="ph" data-img="curlew.jpg" data-emo="🐦" data-cap="알락꼬리마도요"></figure>
+              <div class="txt"><span class="tag" style="background:var(--salt)">먹고 먹힘</span>
+                <h4>칠게를 노리는 새들</h4><p><b>알락꼬리마도요</b>, <b>검은머리갈매기</b>가 칠게를 잡아먹는다.</p></div>
+            </div>
+            <div class="case" data-step="2">
+              <figure class="ph" data-img="gull.jpg" data-emo="🕊️" data-cap="검은머리갈매기"></figure>
+              <div class="txt"><span class="tag" style="background:#7c3aed">경쟁</span>
+                <h4>같은 먹이를 두고</h4><p>여러 도요새가 같은 <b>게·갯지렁이</b>를 두고 경쟁한다.</p></div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="callout" data-step="3" style="font-size:2.02rem">🔭 줌아웃 정리<br>개체 → 개체군 → 군집 → 생태계<br><span style="font-weight:600">그 안의 모든 구성요소가 <u>서로 영향을 주고받는다</u> = 상호작용</span></div>
+            <div class="callout gold" data-step="4" style="font-size:2.08rem;text-align:center">🎮 퀴즈 1 시작!<br>📱 핸드폰을 준비하세요</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-nav"><div class="slide-dots"></div><button class="sn-prev">◀</button><button class="sn-next">▶</button></div>
+    </section>
+    <!-- ===== ③ 먹이 관계 ===== -->
+    <section class="t-view slides" id="tv-s3">
+
+      <div class="page" data-key="chain">
+        <div class="p-head"><span class="p-kicker">③ 먹이 관계</span><h2 class="p-title">🔗 순천만의 먹이사슬</h2></div>
+        <div class="p-body">
+          <div class="col w2" style="justify-content:center">
+            <div class="chain" data-step="1"><span class="o">🟤 규조류</span><span class="ar">➜</span><span class="o">🐟 짱뚱어</span><span class="ar">➜</span><span class="o">🐦 저어새</span></div>
+            <div class="chain" data-step="2"><span class="o">🟤 규조류·유기물</span><span class="ar">➜</span><span class="o">🦀 칠게</span><span class="ar">➜</span><span class="o">🐦 알락꼬리마도요</span></div>
+            <div class="chain" data-step="3"><span class="o">🟢 식물플랑크톤</span><span class="ar">➜</span><span class="o">🐚 꼬막</span><span class="ar">➜</span><span class="o">🧑 사람</span></div>
+            <div class="chain" data-step="4"><span class="o">🌾 볍씨 (논에 떨어진 낟알)</span><span class="ar">➜</span><span class="o">🐦 흑두루미</span><span class="star">⭐ 흑두루미는 1차 소비자!</span></div>
+          </div>
+          <div class="col" style="justify-content:center">
+            <div class="fact" data-step="1"><span class="ic">➜</span><div>화살표는 <b>먹히는 쪽 → 먹는 쪽</b><br>에너지가 이동하는 방향</div></div>
+            <div class="tip" data-step="5">💡 <b>짱뚱어</b>는 물고기지만 갯벌 표면의 규조류를 긁어 먹는 <b>1차 소비자</b>예요.</div>
+            <div class="callout" data-step="6">그런데 칠게를 먹는 새는 알락꼬리마도요만일까? → 사슬이 얽히면 <b>먹이그물</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" data-key="web" data-steps="3">
+        <div class="p-head"><span class="p-kicker">③ 먹이 관계</span><h2 class="p-title">🕸️ 순천만의 먹이그물 <small style="font-size:.5em;color:var(--muted)">생물을 눌러 보세요</small></h2></div>
+        <div class="p-body">
+          <div class="web-wrap">
+            <svg id="foodweb" viewBox="0 0 1000 560" aria-label="순천만 먹이그물"></svg>
+            <div class="web-legend"><span style="color:#16a34a">먹는 것</span><span style="color:#ea580c">먹히는 곳</span><span style="color:#8b6b4a">분해</span></div>
+          </div>
+          <div class="col" style="flex:0 0 30%;justify-content:center">
+            <div class="web-tools"><button class="btn warn" id="web-remove">🦀 칠게가 줄어든다면?</button><button class="btn soft" id="web-reset">↺ 처음대로</button></div>
+            <div class="fact" id="web-info" style="font-size:1.56rem"><span class="ic">👆</span><div>생물을 누르면 <b style="color:#16a34a">먹는 것</b>과 <b style="color:#ea580c">먹히는 곳</b>이 표시돼요.</div></div>
+            <div class="callout" id="web-c1" style="opacity:0;transition:opacity .5s">칠게가 줄어도 도요새는 <b>갯지렁이</b>를 먹을 수 있다<br>→ 먹이그물이 복잡할수록(<u>종다양성</u>이 높을수록) 생태계가 <b>안정적</b></div>
+            <div class="callout red" id="web-c2" style="opacity:0;transition:opacity .5s;font-size:1.56rem">⚠️ 흑두루미처럼 한두 곳의 월동지에 몰린 종은 질병·먹이 부족 같은 <b>한 가지 변화에도 크게 흔들린다.</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" data-key="pyramid">
+        <div class="p-head"><span class="p-kicker">③ 먹이 관계</span><h2 class="p-title">🔺 생태피라미드 <small style="font-size:.5em;color:var(--muted)">단계를 눌러 보세요</small></h2></div>
+        <div class="p-body">
+          <div class="col">
+            <div class="pyr" id="pyr">
+              <div class="lvl l4" data-lv="4">최종</div>
+              <div class="lvl l3" data-lv="3">2차 소비자</div>
+              <div class="lvl l2" data-lv="2">1차 소비자</div>
+              <div class="lvl l1" data-lv="1">생산자</div>
+            </div>
+            <div class="pyr-info" id="pyr-info">👆 단계를 누르면 순천만 생물이 나타나요.</div>
+          </div>
+          <div class="col" style="justify-content:center">
+            <div class="fact" data-step="1"><span class="ic">⚡</span><div>에너지는 한 단계 올라갈 때마다 <b>일부(약 10%)만 전달</b>된다.<br>나머지는 <b>호흡(열)</b>으로 쓰이거나 사체·배설물로 빠져나간다.</div></div>
+            <div class="callout" data-step="2">그래서 상위 단계로 갈수록 개체 수·생물량·에너지양이 줄어 <b>피라미드 모양</b>!</div>
+            <div class="qa" data-step="3"><div class="q">🤔 흑두루미는 8천 마리 넘게 오는데, 삵은 왜 몇 마리밖에 없을까?</div><div class="a" data-step="4">→ 흑두루미는 1차 소비자라서 쓸 수 있는 에너지가 많기 때문</div></div>
+            <div class="qa" data-step="5"><div class="q">🤔 갯벌의 규조류가 사라지면 저어새는 어떻게 될까?</div><div class="a" data-step="6">→ 짱뚱어와 게가 줄어 저어새도 줄어든다.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-nav"><div class="slide-dots"></div><button class="sn-prev">◀</button><button class="sn-next">▶</button></div>
+    </section>
+
+    <!-- ===== ④ 생태계평형 ===== -->
+    <section class="t-view slides" id="tv-s4">
+
+      <div class="page" data-key="balance" data-steps="5">
+        <div class="p-head"><span class="p-kicker">④ 생태계평형</span><h2 class="p-title">⚖️ 흔들려도 다시 돌아온다</h2></div>
+        <div class="p-body">
+          <div class="bal-stage">
+            <span class="bal-tag">가정 상황 · 막대 길이 = 개체수</span>
+            <div class="bal-row"><div class="nm">알락꼬리마도요<small>2차 소비자</small></div><div class="bal-track"><div class="bal-bar" id="bal-3" style="background:#ea580c"></div></div></div>
+            <div class="bal-row"><div class="nm">칠게<small>1차 소비자</small></div><div class="bal-track"><div class="bal-bar" id="bal-2" style="background:#ca8a04"></div></div></div>
+            <div class="bal-row"><div class="nm">규조류<small>생산자</small></div><div class="bal-track"><div class="bal-bar" id="bal-1" style="background:#15803d"></div></div></div>
+          </div>
+          <div class="col" style="justify-content:center">
+            <div class="fact" style="font-size:1.5rem"><span class="ic">⚖️</span><div><b>생태계평형</b>: 생물의 종류, 개체수, 에너지의 이동이 안정적으로 유지되는 상태</div></div>
+            <div class="bal-steps">
+              <div class="bal-step" data-bs="1">❶ 칠게(1차 소비자)가 <b>일시적으로 증가</b></div>
+              <div class="bal-step" data-bs="2">❷ 칠게를 먹는 알락꼬리마도요는 <b>증가</b>, 칠게가 먹는 규조류는 <b>감소</b></div>
+              <div class="bal-step" data-bs="3">❸ 먹이는 줄고 천적은 늘어 칠게가 <b>감소</b></div>
+              <div class="bal-step" data-bs="4">❹ 알락꼬리마도요는 <b>감소</b>, 규조류는 다시 <b>증가</b></div>
+              <div class="bal-step" data-bs="5">✅ <b>원래 상태로 회복!</b> 먹이 관계가 잘 짜여 있기 때문</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" data-key="human" data-steps="5">
+        <div class="p-head"><span class="p-kicker">④ 생태계평형</span><h2 class="p-title">🧑‍🤝‍🧑 사람의 선택이 평형을 바꾼다</h2></div>
+        <div class="p-body">
+          <div class="col">
+            <div class="timeline">
+              <div class="tl" data-step="1"><span class="yr">1990년대</span><div>동천 하구 <b>골재(모래) 채취</b> 계획 → 갯벌 흙(비생물요소)이 바뀌면 생물 전체가 영향을 받음</div></div>
+              <div class="tl" data-step="2"><span class="yr">1996~98</span><div>시민 반대와 1996년 생태조사 → <b>1998년 허가 취소</b></div></div>
+              <div class="tl" data-step="3"><span class="yr">2009년</span><div>흑두루미 먹이터(논)의 <b>전봇대 약 280개 제거</b>, 친환경 농법</div></div>
+            </div>
+            <div class="callout red" data-step="4" style="font-size:1.56rem">⚠️ 회복 능력을 넘어설 만큼 평형이 깨지면 생태계 스스로는 쉽게 회복하기 어렵다 → 사람의 활동은 <b>신중하게!</b></div>
+          </div>
+          <div class="col" data-step="3">
+            <div class="crane-count" id="crane-count">
+              <span class="cap">🐦 순천만을 찾은 흑두루미 <small style="color:var(--muted);font-weight:600">(언론 보도 기준)</small></span>
+              <div class="cc-bar"><div class="v" id="cc-v1">0</div><div class="b" id="cc-b1"></div><div class="y">1996~97년</div></div>
+              <div class="cc-bar"><div class="v" id="cc-v2">0</div><div class="b" id="cc-b2"></div><div class="y">2025년 (최대)</div></div>
+            </div>
+            <div class="callout gold" data-step="5" style="font-size:2.08rem;text-align:center">🎮 퀴즈 2 시작!</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-nav"><div class="slide-dots"></div><button class="sn-prev">◀</button><button class="sn-next">▶</button></div>
+    </section>
+
+    <!-- ===== 퀴즈 / 확장질문 / 순위 / 진행 상황 (app.js가 그림) ===== -->
+    <section class="t-view game-stage" id="tv-quiz"></section>
+    <section class="t-view essay-view" id="tv-essay"></section>
+    <section class="t-view game-stage" id="tv-rank"></section>
+    <section class="t-view prog-view" id="tv-progress"></section>
+  </main>
+</div>
+
+<!-- 선생님 암호 -->
+<div class="modal hidden" id="m-pass">
+  <div class="modal-card">
+    <h3>🧑‍🏫 선생님 화면</h3>
+    <p>선생님 암호를 입력하세요.</p>
+    <input id="m-pass-input" type="password" inputmode="numeric" autocomplete="off" placeholder="암호">
+    <div class="row"><button class="btn ghost" id="m-pass-cancel" style="color:var(--muted)">취소</button><button class="btn" id="m-pass-ok">확인</button></div>
+  </div>
+</div>
+<!-- 반 선택 -->
+<div class="modal hidden" id="m-class">
+  <div class="modal-card">
+    <h3>📚 수업할 반을 고르세요</h3>
+    <p>학생들이 같은 반을 골라 들어오면 화면이 연결돼요.</p>
+    <select id="m-class-select"></select>
+    <div class="row"><button class="btn" id="m-class-ok">이 반으로 시작</button></div>
+  </div>
+</div>
+<div class="spot hidden" id="spot"><div id="spot-text"></div></div>
+<canvas id="confetti"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
