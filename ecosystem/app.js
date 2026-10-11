@@ -1174,7 +1174,8 @@ const HOOKS = {
     [3,2,1].forEach((lv,k) => {
       const b = $("bal-"+lv), w = W[s][k], t = Math.max(w - 33, 1);   // 윗변 = 밑변 - 33 → 옆면 기울기가 늘 같음
       b.style.clipPath = `polygon(${50-t/2}% 0,${50+t/2}% 0,${50+w/2}% 100%,${50-w/2}% 100%)`;
-      b.innerHTML = AR[s][k] ? `<span class="ar">${AR[s][k]}</span>` : "";
+      // 화살표는 바뀔 때만 다시 그려서 같은 효과가 반복되지 않게
+      if(b.dataset.ar !== AR[s][k]){ b.dataset.ar = AR[s][k]; b.innerHTML = AR[s][k] ? `<span class="ar">${AR[s][k]}</span>` : ""; }
       // 개체수가 바뀐 단은 잠깐 밝게 빛나서 눈에 띄게
       if(b.dataset.w && +b.dataset.w !== w){ b.classList.remove("chg"); void b.offsetWidth; b.classList.add("chg"); }
       b.dataset.w = w;
@@ -1191,6 +1192,8 @@ const HOOKS = {
   }
 };
 function countUp(el, to, unit, prefix){
+  if(el._to === to) return;   // 이미 그 값이면 효과를 다시 보이지 않음
+  el._to = to;
   const from = 0, t0 = performance.now(), dur = 1600;
   if(el._raf) cancelAnimationFrame(el._raf);
   const f = now => {
@@ -1676,7 +1679,7 @@ function renderEssayView(fromData){
     <div class="essay-cards">${rows.length ? rows.map((a,k) => `
       <div class="ec ${mvp.includes(a.num)?"mvp":""}" data-k="${k}"><div class="who">학생 ${k+1}</div>${esc(a.answer)}
         <button class="star" data-num="${esc(a.num)}">${mvp.includes(a.num) ? "⭐ MVP" : "☆ MVP"}</button></div>`).join("")
-      : `<p style="color:var(--muted);font-size:1.2rem">아직 제출한 학생이 없어요. ${open ? "학생들이 쓰는 중이에요…" : "[📱 학생 화면에 열기]를 눌러 주세요."}</p>`}</div>`;
+      : `<p style="grid-column:1/-1;white-space:nowrap;color:var(--muted);font-size:1.2rem">아직 제출한 학생이 없어요. ${open ? "학생들이 쓰는 중이에요…" : "[📱 학생 화면에 열기]를 눌러 주세요."}</p>`}</div>`;
   $("es-open").onclick = () => { pushLive(open ? {phase:"wait", tab:"확장질문 정리"} : {phase:"essay", tab:"확장질문"}); sec._sig = ""; renderEssayView(); if(!open && T.bots) botsEssay(); };
   $("es-model").onclick = () => { T.showModel = !T.showModel; sec._sig = ""; renderEssayView(); };
   sec.querySelectorAll(".ep").forEach(d => d.onclick = () => { T.essaySel = d.dataset.id; sec._sig = ""; renderEssayView(); });
