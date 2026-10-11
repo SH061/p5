@@ -483,6 +483,7 @@ const T = {
 };
 const TABS = [
   {id:"qr", label:"QR"},
+  {id:"video", label:"🎬 순천 새멍 투어"},
   {id:"s1", label:"① 순천만 줌아웃"},
   {id:"s2", label:"② 상호작용"},
   {id:"qA", label:"🎮 퀴즈 1", game:true},
@@ -647,7 +648,9 @@ function switchTab(id){
   paintMenu(id);
   document.querySelectorAll(".t-view").forEach(v => v.classList.toggle("hidden", v.id !== viewOf(id)));
   const tab = TABS.find(t => t.id === id);
-  if(/^s\d$/.test(id)){
+  if(id !== "video") stopVideo();
+  if(id === "video") showVideo();   // 수업 도입 영상: 학생 핸드폰과는 연결하지 않음
+  else if(/^s\d$/.test(id)){
     renderSlide(id);
     if(T.live.phase !== "wait" || T.live.tab !== tab.label) pushLive({phase:"wait", tab:tab.label});
   }else if(id === "qA" || id === "qB"){
@@ -660,6 +663,34 @@ function switchTab(id){
   else if(id === "rank") enterRank();
   else if(id === "progress") renderProgress();
 }
+// ============================================================
+// 도입 영상 — 스브스뉴스 '순천시 새멍 투어' 2:27부터 끝까지
+//   기본: 유튜브 삽입 / 유튜브가 막히면: 이 컴퓨터의 mp4 파일을 골라 재생(파일은 업로드되지 않음)
+// ============================================================
+const VIDEO = {id:"jz92pFezOwg", start:147};
+function ytSrc(){ return `https://www.youtube-nocookie.com/embed/${VIDEO.id}?start=${VIDEO.start}&rel=0&modestbranding=1&playsinline=1`; }
+function showVideo(){
+  const yt = $("vd-yt"), lv = $("vd-local");
+  if(lv.src){ yt.classList.add("hidden"); lv.classList.remove("hidden"); return; }
+  if(!yt.src) yt.src = ytSrc();
+}
+function stopVideo(){
+  const yt = $("vd-yt"), lv = $("vd-local");
+  if(!lv.paused) lv.pause();
+  if(yt.src) yt.removeAttribute("src");   // 다른 탭으로 가면 유튜브 소리도 멈춤
+}
+$("vd-use-yt").onclick = () => {
+  const lv = $("vd-local"); lv.pause(); lv.removeAttribute("src"); lv.load(); lv.classList.add("hidden");
+  $("vd-yt").classList.remove("hidden"); $("vd-yt").src = ytSrc();
+};
+$("vd-file").onchange = e => {
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  const lv = $("vd-local"), yt = $("vd-yt");
+  yt.removeAttribute("src"); yt.classList.add("hidden");
+  lv.src = URL.createObjectURL(f); lv.classList.remove("hidden");
+  lv.onloadedmetadata = () => { lv.currentTime = Math.min(VIDEO.start, lv.duration || VIDEO.start); lv.play().catch(() => {}); };
+  e.target.value = "";
+};
 function goNextTab(){
   const i = TABS.findIndex(t => t.id === T.tab);
   if(i >= 0 && i < TABS.length - 1) switchTab(TABS[i+1].id);
@@ -1367,6 +1398,7 @@ document.addEventListener("keydown", e => {
     else if(T.rankMode === "award"){ if(T.awardStep > 0){ T.awardStep--; pushLive({awardStep:T.awardStep}); renderAward(); } else { T.rankMode = "board"; enterRank(); } }
     return;
   }
+  if(tab === "video") return act === "next" ? goNextTab() : switchTab("qr");
   if(act === "next" && tab === "qr") goNextTab();
 }, true);
 
