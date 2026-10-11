@@ -906,6 +906,14 @@
   .gf-eq{ margin-top:8px; padding:9px 10px; text-align:center; font-size:17px; font-weight:700; letter-spacing:.3px; background:#fff; border:1px solid var(--line); border-radius:12px; font-family:'Times New Roman','Pretendard',serif; overflow-x:auto; white-space:nowrap; }
   .gf-eq sub, .gf-eq sup{ font-size:.68em; }
   #view-heatq{ max-width:1100px; margin:10px auto; padding:0 16px; }
+  #view-qr{ display:flex; justify-content:center; padding:8px 16px; }
+  #view-qr.hidden{ display:none; }
+  .gf-qrbox{ text-align:center; }
+  #gf-qr-img, #gf-qr-gen svg{ width:min(62vh, 80vw); height:min(62vh, 80vw); max-width:560px; max-height:560px; background:#fff; border-radius:18px; box-shadow:0 6px 24px rgba(0,0,0,.15); padding:12px; box-sizing:border-box; object-fit:contain; }
+  #gf-qr-img[hidden]{ display:none; }
+  #gf-qr-gen{ display:flex; justify-content:center; }
+  .gf-qrnote{ font-size:clamp(16px,2.2vw,26px); font-weight:800; margin:12px 0 2px; }
+  .gf-qrurl{ font-size:clamp(12px,1.4vw,18px); color:var(--muted); font-weight:700; margin:0; word-break:break-all; }
   #view-heatq .gf-qtitle{ font-size:30px; }
   #view-heatq .gf-sit{ font-size:19px; }
   #view-heatq .gf-eq{ font-size:24px; }
@@ -1292,6 +1300,7 @@
         <button class="pill-tab" id="tab-exprec"><span class="lbl-lg">📈 실험 기록</span><span class="lbl-sm">📈 실험기록</span></button>
         <button class="pill-tab" id="tab-neutral"><span class="lbl-lg">🧪 중화 반응 실험</span><span class="lbl-sm">🧪 중화실험</span></button>
         <button class="pill-tab" id="tab-heatq"><span class="lbl-lg">🔥 발열·흡열 퀴즈</span><span class="lbl-sm">🔥 발열퀴즈</span></button>
+        <button class="pill-tab" id="tab-qr"><span class="lbl-lg">📱 QR 코드</span><span class="lbl-sm">📱 QR</span></button>
         <span class="gf-stagectl" id="gf-stagectl" title="학생 진행 단계"><button data-open="0" title="대기: 학생들이 입장 후 대기 화면에서 기다려요">⏸<span class="sl"> 대기</span></button><button data-open="1" title="① 실험 시작">①<span class="sl"> 실험</span></button><button data-open="2" title="② 퀴즈 열기">②<span class="sl"> 퀴즈</span></button><button data-open="3" title="③ 문제풀이 열기">③<span class="sl"> 문제풀이</span></button></span>
         <button class="btn gate-btn state-unknown" id="btn-gate-toggle">접속 확인 중…</button>
         <span class="spacer"></span>
@@ -1381,6 +1390,7 @@
       <div id="view-neutral" class="hidden"><iframe id="gf-neutral-frame" title="중화 반응 실험"></iframe></div>
       <!-- 발열·흡열 퀴즈 문항별 설명 화면 -->
       <div id="view-heatq" class="hidden"><div id="gf-t-quiz"></div></div>
+      <div id="view-qr" class="hidden"><div class="gf-qrbox"><img id="gf-qr-img" alt="접속 QR 코드"><div id="gf-qr-gen"></div><p class="gf-qrnote">휴대폰·태블릿 카메라로 QR을 찍어 접속하세요</p><p class="gf-qrurl" id="gf-qr-url"></p></div></div>
 
     </div>
   </div>
@@ -1419,6 +1429,7 @@
 </div><!-- /#app-root -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script>
 /* ============================================================
    저장소 — Supabase. 접속 제어 게이트에서도 써야 하므로 가장 먼저 선언한다.
@@ -2447,6 +2458,9 @@ function switchTeacherTab(tab){
   document.getElementById("tab-heatq").classList.toggle("active", tab==="heatq");
   document.getElementById("view-neutral").classList.toggle("hidden", tab!=="neutral");
   document.getElementById("view-heatq").classList.toggle("hidden", tab!=="heatq");
+  document.getElementById("tab-qr").classList.toggle("active", tab==="qr");
+  document.getElementById("view-qr").classList.toggle("hidden", tab!=="qr");
+  if(tab==="qr") showQr();
   if(tab==="neutral"){ const f=document.getElementById("gf-neutral-frame"); if(!f.src) f.src="neutralization.html?v=8"; fitNeutralFrame(); }
   if(tab==="groups" || tab==="exprec" || tab==="heatq") GF.teacherRender();
   document.getElementById("view-progress").classList.toggle("hidden", tab!=="progress");
@@ -2466,6 +2480,20 @@ function fitNeutralFrame(){
 }
 window.addEventListener("resize", fitNeutralFrame);
 document.getElementById("tab-heatq").addEventListener("click", ()=>switchTeacherTab("heatq"));
+document.getElementById("tab-qr").addEventListener("click", ()=>switchTeacherTab("qr"));
+// QR 탭: images/qr.png 가 있으면 그것을, 없으면 이 페이지 주소로 QR을 만들어 보여줌
+function showQr(){
+  const img=document.getElementById("gf-qr-img"), gen=document.getElementById("gf-qr-gen"), u=document.getElementById("gf-qr-url");
+  const url = location.origin + location.pathname.replace(/index\.html$/,"");
+  u.textContent = url;
+  img.onload = ()=>{ img.hidden=false; gen.innerHTML=""; };
+  img.onerror = ()=>{
+    img.hidden=true;
+    if(window.qrcode){ const q=qrcode(0,"M"); q.addData(url); q.make(); gen.innerHTML=q.createSvgTag({cellSize:8,margin:2,scalable:true}); }
+    else gen.textContent=url;
+  };
+  img.hidden=true; img.src="images/qr.png?v="+Date.now();
+}
 
 /* ---------- 새로고침 / 초기화 ---------- */
 document.getElementById("btn-teacher-refresh").addEventListener("click", ()=>{
