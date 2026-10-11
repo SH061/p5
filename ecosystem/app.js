@@ -1182,11 +1182,12 @@ const HOOKS = {
     document.querySelectorAll(".bal-step").forEach(e => { const n = +e.dataset.bs; e.classList.toggle("on", n <= s); e.classList.toggle("cur", n === s); });
   },
   human(step){
-    const on = step >= 3;
-    $("cc-b1").style.height = on ? "2%" : "0";
-    $("cc-b2").style.height = on ? "100%" : "0";
-    countUp($("cc-v1"), on ? 75 : 0, "마리");
-    countUp($("cc-v2"), on ? 8600 : 0, "마리", "약 ");
+    // 2단계: 1996~97년 약 75마리 → 3단계: 전봇대 제거 → 4단계: 약 8,600마리
+    const a = step >= 2, b = step >= 4;
+    $("cc-b1").style.height = a ? "2%" : "0";
+    $("cc-b2").style.height = b ? "100%" : "0";
+    countUp($("cc-v1"), a ? 75 : 0, "마리", "약 ");
+    countUp($("cc-v2"), b ? 8600 : 0, "마리", "약 ");
   }
 };
 function countUp(el, to, unit, prefix){
