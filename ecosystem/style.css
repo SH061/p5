@@ -558,3 +558,118 @@ html.teacher body{ overflow:hidden; height:100vh; }
 
 /* 전체화면 탭 */
 .t-tabs button.full{ margin-left:auto; border:1px solid var(--color-hairline-dark); color:var(--color-on-dark); }
+
+/* ============================================================
+   입장 화면 — 조·역할
+============================================================ */
+.lg-row.two{ grid-template-columns:1fr 1fr; }
+.lg-hint{ margin:8px 0 0; font-size:13px; line-height:1.6; color:var(--color-ink-2); }
+
+/* ============================================================
+   학생 — 조별 활동판
+============================================================ */
+.grp{ display:flex; flex-direction:column; gap:12px; width:100%; max-width:640px; margin:0 auto; }
+.fw-box{ max-width:460px; margin:0 auto; width:100%; }
+.grp-head{ background:var(--color-canvas); border:1px solid var(--color-hairline); border-radius:var(--r-card); padding:14px 16px; }
+.grp-t{ font-weight:700; font-size:16px; }
+.grp-mem{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.grp-mem .gm{ font-size:13px; background:var(--color-parchment); border-radius:var(--r-pill); padding:3px 10px; }
+.grp-mem .gm.me{ background:var(--color-primary); color:#fff; font-weight:600; }
+.grp-me{ margin-top:10px; font-size:14px; line-height:1.5; color:var(--color-ink-2); }
+.grp-me b{ color:var(--color-ink); }
+.grp-stage{ background:#eef5ff; border:1.5px solid var(--color-primary); border-radius:var(--r-pearl); padding:12px 14px; font-size:15px; line-height:1.5; }
+.gbins{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.gbin,.gpool{ background:var(--color-canvas); border:1px solid var(--color-hairline); border-radius:var(--r-pearl); padding:10px; min-height:84px; }
+.gbin.cur{ border:2px solid var(--color-primary); box-shadow:0 0 0 3px rgba(0,113,227,.12); }
+.gbin .bh,.gpool .bh{ font-weight:700; font-size:14px; margin-bottom:8px; }
+.gbin .bh small,.gpool .bh small{ font-weight:400; color:var(--color-ink-2); margin-left:4px; }
+.gbin .bl,.gpool .bl{ display:flex; flex-wrap:wrap; gap:6px; }
+.gbin .empty{ font-size:12px; color:var(--color-ink-3); }
+.gc{ display:flex; flex-direction:column; align-items:flex-start; gap:3px; text-align:left; border:1px solid var(--color-hairline); background:var(--color-pearl); border-radius:10px; padding:7px 10px; font-size:14px; color:var(--color-ink); cursor:pointer; max-width:100%; }
+.gc.tap{ border-color:var(--color-primary); }
+.gc .n{ font-weight:600; }
+.gc .h{ font-size:12px; line-height:1.45; color:#7a4e00; background:#fff8e1; border-radius:6px; padding:4px 6px; }
+.gc .fix{ font-size:12px; font-weight:600; color:#c4281c; }
+.gc.ok{ background:#e8f7ec; border-color:#34c759; }
+.gc.no{ background:#fdecea; border-color:#ff3b30; }
+.gpool .gc{ flex:1 1 140px; }
+.grp-lead{ display:flex; gap:8px; }
+.grp-lead .btn{ flex:1; padding:14px; font-size:16px; }
+.grp-wait,.grp-done{ text-align:center; padding:14px; border-radius:var(--r-pearl); background:var(--color-canvas); border:1px dashed var(--color-hairline); color:var(--color-ink-2); font-size:14px; }
+.grp-done{ border-style:solid; border-color:#34c759; color:#1a7f37; font-weight:600; }
+.grp-score{ text-align:center; padding:16px; border-radius:var(--r-card); background:var(--color-ink); color:#fff; font-size:16px; }
+.grp-score b{ font-size:24px; color:var(--color-primary-on-dark); }
+.grp-score small{ display:block; margin-top:4px; color:var(--color-on-dark-2); font-size:12px; }
+.fw-box{ background:var(--color-canvas); border:1px solid var(--color-hairline); border-radius:var(--r-pearl); padding:8px; }
+.fw-mini{ width:100%; height:auto; display:block; }
+.fw-mini line,.fw-mini path{ stroke:var(--color-primary); stroke-width:1.6; }
+.fw-mini .gone{ stroke:#c7c7cc; stroke-dasharray:3 3; }
+.fw-mini line.bad,.fw-mini path.bad{ stroke:#ff3b30; }
+.fw-mini rect{ fill:var(--color-parchment); stroke:var(--color-hairline); }
+.fw-mini text{ font-size:11px; font-weight:600; fill:var(--color-ink); }
+.fw-mini g.gone rect{ fill:#e5e5ea; stroke-dasharray:3 3; }
+.fw-mini g.gone text{ fill:#aeaeb2; text-decoration:line-through; }
+.fw-mini g.starve rect{ fill:#fdecea; stroke:#ff3b30; }
+.fw-leg{ font-size:12px; color:var(--color-ink-2); text-align:center; margin-top:4px; }
+.fw-eater{ background:var(--color-canvas); border:1px solid var(--color-hairline); border-radius:var(--r-pearl); padding:10px 12px; }
+.fw-eater .en{ font-weight:700; font-size:15px; }
+.fw-eater .h{ margin-top:6px; font-size:13px; line-height:1.5; color:#7a4e00; background:#fff8e1; border-radius:6px; padding:6px 8px; }
+.fw-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.fwc{ border:1px solid var(--color-hairline); background:var(--color-pearl); color:var(--color-ink); border-radius:var(--r-pill); padding:6px 12px; font-size:13px; cursor:pointer; }
+.fwc.tap{ border-color:var(--color-primary); }
+.fwc.on{ background:var(--color-primary); border-color:var(--color-primary); color:#fff; font-weight:600; }
+.fw-sim{ background:#fff8e1; border:1.5px solid #e8c766; border-radius:var(--r-pearl); padding:12px 14px; font-size:15px; line-height:1.55; }
+.fw-sim small{ color:var(--color-ink-2); }
+.fw-check{ display:flex; flex-direction:column; gap:6px; }
+.fw-check > div{ border-radius:10px; padding:8px 10px; font-size:13px; line-height:1.5; }
+.fw-check .ok{ background:#e8f7ec; }
+.fw-check .no{ background:#fdecea; }
+.fw-check small{ display:block; color:#c4281c; }
+
+/* ============================================================
+   선생님 — 조별 활동 화면
+============================================================ */
+.gv-view{ display:flex; flex-direction:column; gap:1rem; padding:1.4rem 2.4rem 1.2rem; background:var(--color-parchment); overflow:auto; }
+.gv-head{ display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; }
+.gv-head h2{ margin:0; font-size:2.2rem; letter-spacing:-.03em; }
+.gv-cnt{ font-size:1.2rem; font-weight:600; color:var(--color-primary); background:var(--color-canvas); border-radius:var(--r-pill); padding:.3rem 1rem; }
+.gv-head .btn{ font-size:1rem; padding:.6rem 1.1rem; }
+.gv-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(15rem, 1fr)); gap:.8rem; }
+.gv-mini{ display:grid; grid-template-columns:repeat(auto-fill, minmax(11rem, 1fr)); gap:.5rem; }
+.gv-mini .gv-card{ padding:.5rem .7rem; }
+.gv-mini .gv-mem{ display:none; }
+.gv-card{ background:var(--color-canvas); border:1px solid var(--color-hairline); border-radius:var(--r-card); padding:.9rem 1.1rem; }
+.gv-card.done{ border:2px solid #34c759; }
+.gv-h{ display:flex; justify-content:space-between; align-items:baseline; }
+.gv-h b{ font-size:1.6rem; }
+.gv-h span{ font-size:1rem; color:var(--color-ink-2); font-weight:600; }
+.gv-card.done .gv-h span{ color:#1a7f37; }
+.gv-mem{ display:flex; flex-wrap:wrap; gap:.3rem .7rem; margin-top:.4rem; font-size:1rem; }
+.gv-prog{ margin-top:.4rem; font-size:1rem; color:var(--color-ink-2); }
+.gv-pts{ margin-top:.3rem; font-size:1.4rem; font-weight:700; color:var(--color-primary); }
+.gv-empty{ font-size:1.2rem; color:var(--color-ink-2); }
+.gv-note{ margin:0; font-size:1rem; color:var(--color-ink-2); }
+.gv-table-wrap{ overflow:auto; background:var(--color-canvas); border:1px solid var(--color-hairline); border-radius:var(--r-card); }
+.gv-table{ width:100%; border-collapse:collapse; font-size:1.05rem; }
+.gv-table th,.gv-table td{ padding:.45rem .6rem; border-bottom:1px solid var(--color-divider); text-align:center; white-space:nowrap; }
+.gv-table th{ position:sticky; top:0; background:var(--color-pearl); font-weight:700; }
+.gv-table td.l{ text-align:left; font-weight:600; }
+.gv-table tr.split td{ background:#fff8e1; }
+.gv-table td.ok,.gv-table span.ok{ color:#1a7f37; font-weight:700; }
+.gv-table td.no,.gv-table span.no{ color:#c4281c; font-weight:700; text-decoration:line-through; }
+.gv-table td.ans{ background:#e8f7ec; font-weight:700; color:#1a7f37; }
+.gv-table td span{ display:inline-block; margin:0 .15rem; }
+.gv-table tr.sim td{ background:#fff8e1; white-space:normal; }
+
+/* 관찰자 사진 창 */
+.gc .look,.fw-eater .look{ font-size:11px; font-weight:600; color:var(--color-primary); }
+.fw-eater.look{ cursor:pointer; }
+.img-pop{ position:fixed; inset:0; z-index:60; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:20px; }
+.img-pop.hidden{ display:none; }
+.ip-box{ width:100%; max-width:520px; max-height:90vh; overflow:auto; background:var(--color-canvas); border-radius:var(--r-card); box-shadow:0 20px 50px rgba(0,0,0,.4); }
+.ip-box img{ display:block; width:100%; max-height:60vh; object-fit:cover; background:#000; }
+.ip-emo{ font-size:96px; text-align:center; padding:28px 0 8px; background:var(--color-parchment); }
+.ip-cap{ padding:14px 16px 18px; }
+.ip-cap b{ font-size:18px; }
+.ip-cap small{ display:block; margin-top:2px; color:var(--color-ink-2); font-size:12px; }
+.ip-cap p{ margin:8px 0 0; font-size:15px; line-height:1.55; color:#7a4e00; background:#fff8e1; border-radius:8px; padding:8px 10px; }

@@ -100,8 +100,30 @@
         </div>
       </div>
 
+      <div class="page" data-key="def">
+        <div class="p-head"><span class="p-kicker">① 순천만 줌아웃</span><h2 class="p-title">🧩 생태계 구성요소, 어떻게 나눌까?</h2></div>
+        <div class="p-body">
+          <div class="col w2">
+            <h3 class="grp-title">🌱 생물요소 <small style="font-weight:400;color:var(--muted)">생태계 안에 살고 있는 모든 생물</small></h3>
+            <div class="role pro" data-step="1"><span class="ic">🌱</span><div><h4>생산자</h4><p>빛에너지를 이용해 <b>광합성</b>을 하여 스스로 양분(유기물)을 만드는 생물</p></div></div>
+            <div class="role con" data-step="2"><span class="ic">🦀</span><div><h4>소비자</h4><p>스스로 양분을 만들지 못해 <b>다른 생물을 먹어</b> 양분을 얻는 생물</p></div></div>
+            <div class="role dec" data-step="3"><span class="ic">🦠</span><div><h4>분해자</h4><p><b>죽은 생물이나 배설물</b>을 분해해 양분을 얻는 생물</p></div></div>
+          </div>
+          <div class="col" data-step="4">
+            <h3 class="grp-title">🌤️ 비생물요소</h3>
+            <div class="fact"><span class="ic">🌍</span><div>생물을 둘러싸고 있는 <b>환경 요인</b><br><small style="color:var(--muted)">예: 빛, 물, 온도, 토양, 공기 …</small></div></div>
+            <div class="callout gold" data-step="5" style="text-align:center">👥 이제 <b>조별로</b><br>순천만의 구성요소를<br>직접 나눠 볼까요?</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-nav"><div class="slide-dots"></div><button class="sn-prev">◀</button><button class="sn-next">▶</button></div>
+    </section>
+
+    <!-- ===== ① 구성요소 정리 (조별 1 정답) ===== -->
+    <section class="t-view slides" id="tv-s5">
+
       <div class="page" data-key="parts">
-        <div class="p-head"><span class="p-kicker">① 순천만 줌아웃</span><h2 class="p-title">🧩 순천만 생태계의 구성요소</h2></div>
+        <div class="p-head"><span class="p-kicker">👥 조별 1 정리</span><h2 class="p-title">🧩 순천만 생태계의 구성요소</h2></div>
         <div class="p-body">
           <div class="col w2">
             <h3 class="grp-title">🌱 생물요소</h3>
@@ -268,6 +290,12 @@
         </div>
       </div>
 
+      <div class="slide-nav"><div class="slide-dots"></div><button class="sn-prev">◀</button><button class="sn-next">▶</button></div>
+    </section>
+
+    <!-- ===== ③ 먹이그물·피라미드 (조별 2 정리) ===== -->
+    <section class="t-view slides" id="tv-s6">
+
       <div class="page" data-key="web" data-steps="3">
         <div class="p-head"><span class="p-kicker">③ 먹이 관계</span><h2 class="p-title">🕸️ 순천만의 먹이그물 <small style="font-size:.5em;color:var(--muted)">생물을 눌러 보세요</small></h2></div>
         <div class="p-body">
@@ -358,6 +386,7 @@
 
     <!-- ===== 퀴즈 / 확장질문 / 순위 / 진행 상황 (app.js가 그림) ===== -->
     <section class="t-view game-stage" id="tv-quiz"></section>
+    <section class="t-view gv-view" id="tv-group"></section>
     <section class="t-view essay-view" id="tv-essay"></section>
     <section class="t-view game-stage" id="tv-rank"></section>
     <section class="t-view prog-view" id="tv-progress"></section>
@@ -383,6 +412,7 @@
   </div>
 </div>
 <div class="spot hidden" id="spot"><div id="spot-text"></div></div>
+<div class="img-pop hidden" id="img-pop"><div class="ip-box" id="img-pop-body"></div></div>
 <canvas id="confetti"></canvas>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>

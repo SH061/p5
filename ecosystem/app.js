@@ -147,6 +147,126 @@ const ESSAYS = [
            "갈대·칠면초 찌꺼기를 먹는 게·갯지렁이가 줄고, 이를 먹는 도요새도 줄어드는 등 <b>먹이그물 전체</b>에 영향을 준다.",
            "찬성 의견도 근거가 맞으면 인정 (예: 갈대밭이 아닌 기존 도심 쪽에 주차장을 만드는 대안 제시)"] }
 ];
+// ============================================================
+// 조별 활동 — 조장(단계 넘기기) · 관찰자(카드 설명 보기) · 실행자(카드 옮기기) · 관찰자2(4명 조)
+//   활동판은 settings 표에 조마다 두 줄로 저장: …|G3|A|b (실행자가 쓰는 판) / …|G3|A|s (조장이 쓰는 단계)
+// ============================================================
+const GROUP_COUNT = 10;
+const ROLES = [
+  {id:"조장",   icon:"👑", desc:"다음 단계로 넘기기"},
+  {id:"관찰자", icon:"👀", desc:"카드 설명 읽어 주기"},
+  {id:"실행자", icon:"🖐", desc:"카드 옮기기"},
+  {id:"관찰자2", icon:"👀", desc:"4명인 조만"}
+];
+const roleOf = id => ROLES.find(r => r.id === id) || {id, icon:"", desc:""};
+const groupRowId = (cls, g, act, kind) => `${LESSON_ID}|${cls}|G${g}|${act}|${kind}`;
+
+// 조별 1 — 순천만 구성요소 나누기 (카드 15장, 정답 칸 bin)
+const SORT_BINS = [
+  {id:"pro",  label:"생산자",   icon:"🌱", ask:"스스로 양분을 만드는 생물을 모두 골라요"},
+  {id:"con",  label:"소비자",   icon:"🦀", ask:"다른 생물을 먹어 양분을 얻는 생물을 모두 골라요"},
+  {id:"dec",  label:"분해자",   icon:"🦠", ask:"죽은 생물·배설물을 분해해 양분을 얻는 생물을 골라요"},
+  {id:"abio", label:"비생물요소", icon:"🌤️", ask:"생물을 둘러싼 환경 요인을 골라요"}
+];
+const SORT_CARDS = [
+  {id:"reed",   t:"🌾 갈대",       bin:"pro",  hint:"강 쪽 갯벌에 넓게 자라는 풀. 잎으로 햇빛을 받는다."},
+  {id:"chil",   t:"🌿 칠면초",     bin:"pro",  hint:"바다 쪽 갯벌에 자라는 풀. 가을이면 붉게 물든다."},
+  {id:"diatom", t:"🟤 규조류",     bin:"pro",  hint:"갯벌 표면을 갈색으로 보이게 하는 아주 작은 생물. 엽록체가 있다."},
+  {id:"mud",    t:"🐟 짱뚱어",     bin:"con",  hint:"갯벌을 기어다니는 물고기. 진흙 표면의 규조류를 긁어 먹는다."},
+  {id:"crab",   t:"🦀 칠게",       bin:"con",  hint:"갯벌 구멍에 사는 게. 진흙을 떠 먹으며 그 속의 먹이를 걸러 먹는다."},
+  {id:"worm",   t:"〰️ 갯지렁이",   bin:"con",  hint:"갯벌 속에 살며 진흙 속 유기물 찌꺼기를 먹는다. 찌꺼기를 잘게 부숴 분해를 돕는다."},
+  {id:"crane",  t:"🐦 흑두루미",   bin:"con",  hint:"겨울에 순천만에 와서 논에 떨어진 낟알을 먹는다."},
+  {id:"spoon",  t:"🐦 저어새",     bin:"con",  hint:"주걱 같은 부리를 좌우로 저어 물고기와 게를 잡아먹는다."},
+  {id:"bact",   t:"🦠 세균",       bin:"dec",  hint:"갯벌 진흙 속에 아주 많이 사는 작은 생물. 죽은 생물과 배설물을 분해한다."},
+  {id:"fungi",  t:"🍄 곰팡이",     bin:"dec",  hint:"죽은 갈대 같은 생물의 몸에 자라며 그것을 분해해 양분을 얻는다."},
+  {id:"light",  t:"☀️ 햇빛",       bin:"abio", hint:"썰물 때 드러난 갯벌을 비춘다."},
+  {id:"salt",   t:"🧂 바닷물의 염분", bin:"abio", hint:"바닷물에 녹아 있는 소금 성분. 강 쪽은 낮고 바다 쪽은 높다."},
+  {id:"temp",   t:"🌡️ 온도",       bin:"abio", hint:"계절에 따라 크게 변한다."},
+  {id:"soil",   t:"🟫 갯벌 흙(펄)", bin:"abio", hint:"강물이 실어 온 고운 진흙이 쌓여 만들어졌다."},
+  {id:"air",    t:"💨 공기(산소)",  bin:"abio", hint:"생물이 호흡할 때 필요하다. 게 구멍을 통해 갯벌 속까지 들어간다."}
+];
+const SORT_PT = 100;   // 카드 1장 맞으면 100점 → 최대 1,500점
+
+// 조별 2 — 순천만 먹이그물 만들기 (먹이 고르기: [먹히는 것, 먹는 것])
+const FW_NODES = {
+  diatom:{t:"🟤 규조류", short:"규조류", x:110, y:262, lv:0, hint:"갯벌 표면에서 광합성을 하는 아주 작은 생물."},
+  reed:  {t:"🌾 갈대·칠면초 찌꺼기", short:"갈대·칠면초", x:255, y:262, lv:0, hint:"갈대와 칠면초가 시들어 떨어진 조각(유기물)."},
+  mud:   {t:"🐟 짱뚱어", short:"짱뚱어", x:60,  y:188, lv:1, hint:"썰물 때 갯벌을 기어다니며 진흙 표면의 규조류를 긁어 먹는다."},
+  crab:  {t:"🦀 칠게·농게", short:"칠게·농게", x:180, y:188, lv:1, hint:"집게발로 진흙을 떠 먹으며 그 속의 규조류와 갈대·칠면초 찌꺼기를 걸러 먹는다."},
+  worm:  {t:"〰️ 갯지렁이", short:"갯지렁이", x:300, y:188, lv:1, hint:"갯벌 속에 살며 진흙 속 갈대·칠면초 찌꺼기와 규조류를 먹는다."},
+  spoon: {t:"🐦 저어새", short:"저어새", x:60,  y:112, lv:2, hint:"주걱 같은 부리를 물속에서 좌우로 저어 짱뚱어 같은 물고기와 게를 잡아먹는다."},
+  curlew:{t:"🐦 알락꼬리마도요", short:"알락꼬리마도요", x:180, y:112, lv:2, hint:"아래로 휜 긴 부리를 게 구멍과 갯벌 속에 넣어 칠게·농게와 갯지렁이를 꺼내 먹는다."},
+  gull:  {t:"🕊️ 검은머리갈매기", short:"검은머리갈매기", x:300, y:112, lv:2, hint:"갯벌 위를 날다가 내려앉아 칠게를 잡아먹는다."},
+  cat:   {t:"🐾 삵", short:"삵", x:110, y:36, lv:3, hint:"갈대숲에 숨어 살며 물가의 새(도요새·갈매기 등)를 사냥한다."},
+  otter: {t:"🦦 수달", short:"수달", x:255, y:36, lv:3, hint:"물속을 헤엄쳐 짱뚱어 같은 물고기와 게를 잡아먹는다."}
+};
+// 꼭 있어야 하는 연결(+100) / 있어도 감점하지 않는 연결
+const FW_MUST = {mud:["diatom"], crab:["diatom","reed"], worm:["reed","diatom"], spoon:["mud","crab"], curlew:["crab","worm"], gull:["crab"], cat:["curlew","gull"], otter:["mud","crab"]};
+const FW_OK   = {spoon:["worm"], gull:["worm"], cat:["spoon"]};
+const FW_STAGES = [
+  {eaters:["mud","crab","worm"],    ask:"1단계: 갯벌 바닥의 작은 동물들은 무엇을 먹을까?"},
+  {eaters:["spoon","curlew","gull"], ask:"2단계: 갯벌의 새들은 무엇을 먹을까?"},
+  {eaters:["cat","otter"],          ask:"3단계: 삵과 수달은 무엇을 먹을까?"},
+  {eaters:[],                       ask:"4단계: 칠게·농게가 갑자기 사라진다면?"}
+];
+const FW_PT = 100, FW_WRONG = 50;   // 맞는 연결 +100, 틀린 연결 −50 → 최대 1,400점
+const FW_MAX = Object.values(FW_MUST).reduce((s,a) => s + a.length, 0) * FW_PT;
+const FW_ANSWER = Object.entries(FW_MUST).flatMap(([eater, preys]) => preys.map(p => p + ">" + eater));   // 정답 먹이그물
+const ACTS = {
+  A: {title:"조별 1 · 순천만 구성요소 나누기", short:"구성요소 나누기", stages:SORT_BINS.length, max:SORT_CARDS.length * SORT_PT},
+  B: {title:"조별 2 · 순천만 먹이그물 만들기", short:"먹이그물 만들기", stages:FW_STAGES.length, max:FW_MAX}
+};
+const edgeKey = (prey, eater) => prey + ">" + eater;
+function scoreAct(act, board){
+  board = board || {};
+  if(act === "A"){
+    const place = board.place || {};
+    return Math.max(0, SORT_CARDS.filter(c => place[c.id] === c.bin).length * SORT_PT);
+  }
+  const edges = new Set(board.edges || []);
+  let s = 0;
+  for(const e of edges){
+    const [prey, eater] = e.split(">");
+    if((FW_MUST[eater] || []).includes(prey)) s += FW_PT;
+    else if(!(FW_OK[eater] || []).includes(prey)) s -= FW_WRONG;
+  }
+  return Math.max(0, s);
+}
+// 칠게·농게가 사라졌을 때, 먹을 것이 하나도 남지 않는 생물(먹이가 끊긴 생물이 먹이였던 생물도 차례로)
+function fwStarving(edgeList){
+  const prey = {};
+  (edgeList || []).forEach(e => { const [p, q] = e.split(">"); (prey[q] = prey[q] || []).push(p); });
+  const alive = new Set(["diatom","reed"]);
+  let changed = true;
+  while(changed){
+    changed = false;
+    for(const id of Object.keys(FW_NODES)){
+      if(alive.has(id) || id === "crab" || FW_NODES[id].lv === 0) continue;
+      if((prey[id] || []).some(p => alive.has(p))){ alive.add(id); changed = true; }
+    }
+  }
+  return Object.keys(FW_NODES).filter(id => FW_NODES[id].lv > 0 && id !== "crab" && !alive.has(id));
+}
+// 관찰자가 카드를 누르면 보여 줄 사진 (images 폴더). 사진이 없는 카드는 큰 그림 문자로 보여 준다.
+const CARD_IMG = {
+  reed:["순천만 갈대밭.jpg"], chil:["붉게 물든 칠면조 군락.jpg","칠면초가 붉게 물든 순천만"], diatom:["규조류 현미경 사진.jpg","규조류 (현미경으로 본 모습)"],
+  mud:["짱뚱어.jpg"], crab:["칠게.png"], worm:["갯지렁이.png"], crane:["논에서 먹이를 먹는 흑두루미 무리.jpg","논에서 낟알을 먹는 흑두루미 무리"],
+  spoon:["저어새.jpg"], bact:["세균.jpg","세균 (그림)"], fungi:["곰팡이.jpg","배양 접시에서 자란 곰팡이"],
+  light:["햇빛.png"], salt:["염분.jpg","강물과 바닷물이 만나는 하구 — 장소마다 염분이 다르다"], soil:["썰물 때 드러난 갯벌.jpg","썰물 때 드러난 갯벌"], air:["게 구멍이 뚫린 갯벌.jpg","게 구멍이 뚫린 갯벌 (구멍으로 공기가 드나든다)"],
+  curlew:["알락꼬리마도요.png"], gull:["검은머리갈매기.jpg"], cat:["삵.jpg"], otter:["수달.png"]
+};
+function showCardImage(id, title, hint){
+  const im = CARD_IMG[id], pop = $("img-pop");
+  const emo = (title.match(/^\S+/) || [""])[0], name = title.replace(/^\S+\s/, "");
+  $("img-pop-body").innerHTML = (im
+    ? `<img src="images/${encodeURIComponent(im[0])}" alt="${esc(im[1] || name)}">`
+    : `<div class="ip-emo">${emo}</div>`) +
+    `<div class="ip-cap"><b>${esc(name)}</b>${im && im[1] ? `<small>사진: ${esc(im[1])}</small>` : ""}${hint ? `<p>${esc(hint)}</p>` : ""}</div>`;
+  pop.classList.remove("hidden");
+}
+// 조별 활동 점수: 선생님이 [정답 공개]를 누를 때 live.gscore = {A:{"3":1200,…}, B:{…}} 로 저장
+const groupPoints = (gs, grp) => grp ? Object.values(gs || {}).reduce((s, byG) => s + (Number((byG || {})[grp]) || 0), 0) : 0;
+
 const ALL_Q = [...QUIZ.A.items, ...QUIZ.B.items];
 const qById = qid => ALL_Q.find(q => q.id === qid) || null;
 const setOf = qid => QUIZ.A.items.some(q => q.id === qid) ? "A" : "B";
@@ -163,9 +283,10 @@ function pointsFor(q, row){
   const ms = Math.max(0, Math.min(Number(row.ms) || lim, lim));
   return Math.round(500 + 500 * (1 - ms / lim));
 }
-function leaderboard(players, answers, revealed){
+function leaderboard(players, answers, revealed, gscore){
   const map = new Map();
-  for(const p of players) map.set(p.num, {num:p.num, name:p.name, score:0, correct:0, ms:0});
+  // 조별 활동 점수는 조원 모두에게 똑같이 더한다
+  for(const p of players) map.set(p.num, {num:p.num, name:p.name, score:groupPoints(gscore, p.grp), correct:0, ms:0});
   for(const a of answers){
     if(!revealed.includes(a.qid)) continue;
     const q = qById(a.qid); if(!q) continue;
@@ -187,7 +308,7 @@ function toast(msg, ms){
 // ============================================================
 // 학생 화면
 // ============================================================
-const S = { cls:"", num:"", name:"", live:{}, mine:{}, lastKey:"", shownAt:0, raf:0, submitting:false, drafts:{}, rankCache:null };
+const S = { cls:"", num:"", name:"", grp:"", role:"", group:null, gSig:"", live:{}, mine:{}, lastKey:"", shownAt:0, raf:0, submitting:false, drafts:{}, rankCache:null };
 
 function sPaint(html, game, login){
   $("s-screen").innerHTML = html;
@@ -201,7 +322,7 @@ function classOptions(sel){
 }
 function renderLogin(msg){
   $("s-me").textContent = ""; $("s-score").classList.add("hidden");
-  const saved = { cls:idStore.get("sc:cls")||"", num:idStore.get("sc:num")||"", name:idStore.get("sc:name")||"" };
+  const saved = { cls:idStore.get("sc:cls")||"", num:idStore.get("sc:num")||"", name:idStore.get("sc:name")||"", grp:idStore.get("sc:grp")||"", role:idStore.get("sc:role")||"" };
   sPaint(`
     <div class="lg-head">
       <div class="lg-titles">
@@ -225,6 +346,12 @@ function renderLogin(msg){
         <input id="in-num" inputmode="numeric" maxlength="5" placeholder="학번 (예: 10101)" aria-label="학번" value="${esc(saved.num)}">
         <input id="in-name" maxlength="10" placeholder="이름" aria-label="이름" value="${esc(saved.name)}">
       </div>
+      <div class="lg-label">조 · 역할</div>
+      <div class="lg-row two">
+        <select id="in-grp" aria-label="조"><option value="">조</option>${Array.from({length:GROUP_COUNT}, (_,i) => `<option value="${i+1}" ${String(i+1)===saved.grp?"selected":""}>${i+1}조</option>`).join("")}</select>
+        <select id="in-role" aria-label="역할"><option value="">역할</option>${ROLES.map(r => `<option value="${r.id}" ${r.id===saved.role?"selected":""}>${r.icon} ${r.id}</option>`).join("")}</select>
+      </div>
+      <p class="lg-hint">${ROLES.map(r => `${r.icon} <b>${r.id}</b> ${r.desc}`).join(" · ")}</p>
       <div class="lg-warn"><b>⚠️ 시작 전 꼭 확인하세요</b>선생님이 문제를 열어 줄 때까지 기다려 주세요. 반·학번·이름을 정확히 입력해야 내 점수가 이어져요.</div>
       <button class="btn s-big-btn" id="in-go">시작하기</button>
       <div class="s-msg" id="in-msg">${esc(msg||"")}</div>
@@ -237,10 +364,13 @@ function renderLogin(msg){
 }
 async function doLogin(){
   const cls = $("in-cls").value, num = $("in-num").value.trim(), name = $("in-name").value.trim().replace(/\s+/g,"");
+  const grp = $("in-grp").value, role = $("in-role").value;
   const msg = $("in-msg");
   if(!cls){ msg.textContent = "반을 골라 주세요."; return; }
   if(!/^\d{4,5}$/.test(num)){ msg.textContent = "학번을 숫자 5자리로 입력해 주세요. (예: 10301)"; return; }
   if(!name){ msg.textContent = "이름을 입력해 주세요."; return; }
+  if(!grp){ msg.textContent = "자리에 적힌 조 번호를 골라 주세요."; return; }
+  if(!role){ msg.textContent = "역할을 골라 주세요."; return; }
   const btn = $("in-go"); btn.disabled = true; btn.textContent = "연결 중…";
   try{
     // 선생님이 입장을 막았으면 새 학생은 못 들어오고, 이미 들어왔던 학생(폰 꺼짐 등)만 다시 들어올 수 있다
@@ -250,7 +380,14 @@ async function doLogin(){
       msg.textContent = "🔒 지금은 입장이 닫혀 있어요. 선생님께 말씀해 주세요.";
       return;
     }
-    await DB.upsert("lesson_players", {id:playerId(cls,num), lesson_id:LESSON_ID, cls, num, name, seen:nowIso()});
+    // 한 조에 같은 역할은 한 명만
+    const taken = (await DB.list("lesson_players", {lesson_id:LESSON_ID, cls})).find(p => String(p.grp) === grp && p.role === role && p.num !== num);
+    if(taken){
+      btn.disabled = false; btn.textContent = "시작하기";
+      msg.textContent = `${grp}조에는 이미 ${role}(${taken.name})가 있어요. 조원과 역할을 다시 정해 주세요.`;
+      return;
+    }
+    await DB.upsert("lesson_players", {id:playerId(cls,num), lesson_id:LESSON_ID, cls, num, name, grp, role, seen:nowIso()});
     idStore.set("sc:reset:" + cls, String((lv && lv.resetAt) || ""));   // 새로 들어온 시점의 기록을 기준으로 삼음
   }catch(e){
     btn.disabled = false; btn.textContent = "시작하기";
@@ -258,20 +395,25 @@ async function doLogin(){
     console.error(e); return;
   }
   idStore.set("sc:cls", cls); idStore.set("sc:num", num); idStore.set("sc:name", name);
-  Object.assign(S, {cls, num, name});
+  idStore.set("sc:grp", grp); idStore.set("sc:role", role);
+  Object.assign(S, {cls, num, name, grp, role});
   enterStudent();
 }
 let studentStarted = false;
 async function enterStudent(){
-  $("s-me").textContent = `${S.cls} ${S.num} ${S.name}`;
-  $("s-me").onclick = () => { if(confirm("다른 반·학번·이름으로 다시 들어갈까요?")){ idStore.set("sc:num",""); idStore.set("sc:name",""); location.reload(); } };
-  DB.upsert("lesson_players", {id:playerId(S.cls,S.num), lesson_id:LESSON_ID, cls:S.cls, num:S.num, name:S.name, seen:nowIso()}).catch(() => {});
+  $("s-me").textContent = `${S.cls} ${S.grp}조 ${roleOf(S.role).icon}${S.role} · ${S.num} ${S.name}`;
+  $("s-me").onclick = () => { if(confirm("다른 반·학번·이름·조·역할로 다시 들어갈까요?")){ idStore.set("sc:num",""); idStore.set("sc:name",""); location.reload(); } };
+  DB.upsert("lesson_players", {id:playerId(S.cls,S.num), lesson_id:LESSON_ID, cls:S.cls, num:S.num, name:S.name, grp:S.grp, role:S.role, seen:nowIso()}).catch(() => {});
   sPaint(`<div class="wait-box"><div class="hero-emoji pulse">⏳</div><p class="s-sub">연결하는 중…</p></div>`);
   try{ await loadMine(); }catch(e){}
   if(!studentStarted){
     studentStarted = true;
-    DB.on("settings", row => { if(!row || row.id === liveId(S.cls)) pullLive(); });
-    setInterval(pullLive, 2500);
+    const gPre = `${LESSON_ID}|${S.cls}|G${S.grp}|`;
+    DB.on("settings", row => {
+      if(!row || row.id === liveId(S.cls)) pullLive();
+      if(!row || String(row.id).startsWith(gPre)) pullGroup();
+    });
+    setInterval(() => { pullLive(); if((S.live || {}).phase === "group") pullGroup(); }, 2500);
   }
   S.lastKey = "";
   pullLive();
@@ -285,7 +427,7 @@ async function pullLive(){
   try{ applyLive((await getSetting(liveId(S.cls))) || {}); }catch(e){}
 }
 function liveKey(v){
-  return [v.phase, v.listen ? "listen" : "", v.qid, v.tab, (v.revealed||[]).length, JSON.stringify(v.mvp||[]), v.awardStep, JSON.stringify(v.essayMvp||{})].join("|");
+  return [v.phase, v.listen ? "listen" : "", v.act, v.glock, JSON.stringify(v.grev||[]), JSON.stringify(v.gscore||{}), v.qid, v.tab, (v.revealed||[]).length, JSON.stringify(v.mvp||[]), v.awardStep, JSON.stringify(v.essayMvp||{})].join("|");
 }
 function applyLive(v){
   // 선생님이 [이 반 기록 지우기]를 했으면: 이 폰에 남은 답·점수·쓰던 글을 비우고 처음 입장 화면으로
@@ -302,18 +444,18 @@ function applyLive(v){
 }
 function wipeStudent(){
   stopTimer();
-  Object.assign(S, {num:"", name:"", live:{}, mine:{}, lastKey:"", drafts:{}, rankCache:null, submitting:false});
+  Object.assign(S, {num:"", name:"", live:{}, mine:{}, lastKey:"", drafts:{}, rankCache:null, submitting:false, group:null, gSig:""});
   idStore.set("sc:num", ""); idStore.set("sc:name", "");
   renderLogin("선생님이 기록을 새로 시작했어요. 반·학번·이름을 다시 입력해 주세요.");
 }
 function myScore(){
   const rev = S.live.revealed || [];
-  let s = 0; for(const qid of rev){ s += pointsFor(qById(qid), S.mine[qid]); } return s;
+  let s = groupPoints(S.live.gscore, S.grp); for(const qid of rev){ s += pointsFor(qById(qid), S.mine[qid]); } return s;
 }
 function paintScore(){
   const rev = S.live.revealed || [];
   const chip = $("s-score");
-  chip.classList.toggle("hidden", !rev.length);
+  chip.classList.toggle("hidden", !rev.length && !Object.keys(S.live.gscore || {}).length);
   chip.textContent = myScore().toLocaleString() + "점";
 }
 function stopTimer(){ if(S.raf) cancelAnimationFrame(S.raf); S.raf = 0; }
@@ -321,6 +463,7 @@ function renderStudent(){
   stopTimer(); paintScore();
   const v = S.live || {}, ph = v.phase || "wait", q = qById(v.qid);
   if(v.listen) return renderListen();
+  if(ph === "group" && v.act){ S.gSig = ""; return renderGroup(); }
   if(ph === "question" && q) return S.mine[q.id] ? renderAnswered(q) : renderQuestion(q);
   if(ph === "closed" && q) return S.mine[q.id] ? renderAnswered(q) : renderTimeUp();
   if(ph === "reveal" && q) return renderReveal(q);
@@ -344,6 +487,200 @@ function renderListen(){
       <h2 class="s-title" style="margin-top:14px">핸드폰을 내려놓고<br>수업을 들어요</h2>
       <p class="s-sub">화면을 엎어 두고 선생님 설명에 집중해 주세요.<br>문제가 시작되면 이 화면이 저절로 바뀌어요.</p>
     </div>`, true);
+}
+// ============================================================
+// 학생 — 조별 활동
+// ============================================================
+async function pullGroup(){
+  const act = (S.live || {}).act;
+  if(!S.cls || !S.num || !S.grp || !act) return;
+  try{
+    const [members, b, s] = await Promise.all([
+      DB.list("lesson_players", {lesson_id:LESSON_ID, cls:S.cls}),
+      getSetting(groupRowId(S.cls, S.grp, act, "b")),
+      getSetting(groupRowId(S.cls, S.grp, act, "s"))
+    ]);
+    // 방금 내가 바꾼 내용이 아직 저장 중이면, 서버에서 읽은 옛 판으로 덮어쓰지 않는다
+    const keep = S.group && S.group.act === act && Date.now() - (S.gWrote || 0) < 2500;
+    S.group = {act, members:members.filter(m => String(m.grp) === String(S.grp)),
+      b: keep ? S.group.b : (b || {}), s: keep ? S.group.s : (s || {stage:0, done:false})};
+  }catch(e){ return; }
+  if((S.live || {}).phase === "group") renderGroup();
+}
+function gPerm(){
+  const mem = (S.group && S.group.members) || [], has = r => mem.some(m => m.role === r);
+  const canMove = S.role === "실행자" || (!has("실행자") && S.role === "조장");
+  const canLead = S.role === "조장" || (!has("조장") && S.role === "실행자");
+  // 관찰자가 둘이면 설명 카드를 반씩 나눠 본다. 관찰자가 없는 조는 조장이 설명을 본다.
+  let hint = () => false;
+  if(S.role === "관찰자") hint = i => !has("관찰자2") || i % 2 === 0;
+  else if(S.role === "관찰자2") hint = i => !has("관찰자") || i % 2 === 1;
+  else if(S.role === "조장" && !has("관찰자") && !has("관찰자2")) hint = () => true;
+  const look = S.role === "관찰자" || S.role === "관찰자2";
+  return {canMove, canLead, hint, look};
+}
+const ROLE_TIP = {
+  "조장":"모둠 의견이 모이면 [다음 단계 ▶]를 눌러요. 카드는 옮기지 않아요.",
+  "관찰자":"카드 설명을 읽어 주고, 근거를 들어 의견을 말해요.",
+  "관찰자2":"카드 설명을 읽어 주고, 근거를 들어 의견을 말해요.",
+  "실행자":"모둠이 정한 대로 카드를 눌러 옮겨요."
+};
+function renderGroup(){
+  const v = S.live || {}, act = v.act, g = S.group;
+  if(!g || g.act !== act){
+    sPaint(`<div class="wait-box"><div class="hero-emoji pulse">👥</div><p class="s-sub">${S.grp}조 활동판을 불러오는 중…</p></div>`);
+    pullGroup(); return;
+  }
+  const sig = JSON.stringify([act, g.b, g.s, g.members.map(m => m.num + m.role), v.glock, v.grev, v.gscore]);
+  if(sig === S.gSig && $("grp-root")) return;
+  S.gSig = sig;
+  const p = gPerm(), st = g.s.stage || 0;
+  const revealed = (v.grev || []).includes(act);
+  const locked = !!g.s.done || v.glock === act || revealed;
+  const mem = g.members.slice().sort((a,b) => ROLES.findIndex(r => r.id === a.role) - ROLES.findIndex(r => r.id === b.role))
+    .map(m => `<span class="gm ${m.num === S.num ? "me" : ""}">${roleOf(m.role).icon} ${esc(m.name)}</span>`).join("");
+  let head = `<div class="grp-head"><div class="grp-t">👥 ${S.grp}조 · ${esc(ACTS[act].title)}</div>
+      <div class="grp-mem">${mem}</div>
+      <div class="grp-me">${roleOf(S.role).icon} 나는 <b>${esc(S.role)}</b> — ${ROLE_TIP[S.role] || ""}</div></div>`;
+  let body = act === "A" ? groupSortHtml(g, st, p, locked, revealed) : groupWebHtml(g, st, p, locked, revealed);
+  let foot = "";
+  if(revealed){
+    const pts = Number(((v.gscore || {})[act] || {})[S.grp]) || 0;
+    foot = `<div class="grp-score">🎉 우리 조 점수 <b>${pts.toLocaleString()}점</b> / ${ACTS[act].max.toLocaleString()}점<small>조원 모두의 점수에 더해져요</small></div>`;
+  }else if(locked){
+    foot = `<div class="grp-done">✅ 제출 완료! 선생님 화면을 봐 주세요.</div>`;
+  }else if(p.canLead){
+    const last = st >= ACTS[act].stages - 1;
+    foot = `<div class="grp-lead">${st > 0 ? `<button class="btn ghost" id="gl-prev">◀ 이전 단계</button>` : ""}
+      <button class="btn" id="gl-next">${last ? "✅ 우리 조 제출하기" : "다음 단계 ▶"}</button></div>`;
+  }else{
+    foot = `<div class="grp-wait">👑 조장이 다음 단계로 넘겨요.</div>`;
+  }
+  sPaint(`<div id="grp-root" class="grp">${head}${body}${foot}</div>`, false);
+  document.querySelectorAll("[data-card]").forEach(b => b.onclick = () => groupMoveCard(b.dataset.card));
+  document.querySelectorAll("[data-edge]").forEach(b => b.onclick = ev => { ev.stopPropagation(); groupToggleEdge(b.dataset.edge); });
+  document.querySelectorAll("[data-look]").forEach(b => b.onclick = () => { const n = FW_NODES[b.dataset.look]; showCardImage(b.dataset.look, n.t, n.hint); });
+  if($("gl-next")) $("gl-next").onclick = () => groupStep(+1);
+  if($("gl-prev")) $("gl-prev").onclick = () => groupStep(-1);
+}
+function groupSortHtml(g, st, p, locked, revealed){
+  const place = g.b.place || {}, cur = SORT_BINS[Math.min(st, SORT_BINS.length - 1)];
+  const card = (c, i) => {
+    const mark = revealed ? (place[c.id] === c.bin ? "ok" : "no") : "";
+    const tap = !locked && p.canMove && (!place[c.id] || place[c.id] === cur.id);
+    return `<button class="gc ${mark} ${tap ? "tap" : ""}" data-card="${c.id}" ${tap ? "" : "data-ro=1"}>
+      <span class="n">${c.t}</span>${p.hint(i) ? `<span class="h">${esc(c.hint)}</span>${p.look ? `<span class="look">📷 눌러서 사진 보기</span>` : ""}` : ""}
+      ${revealed && place[c.id] !== c.bin ? `<span class="fix">정답: ${SORT_BINS.find(b => b.id === c.bin).label}</span>` : ""}</button>`;
+  };
+  const pool = SORT_CARDS.map((c,i) => [c,i]).filter(([c]) => !place[c.id]);
+  return `${locked ? "" : `<div class="grp-stage"><b>${st + 1} / ${SORT_BINS.length}단계</b> ${cur.icon} <b>${cur.label}</b> — ${cur.ask}</div>`}
+    <div class="gbins">${SORT_BINS.map(b => {
+      const inBin = SORT_CARDS.map((c,i) => [c,i]).filter(([c]) => place[c.id] === b.id);
+      return `<div class="gbin ${!locked && b.id === cur.id ? "cur" : ""}"><div class="bh">${b.icon} ${b.label} <small>${inBin.length}</small></div>
+        <div class="bl">${inBin.map(([c,i]) => card(c,i)).join("") || `<span class="empty">비어 있어요</span>`}</div></div>`;
+    }).join("")}</div>
+    ${pool.length ? `<div class="gpool"><div class="bh">🃏 아직 고르지 않은 카드 ${pool.length}장 ${!locked && p.canMove ? "<small>눌러서 위 칸에 넣어요</small>" : ""}</div>
+      <div class="bl">${pool.map(([c,i]) => card(c,i)).join("")}</div></div>` : ""}`;
+}
+function fwSvg(edges, opts){
+  opts = opts || {};
+  const set = new Set(edges || []), starving = opts.sim ? fwStarving(edges) : [];
+  let h = `<svg class="fw-mini" viewBox="0 0 360 290"><defs><marker id="fwa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0071e3"/></marker>
+    <marker id="fwr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff3b30"/></marker></defs>`;
+  for(const e of set){
+    const [a, b] = e.split(">"), A = FW_NODES[a], B = FW_NODES[b]; if(!A || !B) continue;
+    const gone = opts.sim && (a === "crab" || b === "crab");
+    const bad = opts.mark && !(FW_MUST[b] || []).includes(a) && !(FW_OK[b] || []).includes(a);
+    const cls = gone ? "gone" : bad ? "bad" : "", mk = `marker-end="url(#${bad ? "fwr" : "fwa"})"`;
+    if(A.lv === B.lv){   // 같은 줄끼리는 위로 휘어지게 그려 다른 생물 상자를 가리지 않게
+      h += `<path d="M${A.x},${A.y - 11} Q${(A.x + B.x) / 2},${A.y - 48} ${B.x},${B.y - 12}" fill="none" class="${cls}" ${mk}/>`;
+    }else h += `<line x1="${A.x}" y1="${A.y - 11}" x2="${B.x}" y2="${B.y + 13}" class="${cls}" ${mk}/>`;
+  }
+  for(const [id, n] of Object.entries(FW_NODES)){
+    const cls = opts.sim && id === "crab" ? "gone" : starving.includes(id) ? "starve" : "";
+    const w = n.short.length * 11 + 16;
+    h += `<g class="${cls}"><rect x="${n.x - w/2}" y="${n.y - 11}" width="${w}" height="24" rx="8"/><text x="${n.x}" y="${n.y + 5}" text-anchor="middle">${n.short}</text></g>`;
+  }
+  return h + `</svg>`;
+}
+function groupWebHtml(g, st, p, locked, revealed){
+  const edges = g.b.edges || [], set = new Set(edges);
+  const stage = FW_STAGES[Math.min(st, FW_STAGES.length - 1)];
+  const sim = !revealed && (locked || st >= FW_STAGES.length - 1);
+  let html = `${locked && !revealed ? "" : revealed ? "" : `<div class="grp-stage"><b>${st + 1} / ${FW_STAGES.length}단계</b> ${stage.ask}</div>`}
+    <div class="fw-box">${fwSvg(edges, {sim, mark:revealed})}<div class="fw-leg">화살표: <b>먹히는 쪽 → 먹는 쪽</b> (에너지가 이동하는 방향)</div></div>`;
+  if(!locked && stage.eaters.length){
+    html += stage.eaters.map((id, i) => {
+      const n = FW_NODES[id];
+      const cands = Object.keys(FW_NODES).filter(x => x !== id);
+      const look = p.look && p.hint(i);
+      return `<div class="fw-eater ${look ? "look" : ""}" ${look ? `data-look="${id}"` : ""}><div class="en">${n.t} 는(은) 무엇을 먹을까?</div>${p.hint(i) ? `<div class="h">📖 ${esc(n.hint)}${look ? ` <span class="look">📷 눌러서 사진 보기</span>` : ""}</div>` : ""}
+        <div class="fw-chips">${cands.map(x => `<button class="fwc ${set.has(edgeKey(x, id)) ? "on" : ""} ${p.canMove ? "tap" : ""}" data-edge="${edgeKey(x, id)}">${p.look ? "📷 " : ""}${FW_NODES[x].short}</button>`).join("")}</div></div>`;
+    }).join("");
+  }
+  if(sim){
+    const starve = fwStarving(edges);
+    html += `<div class="fw-sim">${starve.length
+      ? `😵 칠게·농게가 사라지면 먹이가 끊기는 생물: <b>${starve.map(id => FW_NODES[id].short).join(", ")}</b><br><small>다른 먹이와의 연결이 없어서 버티기 어려워요.</small>`
+      : `😊 칠게·농게가 사라져도 <b>모든 생물이 다른 먹이로 버틸 수 있어요!</b><br><small>먹이 관계가 여러 갈래로 얽혀 있기 때문이에요.</small>`}</div>`;
+  }
+  if(revealed){
+    html += `<div class="fw-check">${Object.keys(FW_MUST).map(id => {
+      const miss = FW_MUST[id].filter(x => !set.has(edgeKey(x, id)));
+      const wrong = edges.filter(e => e.endsWith(">" + id)).map(e => e.split(">")[0]).filter(x => !FW_MUST[id].includes(x) && !(FW_OK[id] || []).includes(x));
+      return `<div class="${miss.length || wrong.length ? "no" : "ok"}"><b>${FW_NODES[id].short}</b> ← ${FW_MUST[id].map(x => FW_NODES[x].short).join(", ")}
+        ${miss.length ? `<small>빠짐: ${miss.map(x => FW_NODES[x].short).join(", ")}</small>` : ""}${wrong.length ? `<small>틀림: ${wrong.map(x => FW_NODES[x].short).join(", ")}</small>` : ""}</div>`;
+    }).join("")}</div>`;
+  }
+  return html;
+}
+async function groupSaveBoard(b){
+  S.group.b = b; S.gWrote = Date.now(); renderGroup();
+  try{ await setSetting(groupRowId(S.cls, S.grp, S.group.act, "b"), b); }catch(e){ toast("저장이 안 됐어요. 다시 눌러 주세요."); }
+}
+function groupMoveCard(id){
+  const g = S.group, p = gPerm(), v = S.live || {};
+  if(!g || g.act !== "A") return;
+  if(!p.canMove){
+    const i = SORT_CARDS.findIndex(c => c.id === id);
+    if(p.look && p.hint(i)) return showCardImage(id, SORT_CARDS[i].t, SORT_CARDS[i].hint);
+    toast("카드는 🖐 실행자만 옮길 수 있어요."); return;
+  }
+  if(g.s.done || v.glock === "A" || (v.grev || []).includes("A")) return;
+  const cur = SORT_BINS[Math.min(g.s.stage || 0, SORT_BINS.length - 1)].id;
+  const place = Object.assign({}, g.b.place || {});
+  if(!place[id]) place[id] = cur;
+  else if(place[id] === cur) delete place[id];
+  else { toast("앞 단계에서 넣은 카드예요. 조장이 [◀ 이전 단계]로 돌아가면 바꿀 수 있어요."); return; }
+  groupSaveBoard(Object.assign({}, g.b, {place}));
+}
+function groupToggleEdge(key){
+  const g = S.group, p = gPerm(), v = S.live || {};
+  if(!g || g.act !== "B") return;
+  if(!p.canMove){
+    // 관찰자는 먹이 버튼(규조류·갈대 같은 생산자 포함)을 누르면 그 생물의 사진을 본다
+    const prey = key.split(">")[0], n = FW_NODES[prey];
+    if(p.look && n) return showCardImage(prey, n.t, n.hint);
+    toast("먹이 연결은 🖐 실행자만 고를 수 있어요."); return;
+  }
+  if(g.s.done || v.glock === "B" || (v.grev || []).includes("B")) return;
+  const set = new Set(g.b.edges || []);
+  set.has(key) ? set.delete(key) : set.add(key);
+  groupSaveBoard(Object.assign({}, g.b, {edges:[...set]}));
+}
+async function groupStep(d){
+  const g = S.group; if(!g) return;
+  const act = g.act, n = ACTS[act].stages, st = g.s.stage || 0;
+  let next;
+  if(d > 0 && st >= n - 1){
+    if(act === "A"){
+      const left = SORT_CARDS.filter(c => !(g.b.place || {})[c.id]).length;
+      if(left && !confirm(`아직 넣지 않은 카드가 ${left}장 있어요. 그래도 제출할까요?`)) return;
+    }else if(!confirm("우리 조 먹이그물을 제출할까요? 제출하면 더 고칠 수 없어요.")) return;
+    next = {stage:st, done:true};
+  }else next = {stage:Math.max(0, Math.min(n - 1, st + d)), done:false};
+  g.s = next; S.gWrote = Date.now(); renderGroup();
+  try{ await setSetting(groupRowId(S.cls, S.grp, act, "s"), next); }catch(e){ toast("전달이 안 됐어요. 다시 눌러 주세요."); }
 }
 function qTag(q){ const st = setOf(q.id); return `${QUIZ[st].title} · ${QUIZ[st].items.indexOf(q)+1}번`; }
 function renderQuestion(q){
@@ -426,7 +763,7 @@ async function renderMyRank(){
     ]);
   }catch(e){}
   if(liveKey(S.live) !== liveKey(v)) return; // 그 사이 화면이 바뀜
-  const lb = leaderboard(players, answers, v.revealed || []);
+  const lb = leaderboard(players, answers, v.revealed || [], v.gscore);
   const idx = lb.findIndex(r => r.num === S.num);
   const me = lb[idx] || {score:0, correct:0};
   const rank = idx + 1;
@@ -479,15 +816,20 @@ const T = {
   quizSet:"A", qi:{A:0, B:0}, qstage:{}, timer:0, qStart:0, lastCounts:{},
   showCounts: pref.get("showCounts","1") === "1", mask: pref.get("mask","0") === "1", sound: pref.get("sound","1") === "1",
   pointer: pref.get("pointer","0") === "1",
-  rankMode:"board", awardStep:0, essaySel:"e1", showModel:false, bots:null, started:false
+  rankMode:"board", awardStep:0, essaySel:"e1", showModel:false, bots:null, started:false,
+  gact:"A", gview:"status", gboards:{A:{}, B:{}}
 };
 const TABS = [
   {id:"qr", label:"QR"},
   {id:"video", label:"🎬 순천 새멍 투어"},
   {id:"s1", label:"① 순천만 줌아웃"},
+  {id:"gA", label:"👥 조별 1 · 구성요소 나누기", group:"A"},
+  {id:"s5", label:"① 구성요소 정리"},
   {id:"s2", label:"② 상호작용"},
   {id:"qA", label:"🎮 퀴즈 1", game:true},
-  {id:"s3", label:"③ 먹이 관계"},
+  {id:"s3", label:"③ 먹이사슬"},
+  {id:"gB", label:"👥 조별 2 · 먹이그물 만들기", group:"B"},
+  {id:"s6", label:"③ 먹이그물·피라미드"},
   {id:"s4", label:"④ 생태계평형"},
   {id:"qB", label:"🎮 퀴즈 2", game:true},
   {id:"essay", label:"✍ 확장질문"},
@@ -572,6 +914,7 @@ async function startTeacher(cls){
     buildTabs(); initTools(); initSlides(); initImages();
     DB.on("lesson_answers", scheduleRefresh);
     DB.on("lesson_players", scheduleRefresh);
+    DB.on("settings", row => { if(!row || String(row.id).startsWith(`${LESSON_ID}|${T.cls}|G`)) scheduleRefresh(); });
     setInterval(refreshData, 4000);
   }
   paintGates();
@@ -580,7 +923,7 @@ async function startTeacher(cls){
 }
 function pushLive(patch){
   // 학생이 핸드폰으로 할 일이 생기면(문제·확장질문·순위) [수업듣기!]는 저절로 꺼진다
-  if(["question","essay","board","award"].includes(patch.phase)) patch = Object.assign({}, patch, {listen:false});
+  if(["question","essay","board","award","group"].includes(patch.phase)) patch = Object.assign({}, patch, {listen:false});
   T.live = Object.assign({}, T.live, patch, {nonce:(T.live.nonce||0)+1, at:Date.now()});
   paintGates();
   return setSetting(liveId(T.cls), T.live).catch(e => { console.error(e); toast("⚠️ 학생 화면에 전달이 안 됐어요. 인터넷을 확인하세요."); });
@@ -590,12 +933,22 @@ function scheduleRefresh(){ if(refreshTimer) return; refreshTimer = setTimeout((
 async function refreshData(){
   if(!T.cls) return;
   try{
-    const [pl, an] = await Promise.all([
+    const [pl, an, st] = await Promise.all([
       DB.list("lesson_players", {lesson_id:LESSON_ID, cls:T.cls}),
-      DB.list("lesson_answers", {lesson_id:LESSON_ID, cls:T.cls})
+      DB.list("lesson_answers", {lesson_id:LESSON_ID, cls:T.cls}),
+      DB.list("settings")
     ]);
     T.players = pl.sort((a,b) => String(a.num).localeCompare(String(b.num)));
     T.answers = an; T.dataErr = null;
+    // 조별 활동판: …|G3|A|b → T.gboards.A["3"].b
+    const pre = `${LESSON_ID}|${T.cls}|G`, gb = {A:{}, B:{}};
+    st.forEach(r => {
+      if(!String(r.id).startsWith(pre)) return;
+      const [g, act, kind] = String(r.id).slice(pre.length).split("|");
+      if(!gb[act]) return;
+      (gb[act][g] = gb[act][g] || {})[kind] = r.value;
+    });
+    T.gboards = gb;
   }catch(e){ T.dataErr = e; console.error(e); }
   onData();
 }
@@ -604,6 +957,7 @@ function onData(){
   if(T.tab === "qA" || T.tab === "qB") updateQuizCounts();
   else if(T.tab === "essay") renderEssayView(true);
   else if(T.tab === "progress") renderProgress();
+  else if(T.tab === "gA" || T.tab === "gB") renderGroupView(true);
 }
 
 // ============================================================
@@ -640,7 +994,7 @@ function paintMenu(id){
   b.classList.toggle("active", !!t);
   b.textContent = t ? `📚 ${t.label} ▾` : "📚 학습내용 ▾";
 }
-function viewOf(id){ return (id === "qA" || id === "qB") ? "tv-quiz" : "tv-" + id; }
+function viewOf(id){ return (id === "qA" || id === "qB") ? "tv-quiz" : (id === "gA" || id === "gB") ? "tv-group" : "tv-" + id; }
 function switchTab(id){
   if(!TABS.some(t => t.id === id)) id = "qr";
   T.tab = id; sess.set("tab", id);
@@ -659,7 +1013,8 @@ function switchTab(id){
     const busy = ["question","closed","reveal"].includes(T.live.phase) && T.live.qid && setOf(T.live.qid) === set;
     if(!busy) pushLive({phase:"wait", tab:QUIZ[set].title + " 준비 중"});
     renderQuiz();
-  }else if(id === "essay") renderEssayView();
+  }else if(id === "gA" || id === "gB"){ T.gact = tab.group; T.gview = "status"; renderGroupView(); }
+  else if(id === "essay") renderEssayView();
   else if(id === "rank") enterRank();
   else if(id === "progress") renderProgress();
 }
@@ -691,6 +1046,10 @@ $("vd-file").onchange = e => {
   lv.onloadedmetadata = () => { lv.currentTime = Math.min(VIDEO.start, lv.duration || VIDEO.start); lv.play().catch(() => {}); };
   e.target.value = "";
 };
+function goPrevTab(){
+  const i = TABS.findIndex(t => t.id === T.tab);
+  if(i > 0) switchTab(TABS[i-1].id);
+}
 function goNextTab(){
   const i = TABS.findIndex(t => t.id === T.tab);
   if(i >= 0 && i < TABS.length - 1) switchTab(TABS[i+1].id);
@@ -706,7 +1065,7 @@ function stepsOf(page){
   let m = 0; page.querySelectorAll("[data-step]").forEach(e => m = Math.max(m, +e.dataset.step)); return m;
 }
 function initSlides(){
-  ["s1","s2","s3","s4"].forEach(tab => {
+  ["s1","s2","s3","s4","s5","s6"].forEach(tab => {
     SLIDE[tab] = {page:0, step:0};
     const sec = $("tv-"+tab);
     sec.querySelector(".sn-next").onclick = () => slideNext(tab);
@@ -736,11 +1095,11 @@ function slidePrev(tab){
   renderSlide(tab);
 }
 const IMG_FILES = {
-  "intro-bay.jpg":["순천만 전경.png"], "reed.jpg":["순천만 갈대밭.png"], "chilmyeoncho.jpg":["붉게 물든 칠면조 군락.png","붉게 물든 칠면초 군락.png"],
-  "mudflat.jpg":["썰물 때 드러난 갯벌.png"], "mudskipper.jpg":["짱뚱어.png"], "fiddler-crab.jpg":["농게.png"], "chilge.jpg":["칠게.png"],
-  "lugworm.jpg":["갯지렁이.png"], "hooded-crane.jpg":["논에서 먹이를 먹는 흑두루미 무리.png"], "spoonbill.jpg":["노랑부리저어새.png"],
-  "curlew.jpg":["알락꼬리마도요.png"], "gull.jpg":["검은머리갈매기.png"], "leopard-cat.jpg":["삵.png"], "otter.jpg":["수달.png"],
-  "diatom.jpg":["규조류 현미경 사진.png"]
+  "intro-bay.jpg":["순천만 전경.jpg"], "reed.jpg":["순천만 갈대밭.jpg"], "chilmyeoncho.jpg":["붉게 물든 칠면조 군락.jpg","붉게 물든 칠면초 군락.png"],
+  "mudflat.jpg":["썰물 때 드러난 갯벌.jpg"], "mudskipper.jpg":["짱뚱어.jpg"], "fiddler-crab.jpg":["농게.jpg"], "chilge.jpg":["칠게.png"],
+  "lugworm.jpg":["갯지렁이.png"], "hooded-crane.jpg":["논에서 먹이를 먹는 흑두루미 무리.jpg"], "spoonbill.jpg":["노랑부리저어새.png"],
+  "curlew.jpg":["알락꼬리마도요.png"], "gull.jpg":["검은머리갈매기.jpg"], "leopard-cat.jpg":["삵.jpg"], "otter.jpg":["수달.png"],
+  "diatom.jpg":["규조류 현미경 사진.jpg"]
 };
 function initImages(){
   document.querySelectorAll("figure.ph[data-img]").forEach(fig => {
@@ -843,7 +1202,8 @@ function countUp(el, to, unit, prefix){
 // ---------- 먹이그물 ----------
 const WEB = { sel:null, removed:false,
   nodes:{
-    top:   {t:"🐾 삵·수달", x:500, y:62,  lv:"최종 소비자", c:"#7c3aed"},
+    cat:   {t:"🐾 삵", x:330, y:62,  lv:"최종 소비자", c:"#7c3aed"},
+    otter: {t:"🦦 수달", x:670, y:62,  lv:"최종 소비자", c:"#7c3aed"},
     spoon: {t:"🐦 저어새", x:190, y:195, lv:"2차 소비자", c:"#ea580c"},
     curlew:{t:"🐦 알락꼬리마도요", x:500, y:195, lv:"2차 소비자", c:"#ea580c"},
     gull:  {t:"🕊️ 검은머리갈매기", x:810, y:195, lv:"2차 소비자", c:"#ea580c"},
@@ -857,7 +1217,7 @@ const WEB = { sel:null, removed:false,
   // [먹히는 것, 먹는 것]
   edges:[["diatom","mud"],["diatom","crab"],["reed","crab"],["reed","worm"],["diatom","worm"],
          ["mud","spoon"],["crab","spoon"],["crab","curlew"],["worm","curlew"],["crab","gull"],
-         ["spoon","top"],["curlew","top"],["gull","top"],["mud","top"]],
+         ["spoon","cat"],["curlew","cat"],["gull","cat"],["mud","otter"],["crab","otter"]],
   dec:[["bact","reed"]]
 };
 function buildWeb(){
@@ -1133,6 +1493,94 @@ function updateQuizCounts(first){
 }
 
 // ============================================================
+// 선생님 — 조별 활동 (진행 현황 · 조별 비교 · 정답 공개와 점수 반영)
+// ============================================================
+function groupsInClass(){
+  const set = new Set(T.players.filter(p => p.grp).map(p => String(p.grp)));
+  Object.values(T.gboards || {}).forEach(byG => Object.keys(byG).forEach(g => set.add(g)));
+  return [...set].sort((a,b) => +a - +b);
+}
+function renderGroupView(fromData){
+  const sec = $("tv-group"), act = T.gact, A = ACTS[act];
+  const boards = (T.gboards || {})[act] || {}, groups = groupsInClass();
+  const open = T.live.phase === "group" && T.live.act === act && T.live.glock !== act;
+  const revealed = (T.live.grev || []).includes(act);
+  const sig = JSON.stringify([act, T.gview, boards, T.players.map(p => p.num + p.grp + p.role), T.live.phase, T.live.act, T.live.glock, T.live.grev, T.mask]);
+  if(fromData && sec._sig === sig) return;
+  sec._sig = sig;
+  const doneN = groups.filter(g => ((boards[g] || {}).s || {}).done).length;
+  const cards = groups.map(g => {
+    const b = (boards[g] || {}).b || {}, s = (boards[g] || {}).s || {stage:0};
+    const mem = T.players.filter(p => String(p.grp) === g).sort((x,y) => ROLES.findIndex(r => r.id === x.role) - ROLES.findIndex(r => r.id === y.role));
+    const prog = act === "A" ? `카드 ${Object.keys(b.place || {}).length} / ${SORT_CARDS.length}` : `먹이 연결 ${(b.edges || []).length}개`;
+    const pts = revealed ? Number(((T.live.gscore || {})[act] || {})[g]) || 0 : null;
+    return `<div class="gv-card ${s.done ? "done" : ""}">
+      <div class="gv-h"><b>${g}조</b><span>${s.done ? "✅ 제출" : `${(s.stage || 0) + 1} / ${A.stages}단계`}</span></div>
+      <div class="gv-mem">${mem.map(p => `<span>${roleOf(p.role).icon}${esc(dispName(p.name))}</span>`).join("") || "<span>—</span>"}</div>
+      <div class="gv-prog">${prog}</div>
+      ${pts !== null ? `<div class="gv-pts">${pts.toLocaleString()}점</div>` : ""}</div>`;
+  }).join("");
+  const showCompare = T.gview === "compare" || revealed;
+  sec.innerHTML = `
+    <div class="gv-head"><h2>👥 ${esc(A.title)}</h2>
+      <span class="gv-cnt">제출 ${doneN} / ${groups.length}조</span>
+      <span class="g-spacer"></span>
+      <button class="btn ${open ? "warn" : ""}" id="gv-open">${open ? "⏹ 활동 마감" : "📱 활동 시작"}</button>
+      <button class="btn soft" id="gv-view">${showCompare && !revealed ? "👥 진행 현황 보기" : "📊 조별 비교 보기"}</button>
+      <button class="btn gold" id="gv-reveal">${revealed ? "↺ 점수 다시 계산" : "✅ 정답 공개 · 점수 반영"}</button></div>
+    ${showCompare ? groupCompareHtml(act, groups, boards, revealed) : `<div class="gv-grid">${cards || `<p class="gv-empty">아직 조에 들어온 학생이 없어요. 학생들이 입장할 때 조와 역할을 골라요.</p>`}</div>`}
+    ${showCompare ? `<div class="gv-mini">${cards}</div>` : ""}
+    <p class="gv-note">${act === "A"
+      ? "카드 1장 맞으면 100점 (최대 1,500점) · 조마다 다르게 놓은 카드는 노랗게 표시돼요 → 그 카드부터 이야기해 보세요."
+      : "꼭 필요한 먹이 연결 1개 +100점, 틀린 연결 1개 −50점 (최대 " + FW_MAX.toLocaleString() + "점) · 4단계에서 각 조는 칠게·농게가 사라졌을 때를 직접 확인해요."}</p>`;
+  $("gv-open").onclick = () => {
+    if(open) pushLive({phase:"group", act, glock:act, tab:A.short + " 마감"});
+    else pushLive({phase:"group", act, glock:null, tab:A.short});
+    sec._sig = ""; renderGroupView();
+  };
+  $("gv-view").onclick = () => { T.gview = T.gview === "compare" ? "status" : "compare"; sec._sig = ""; renderGroupView(); };
+  $("gv-reveal").onclick = () => {
+    if(!revealed && !confirm("정답을 공개하고 조별 점수를 반영할까요? 학생 핸드폰에도 결과가 보여요.")) return;
+    const byG = {};
+    groupsInClass().forEach(g => byG[g] = scoreAct(act, (boards[g] || {}).b));
+    const gscore = Object.assign({}, T.live.gscore || {}, {[act]: byG});
+    const grev = [...new Set([...(T.live.grev || []), act])];
+    pushLive({phase:"group", act, glock:act, grev, gscore, tab:A.short + " 결과"});
+    SND.reveal(); sec._sig = ""; renderGroupView();
+  };
+}
+function groupCompareHtml(act, groups, boards, revealed){
+  if(!groups.length) return `<p class="gv-empty">비교할 조가 없어요.</p>`;
+  const th = `<th>${act === "A" ? "카드" : "먹는 생물"}</th>${groups.map(g => `<th>${g}조</th>`).join("")}${revealed ? "<th>정답</th>" : ""}`;
+  if(act === "A"){
+    const short = id => (SORT_BINS.find(b => b.id === id) || {}).label || "";
+    const rows = SORT_CARDS.map(c => {
+      const vals = groups.map(g => (((boards[g] || {}).b || {}).place || {})[c.id] || "");
+      const split = new Set(vals.filter(Boolean)).size > 1;
+      return `<tr class="${split && !revealed ? "split" : ""}"><td class="l">${c.t}</td>${vals.map(v => `<td class="${revealed && v ? (v === c.bin ? "ok" : "no") : ""}">${short(v) || "·"}</td>`).join("")}${revealed ? `<td class="ans">${short(c.bin)}</td>` : ""}</tr>`;
+    }).join("");
+    return `<div class="gv-table-wrap"><table class="gv-table"><thead><tr>${th}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  const rows = Object.keys(FW_MUST).map(id => {
+    const cells = groups.map(g => {
+      const edges = ((boards[g] || {}).b || {}).edges || [];
+      const prey = edges.filter(e => e.endsWith(">" + id)).map(e => e.split(">")[0]);
+      if(!prey.length) return `<td>·</td>`;
+      return `<td>${prey.map(x => {
+        const k = FW_MUST[id].includes(x) ? "ok" : (FW_OK[id] || []).includes(x) ? "" : "no";
+        return `<span class="${revealed ? k : ""}">${FW_NODES[x].short}</span>`;
+      }).join(" ")}</td>`;
+    }).join("");
+    return `<tr><td class="l">${FW_NODES[id].t}</td>${cells}${revealed ? `<td class="ans">${FW_MUST[id].map(x => FW_NODES[x].short).join(", ")}</td>` : ""}</tr>`;
+  }).join("");
+  const sim = `<tr class="sim"><td class="l">😵 칠게·농게가 사라지면<br>먹이가 끊기는 생물</td>${groups.map(g => {
+    const st = fwStarving(((boards[g] || {}).b || {}).edges || []);
+    return `<td>${st.length ? st.map(x => FW_NODES[x].short).join(", ") : "없음 👍"}</td>`;
+  }).join("")}${revealed ? `<td class="ans">${fwStarving(FW_ANSWER).map(x => FW_NODES[x].short).join(", ") || "없음 👍"}</td>` : ""}</tr>`;
+  return `<div class="gv-table-wrap"><table class="gv-table"><thead><tr>${th}</tr></thead><tbody>${rows}${sim}</tbody></table></div>`;
+}
+
+// ============================================================
 // 순위 · 시상식
 // ============================================================
 function enterRank(){
@@ -1143,17 +1591,17 @@ function enterRank(){
 function renderRank(){ if(T.rankMode === "award") renderAward(); else renderBoard(); }
 function renderBoard(){
   const rev = T.live.revealed || [];
-  const lb = leaderboard(T.players, T.answers, rev);
+  const lb = leaderboard(T.players, T.answers, rev, T.live.gscore);
   const prevRev = rev.slice(0, -1);
-  const before = leaderboard(T.players, T.answers, prevRev);
+  const before = leaderboard(T.players, T.answers, prevRev, T.live.gscore);
   const posBefore = new Map(before.map((r,i) => [r.num, i+1]));
   let rocket = null;
   if(prevRev.length) lb.forEach((r,i) => { const up = (posBefore.get(r.num) || lb.length) - (i+1); if(up >= 2 && (!rocket || up > rocket.up)) rocket = {r, up, from:posBefore.get(r.num), to:i+1}; });
   const top = lb.slice(0, 5), max = Math.max(1, ...top.map(r => r.score));
   $("tv-rank").innerHTML = `
-    <div class="rank-title"><h2>🏆 중간 순위</h2><p>지금까지 ${rev.length}문항 · 참가 ${lb.length}명 · 맞히면 500점 + 빠르기 보너스</p></div>
+    <div class="rank-title"><h2>🏆 중간 순위</h2><p>지금까지 ${rev.length}문항 + 조별 활동 ${Object.keys(T.live.gscore || {}).length}개 · 참가 ${lb.length}명</p></div>
     ${rocket ? `<div class="rocket">🚀 순위 급상승 · ${esc(dispName(rocket.r.name))} (${rocket.from}위 → ${rocket.to}위)</div>` : ""}
-    ${top.length && rev.length ? `<div class="rank-list">${top.map((r,i) => `
+    ${top.length && (rev.length || Object.keys(T.live.gscore || {}).length) ? `<div class="rank-list">${top.map((r,i) => `
       <div class="rk r${i+1}" style="animation-delay:${(top.length - i) * 0.18}s">
         <div class="no">${i+1}</div>
         <div class="bar"><i data-w="${r.score / max * 100}"></i><span>${esc(dispName(r.name))}<span class="up">${r.correct}문제 정답</span></span></div>
@@ -1165,13 +1613,13 @@ function renderBoard(){
     document.querySelectorAll("#tv-rank .rk .bar i").forEach(i => i.style.width = i.dataset.w + "%");
     document.querySelectorAll("#tv-rank .rk .pt").forEach(el => countUp(el, +el.dataset.to, "점"));
   }, 400);
-  if(top.length && rev.length) SND.reveal();
+  if(top.length && (rev.length || Object.keys(T.live.gscore || {}).length)) SND.reveal();
   $("rk-back").onclick = () => switchTab(T.quizSet === "B" ? "qB" : "qA");
   $("rk-refresh").onclick = async () => { await refreshData(); renderBoard(); };
   $("rk-award").onclick = () => { T.rankMode = "award"; T.awardStep = 0; enterRank(); };
 }
 function renderAward(){
-  const lb = leaderboard(T.players, T.answers, T.live.revealed || []);
+  const lb = leaderboard(T.players, T.answers, T.live.revealed || [], T.live.gscore);
   const s = T.awardStep;
   const essayMvp = T.live.essayMvp || {};
   const pd = (k, cls) => {
@@ -1244,13 +1692,15 @@ function renderEssayView(fromData){
   });
 }
 $("spot").onclick = () => $("spot").classList.add("hidden");
+// 사진 창: 사진 바깥(어두운 부분)을 누르면 닫힘
+$("img-pop").onclick = e => { if(e.target === $("img-pop")) $("img-pop").classList.add("hidden"); };
 
 // ============================================================
 // 진행 상황 · 기록 내려받기 · 초기화
 // ============================================================
 function renderProgress(){
   const rev = T.live.revealed || [];
-  const lb = leaderboard(T.players, T.answers, rev);
+  const lb = leaderboard(T.players, T.answers, rev, T.live.gscore);
   const rank = new Map(lb.map((r,i) => [r.num, i+1]));
   const cnt = (num, ids) => T.answers.filter(a => a.num === num && ids.includes(a.qid)).length;
   const A = QUIZ.A.items.map(q => q.id), B = QUIZ.B.items.map(q => q.id), E = ESSAYS.map(e => e.id);
@@ -1261,13 +1711,15 @@ function renderProgress(){
       <button class="btn" id="pg-csv">📥 기록 내려받기(엑셀)</button>
       ${DB.demo ? `<button class="btn gold" id="pg-bots">🤖 가상 학생 24명 입장</button>` : ""}
       <button class="btn warn" id="pg-reset">🗑 이 반 기록 지우기</button></div>
-    <table class="ptable"><thead><tr><th>순위</th><th>학번</th><th>이름</th><th>퀴즈 1</th><th>퀴즈 2</th><th>확장질문</th><th>정답</th><th>점수</th></tr></thead>
+    <table class="ptable"><thead><tr><th>순위</th><th>조</th><th>역할</th><th>학번</th><th>이름</th><th>조별</th><th>퀴즈 1</th><th>퀴즈 2</th><th>확장질문</th><th>정답</th><th>점수</th></tr></thead>
     <tbody>${T.players.map(p => { const s = score.get(p.num) || {score:0, correct:0}; return `<tr>
-      <td>${rank.get(p.num) || "-"}</td><td>${esc(p.num)}</td><td class="l">${esc(p.name)}</td>
+      <td>${rank.get(p.num) || "-"}</td><td>${p.grp ? esc(p.grp) + "조" : "-"}</td><td>${p.role ? roleOf(p.role).icon + esc(p.role) : "-"}</td><td>${esc(p.num)}</td><td class="l">${esc(p.name)}</td>
+      <td>${groupPoints(T.live.gscore, p.grp).toLocaleString()}</td>
       <td>${cnt(p.num,A)} / ${A.length}</td><td>${cnt(p.num,B)} / ${B.length}</td>
       <td class="${cnt(p.num,E)===E.length?"on":""}">${cnt(p.num,E)} / ${E.length}</td>
-      <td>${s.correct}</td><td><b>${s.score.toLocaleString()}</b></td></tr>`; }).join("") || `<tr><td colspan="8" class="off">아직 접속한 학생이 없어요.</td></tr>`}</tbody></table>
+      <td>${s.correct}</td><td><b>${s.score.toLocaleString()}</b></td></tr>`; }).join("") || `<tr><td colspan="11" class="off">아직 접속한 학생이 없어요.</td></tr>`}</tbody></table>
     <p class="prog-note">· 점수는 <b>정답을 공개한 문항</b>만 계산해요 (맞히면 500점 + 빠르기 보너스 최대 500점).<br>
+      · 조별 활동 점수는 [정답 공개 · 점수 반영]을 누르면 조원 모두에게 똑같이 더해져요.<br>
       · 학생이 나갔다 들어와도 같은 반·학번·이름이면 이어서 풀 수 있어요.<br>
       · 수업이 끝나면 [📥 기록 내려받기]로 학생 답(서술형 포함)을 저장해 두세요.</p>`;
   $("pg-csv").onclick = downloadCsv;
@@ -1276,14 +1728,15 @@ function renderProgress(){
 }
 function downloadCsv(){
   const rev = T.live.revealed || [];
-  const lb = leaderboard(T.players, T.answers, rev);
+  const lb = leaderboard(T.players, T.answers, rev, T.live.gscore);
   const rank = new Map(lb.map((r,i) => [r.num, [i+1, r.score]]));
-  const head = ["반","학번","이름"];
+  const head = ["반","조","역할","학번","이름","조별1 점수","조별2 점수"];
   ALL_Q.forEach(q => head.push(`${q.id} 답`, `${q.id} 정오`, `${q.id} 걸린 시간(초)`));
   head.push("총점","순위", ...ESSAYS.map(e => e.title));
   const lines = [head];
   T.players.forEach(p => {
-    const row = [T.cls, p.num, p.name];
+    const gs = T.live.gscore || {};
+    const row = [T.cls, p.grp || "", p.role || "", p.num, p.name, (gs.A || {})[p.grp] || 0, (gs.B || {})[p.grp] || 0];
     ALL_Q.forEach(q => {
       const a = T.answers.find(x => x.qid === q.id && x.num === p.num);
       row.push(a ? optLabel(q, Number(a.answer)) : "", a ? (pointsFor(q,a) > 0 ? "O" : "X") : "", a ? (a.ms/1000).toFixed(1) : "");
@@ -1304,10 +1757,13 @@ async function resetClass(){
   try{
     await DB.drop("lesson_answers", {lesson_id:LESSON_ID, cls:T.cls});
     await DB.drop("lesson_players", {lesson_id:LESSON_ID, cls:T.cls});
+    const ids = [];
+    for(let g = 1; g <= GROUP_COUNT; g++) for(const act of ["A","B"]) for(const k of ["b","s"]) ids.push(groupRowId(T.cls, g, act, k));
+    await Promise.all(ids.map(id => DB.drop("settings", {id})));
   }catch(e){ toast("지우지 못했어요: " + (e.message || e)); }
   T.qstage = {}; T.qi = {A:0, B:0}; T.awardStep = 0; T.rankMode = "board"; T.bots = null; T.lastCounts = {};
   // resetAt이 바뀌면 학생 핸드폰도 풀던 답·점수·쓰던 글을 비우고 입장 화면으로 돌아간다. 입장은 다시 열어 둔다.
-  await pushLive({phase:"wait", revealed:[], mvp:[], essayMvp:{}, qid:null, awardStep:0, tab:"수업 준비 중", listen:false, entry:true, resetAt:Date.now()});
+  await pushLive({phase:"wait", revealed:[], mvp:[], essayMvp:{}, qid:null, awardStep:0, tab:"수업 준비 중", listen:false, entry:true, resetAt:Date.now(), act:null, glock:null, grev:[], gscore:{}});
   await refreshData(); renderProgress(); toast("지웠어요.");
 }
 
@@ -1399,6 +1855,7 @@ document.addEventListener("keydown", e => {
     return;
   }
   if(tab === "video") return act === "next" ? goNextTab() : switchTab("qr");
+  if(tab === "gA" || tab === "gB") return act === "next" ? goNextTab() : goPrevTab();
   if(act === "next" && tab === "qr") goNextTab();
 }, true);
 
@@ -1455,7 +1912,7 @@ function confetti(n){
     if(sess.get("teacher") === "1") openClassPicker(); else openPass();
     return;
   }
-  const cls = idStore.get("sc:cls"), num = idStore.get("sc:num"), name = idStore.get("sc:name");
-  if(cls && num && name){ Object.assign(S, {cls, num, name}); enterStudent(); }
+  const cls = idStore.get("sc:cls"), num = idStore.get("sc:num"), name = idStore.get("sc:name"), grp = idStore.get("sc:grp"), role = idStore.get("sc:role");
+  if(cls && num && name && grp && role){ Object.assign(S, {cls, num, name, grp, role}); enterStudent(); }
   else renderLogin();
 })();
