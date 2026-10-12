@@ -1008,6 +1008,10 @@
   .ls-foot{ display:flex; justify-content:space-between; font-size:clamp(12px,2vh,20px); color:#7b8794; font-weight:700; }
   .ls-chips{ display:flex; flex-wrap:wrap; gap:1vh .8vw; }
   .ls-chips span{ background:#eef2f8; border-radius:1.2vh; padding:.6vh 1vw; font-size:clamp(15px,3.2vh,34px); font-weight:800; color:var(--navy); }
+  /* 단계별 공개: 처음엔 숨김(자리는 유지) → 클릭하면 아래에서 떠오르며 나타남 */
+  .lec-slide .lr{ opacity:0; transform:translateY(16px); transition:opacity .45s ease, transform .45s ease; visibility:hidden; }
+  .lec-slide .lr.on{ opacity:1; transform:none; visibility:visible; }
+  .lec-slide{ cursor:pointer; }
   @media (max-width:760px){ .ls-main{ grid-template-columns:1fr; overflow:auto; } }
 
   /* 화학 반응식이 좁은 화면에서 넘치지 않게 */
@@ -2589,7 +2593,7 @@ const LESSON_ITEMS = [
   {sep:true},
   {no:0, icon:"👥", label:"조별 현황", tab:"groups", tg:"보기만"},
 ];
-let lectureOn = false, lecIdx = 0;
+let lectureOn = false, lecIdx = 0, lecStep = 0, lecStepMax = 0;
 async function setLecture(on){
   lectureOn = !!on;
   paintLecture();
@@ -2647,8 +2651,16 @@ function buildLessonMenu(){
   });
   document.addEventListener("click", e=>{ if(!m.contains(e.target)) m.classList.add("hidden"); });
   document.getElementById("lec-lock-toggle").addEventListener("click", ()=>setLecture(!lectureOn));
-  document.getElementById("lec-prev").addEventListener("click", ()=>{ if(lecIdx>0){ lecIdx--; renderLecture(); } });
-  document.getElementById("lec-next").addEventListener("click", ()=>{ if(lecIdx<LECTURE_SLIDES.length-1){ lecIdx++; renderLecture(); } });
+  // 클릭할 때마다 한 단계씩 나타나고, 다 나타나면 다음 장으로 넘어간다
+  document.getElementById("lec-prev").addEventListener("click", ()=>{
+    if(lecStep>0){ lecStep--; paintLecStep(); }
+    else if(lecIdx>0){ lecIdx--; lecStep = 999; renderLecture(); }
+  });
+  document.getElementById("lec-next").addEventListener("click", ()=>{
+    if(lecStep<lecStepMax){ lecStep++; paintLecStep(); }
+    else if(lecIdx<LECTURE_SLIDES.length-1){ lecIdx++; lecStep = 0; renderLecture(); }
+  });
+  document.getElementById("lec-slide").addEventListener("click", ()=>document.getElementById("lec-next").click());
 })();
 function lecAxes(){ return '<line x1="40" y1="190" x2="310" y2="190" stroke="#8a94a6" stroke-width="3"/><line x1="40" y1="190" x2="40" y2="20" stroke="#8a94a6" stroke-width="3"/>'; }
 // 에너지 준위 그래프: from/to = 반응물/생성물 y좌표(작을수록 에너지 높음), color = 화살표 색, label = 화살표 글자
@@ -2660,14 +2672,14 @@ function lecLevel(from, to, color, label, mid){
   return '<svg viewBox="0 0 340 230">'+lecAxes()
     + '<text x="12" y="16" font-size="17" font-weight="800" fill="#5b6b86">에너지</text>'
     + '<text x="175" y="222" font-size="17" font-weight="800" fill="#5b6b86" text-anchor="middle">반응 진행</text>'
-    + '<line x1="62" y1="'+from+'" x2="140" y2="'+from+'" stroke="#1b2a4a" stroke-width="7" stroke-linecap="round"/>'
-    + '<text x="101" y="'+(from-12)+'" font-size="20" font-weight="900" text-anchor="middle" fill="#1b2a4a">반응물</text>'
-    + '<line x1="240" y1="'+to+'" x2="318" y2="'+to+'" stroke="#1b2a4a" stroke-width="7" stroke-linecap="round"/>'
+    + '<g class="lv"><line x1="62" y1="'+from+'" x2="140" y2="'+from+'" stroke="#1b2a4a" stroke-width="7" stroke-linecap="round"/>'
+    + '<text x="101" y="'+(from-12)+'" font-size="20" font-weight="900" text-anchor="middle" fill="#1b2a4a">반응물</text></g>'
+    + '<g class="lv"><line x1="240" y1="'+to+'" x2="318" y2="'+to+'" stroke="#1b2a4a" stroke-width="7" stroke-linecap="round"/>'
     + '<text x="279" y="'+(up?to-12:to+30)+'" font-size="20" font-weight="900" text-anchor="middle" fill="#1b2a4a">생성물</text>'
-    + '<path d="M140 '+from+' C180 '+from+' 200 '+to+' 240 '+to+'" fill="none" stroke="#b5bdcc" stroke-width="3" stroke-dasharray="7 6"/>'
-    + (mid ? '<text x="190" y="'+Math.round((from+to)/2+8)+'" font-size="44" font-weight="900" text-anchor="middle" fill="#1b2a4a">?</text>'
-           : '<line x1="190" y1="'+ay1+'" x2="190" y2="'+ay2+'" stroke="'+color+'" stroke-width="6"/>'+head
-             +'<text x="204" y="'+Math.round((from+to)/2+6)+'" font-size="20" font-weight="900" fill="'+color+'">'+label+'</text>')
+    + '<path d="M140 '+from+' C180 '+from+' 200 '+to+' 240 '+to+'" fill="none" stroke="#b5bdcc" stroke-width="3" stroke-dasharray="7 6"/></g>'
+    + (mid ? '<g class="lv"><text x="190" y="'+Math.round((from+to)/2+8)+'" font-size="44" font-weight="900" text-anchor="middle" fill="#1b2a4a">?</text></g>'
+           : '<g class="lv"><line x1="190" y1="'+ay1+'" x2="190" y2="'+ay2+'" stroke="'+color+'" stroke-width="6"/>'+head
+             +'<text x="204" y="'+Math.round((from+to)/2+6)+'" font-size="20" font-weight="900" fill="'+color+'">'+label+'</text></g>')
     + '</svg>';
 }
 function lecSlide(no, title, mainHtml, banner){
@@ -2680,9 +2692,9 @@ const LECTURE_SLIDES = [
       '<div class="ls-card"><svg viewBox="0 0 340 230">'+lecAxes()
       +'<text x="12" y="16" font-size="17" font-weight="800" fill="#5b6b86">온도(℃)</text>'
       +'<text x="175" y="222" font-size="17" font-weight="800" fill="#5b6b86" text-anchor="middle">시간</text>'
-      +'<path d="M50 150 C100 148 120 95 175 62 S270 45 312 42" fill="none" stroke="#e4572e" stroke-width="7" stroke-linecap="round"/>'
       +'<circle cx="50" cy="150" r="8" fill="#1b2a4a"/><text x="62" y="176" font-size="18" font-weight="800" fill="#1b2a4a">처음 온도</text>'
-      +'<text x="62" y="80" font-size="21" font-weight="900" fill="#e4572e">온도가 올라갔다!</text></svg></div>'
+      +'<g class="lv"><path d="M50 150 C100 148 120 95 175 62 S270 45 312 42" fill="none" stroke="#e4572e" stroke-width="7" stroke-linecap="round"/>'
+      +'<text x="62" y="80" font-size="21" font-weight="900" fill="#e4572e">온도가 올라갔다!</text></g></svg></div>'
       +'<div class="ls-col">'
       +'<div class="ls-card"><div class="ls-head"><div class="ls-ic ls-org" style="color:#fff">🌡️</div><div class="ls-h">온도가 <span class="ls-txtorg">올라갔다</span></div></div>'
       +'<div class="ls-t">NaOH + HCl 중화 반응</div></div>'
@@ -2725,7 +2737,22 @@ function renderLecture(){
   const el = document.getElementById("lec-slide");
   el.className = "lec-slide ls";
   el.innerHTML = s.html;
+  // 클릭할 때마다 하나씩 나타날 요소: 그래프 조각(.lv) → 카드 → 아래 띠 순서(문서 순서)
+  lecSteps = [...el.querySelectorAll(".lv,.ls-col > .ls-card,.ls-main > .ls-card,.ls-banner")]
+    .filter(n=>!(n.matches(".ls-main > .ls-card") && n.querySelector("svg")));
+  lecSteps.forEach(n=>n.classList.add("lr"));
+  lecStepMax = lecSteps.length;
+  if(lecStep > lecStepMax) lecStep = lecStepMax;
+  paintLecStep();
   paintLecture();
+}
+let lecSteps = [];
+function paintLecStep(){
+  lecSteps.forEach((n,i)=>n.classList.toggle("on", i < lecStep));
+  const last = LECTURE_SLIDES.length-1;
+  document.getElementById("lec-count").textContent = (lecIdx+1)+" / "+LECTURE_SLIDES.length+" · 단계 "+lecStep+"/"+lecStepMax;
+  document.getElementById("lec-prev").disabled = (lecIdx===0 && lecStep===0);
+  document.getElementById("lec-next").disabled = (lecIdx===last && lecStep>=lecStepMax);
 }
 // QR 탭: images/qr.png 가 있으면 그것을, 없으면 이 페이지 주소로 QR을 만들어 보여줌
 function showQr(){
