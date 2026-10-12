@@ -954,6 +954,37 @@
     .teacher-topbar .gf-stagectl button{ padding:4px 5px; font-size:10.5px; }
   }
 
+  /* 교사 상단: 탭을 「QR / 학습내용 ▾ / 진행 상황」으로 정리 (옛 탭 버튼은 코드 호환용으로 숨김) */
+  .teacher-topbar #tab-results, .teacher-topbar #tab-groups, .teacher-topbar #tab-exprec,
+  .teacher-topbar #tab-neutral, .teacher-topbar #tab-heatq, .teacher-topbar #gf-stagectl{ display:none !important; }
+  .lm-menu{ position:fixed; z-index:10001; width:min(340px,92vw); background:#2a2a2d; color:#eee; border-radius:14px; padding:8px; box-shadow:0 12px 34px rgba(0,0,0,.35); }
+  .lm-menu.hidden{ display:none; }
+  .lm-item{ display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border:0; border-radius:10px; background:none; color:#eee; font:inherit; font-size:14.5px; font-weight:600; text-align:left; cursor:pointer; }
+  .lm-item:hover{ background:#3a3a3e; }
+  .lm-item.on{ background:rgba(204,120,92,.28); color:#fff; }
+  .lm-item .no{ width:20px; color:#9a9a9f; font-size:12px; font-weight:500; }
+  .lm-item .tg{ margin-left:auto; font-size:11px; color:#aaa; font-weight:500; }
+  .lm-item.q{ color:#7db8ff; }
+  .lm-sep{ border-top:1px solid #444; margin:4px 6px; }
+
+  /* 설명 슬라이드(교사 화면) / 학생 잠금 */
+  #view-lecture{ padding:10px 14px 16px; }
+  .lec-bar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+  .lec-bar .lec-tag{ font-size:12.5px; font-weight:800; color:var(--accent-active); background:var(--accent-dim); border-radius:999px; padding:4px 11px; }
+  .lec-slide{ background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:2.4vh 2.4vw; height:calc(100vh - 150px); min-height:380px; display:flex; flex-direction:column; }
+  .lec-slide .lec-n{ font-size:14px; font-weight:800; color:var(--accent); }
+  .lec-slide h2{ margin:2px 0 6px; font-size:clamp(22px,3.4vh,34px); }
+  .lec-body{ flex:1; min-height:0; display:flex; gap:2vw; align-items:center; }
+  .lec-body svg{ flex:1 1 60%; min-width:0; height:100%; max-height:100%; }
+  .lec-body .lec-tx{ flex:1 1 40%; font-size:clamp(16px,2.6vh,26px); line-height:1.7; }
+  .lec-hot{ color:#d9534f; font-weight:800; } .lec-cold{ color:#3b78c4; font-weight:800; }
+  .lec-chip{ display:inline-block; background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:1px 10px; font-size:.7em; margin:3px 3px 0 0; }
+  #lecture-lock{ position:fixed; inset:0; z-index:10000; background:linear-gradient(180deg,#2a2a2d,#181715); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; }
+  #lecture-lock.hidden{ display:none; }
+  #lecture-lock .big{ font-size:clamp(28px,7vw,52px); font-weight:900; line-height:1.35; }
+  #lecture-lock .sub{ margin-top:14px; font-size:clamp(15px,3.6vw,20px); color:#cfcac0; }
+  body.gf-watch #lecture-lock{ display:none !important; }
+
   /* 화학 반응식이 좁은 화면에서 넘치지 않게 */
   .gf-eq{ overflow-wrap:anywhere; }
   @media (max-width:599px){ .gf-eq, #view-heatq .gf-eq{ font-size:14.5px; padding:8px 6px; letter-spacing:0; } }
@@ -1070,7 +1101,7 @@
     <nav class="stage-nav hidden" id="stage-nav">
       <button data-stage="1">① 중화 반응 실험</button>
       <button data-stage="2">② 발열? 흡열?</button>
-      <button data-stage="3">③ 문제 풀이</button>
+      <button data-stage="3">③ 성찰 질문</button>
     </nav>
   </header>
 
@@ -1182,7 +1213,7 @@
       <div class="gf-err" id="gf-intro-err"></div>
       <div class="callout-warning">
         <div class="cw-title">⚠️ 시작 전 꼭 확인하세요</div>
-        이 문제는 학습지의 문제입니다. 문제를 풀 때 모르면 학습지를 보면서 풀어보세요. 장난스럽게 푸는 경우 감점의 대상이 됩니다.
+        오늘 활동은 조원과 함께 진행해요. 실험과 퀴즈에 성실하게 참여해 주세요. 장난스럽게 참여하는 경우 감점의 대상이 됩니다.
       </div>
       <div class="btnrow">
         <button class="btn primary" id="btn-start" disabled>시작하기</button>
@@ -1243,7 +1274,7 @@
       <div class="done-card">
         <div class="done-inner">
           <div class="done-badge">✅ 완주 인증</div>
-          <div class="done-sub">전 문항 + 성찰 질문 3개 완료</div>
+          <div class="done-sub">성찰 질문 3개 완료</div>
           <div class="done-gauge">
             <div class="ring" id="done-ring"></div>
             <div class="hole"><img id="done-img" src="" alt=""></div>
@@ -1294,13 +1325,14 @@
     <!-- 반 선택 후 화면 -->
     <div id="teacher-main" class="hidden">
       <div class="teacher-topbar">
+        <button class="pill-tab" id="tab-qr"><span class="lbl-lg">📱 QR</span><span class="lbl-sm">📱 QR</span></button>
+        <button class="pill-tab" id="tab-menu" aria-haspopup="true"><span id="tab-menu-label">📚 학습내용</span> ▾</button>
         <button class="pill-tab active" id="tab-progress"><span class="lbl-lg">진행 상황</span><span class="lbl-sm">진행</span></button>
         <button class="pill-tab" id="tab-results"><span class="lbl-lg">문항별 결과</span><span class="lbl-sm">문항별</span></button>
         <button class="pill-tab" id="tab-groups"><span class="lbl-lg">👥 조별 활동</span><span class="lbl-sm">👥 조별</span></button>
         <button class="pill-tab" id="tab-exprec"><span class="lbl-lg">📈 실험 기록</span><span class="lbl-sm">📈 실험기록</span></button>
         <button class="pill-tab" id="tab-neutral"><span class="lbl-lg">🧪 중화 반응 실험</span><span class="lbl-sm">🧪 중화실험</span></button>
         <button class="pill-tab" id="tab-heatq"><span class="lbl-lg">🔥 발열·흡열 퀴즈</span><span class="lbl-sm">🔥 발열퀴즈</span></button>
-        <button class="pill-tab" id="tab-qr"><span class="lbl-lg">📱 QR 코드</span><span class="lbl-sm">📱 QR</span></button>
         <span class="gf-stagectl" id="gf-stagectl" title="학생 진행 단계"><button data-open="0" title="대기: 학생들이 입장 후 대기 화면에서 기다려요">⏸<span class="sl"> 대기</span></button><button data-open="1" title="① 실험 시작">①<span class="sl"> 실험</span></button><button data-open="2" title="② 퀴즈 열기">②<span class="sl"> 퀴즈</span></button><button data-open="3" title="③ 문제풀이 열기">③<span class="sl"> 문제풀이</span></button></span>
         <button class="btn gate-btn state-unknown" id="btn-gate-toggle">접속 확인 중…</button>
         <span class="spacer"></span>
@@ -1389,6 +1421,16 @@
       <!-- 교사용 중화 반응 실험(온도 측정·그래프·중화점 계산·에너지 도표 포함 전체 버전) -->
       <div id="view-neutral" class="hidden"><iframe id="gf-neutral-frame" title="중화 반응 실험"></iframe></div>
       <!-- 발열·흡열 퀴즈 문항별 설명 화면 -->
+      <div id="view-lecture" class="hidden">
+        <div class="lec-bar">
+          <button class="btn ghost" id="lec-prev">◀ 이전</button>
+          <span class="tq-count" id="lec-count">1 / 5</span>
+          <button class="btn primary" id="lec-next">다음 ▶</button>
+          <span class="lec-tag" id="lec-lock-tag">📵 학생 화면 가림</span>
+          <button class="btn ghost" id="lec-lock-toggle">학생 화면 열기</button>
+        </div>
+        <div class="lec-slide" id="lec-slide"></div>
+      </div>
       <div id="view-heatq" class="hidden"><div id="gf-t-quiz"></div></div>
       <div id="view-qr" class="hidden"><div class="gf-qrbox"><img id="gf-qr-img" alt="접속 QR 코드"><div id="gf-qr-gen"></div><p class="gf-qrnote">휴대폰·태블릿 카메라로 QR을 찍어 접속하세요</p><p class="gf-qrurl" id="gf-qr-url"></p></div></div>
 
@@ -1424,6 +1466,13 @@
 <!-- "문제풀기 그만!" 정지 오버레이 — 선생님이 정지시키면 학생 화면을 완전히 덮는다 -->
 <div class="problemstop-overlay hidden" id="problemstop-overlay">
   <div class="problemstop-msg">문제를 선생님과<br>함께 풀어봅시다</div>
+</div>
+
+<div class="lm-menu hidden" id="lesson-menu"></div>
+<!-- 설명 시간 잠금 —선생님이 설명 슬라이드를 켜 두는 동안 학생 화면을 가린다 -->
+<div id="lecture-lock" class="hidden">
+  <div class="big">👀 앞 화면을 봐 주세요</div>
+  <div class="sub">선생님 설명이 끝나면 다시 열려요</div>
 </div>
 
 </div><!-- /#app-root -->
@@ -1596,7 +1645,8 @@ const CHAR_SALT = "에너지의 흡수와 방출";
 /* ============================================================
    문항 데이터
 ============================================================ */
-const QUESTIONS = [
+// 개인 학습지 문항은 수업 흐름에서 제외했다(데이터만 보관). 되살리려면 아래 QUESTIONS = QUESTIONS_ARCHIVE 로 바꾼다.
+const QUESTIONS_ARCHIVE = [
   /* ══════════ 에너지의 흡수와 방출 (학습지 36~41쪽) ══════════ */
 
   /* ── 스스로 확인하기 ① (36쪽) ── */
@@ -1715,6 +1765,7 @@ const QUESTIONS = [
     text:"[2026 실시 9월 학평 12번 통합과학(고2)]",
     image:"images/img-2026sep-12.png", imageSize:"small" },
 ];
+const QUESTIONS = [];
 
 const REFLECT_QUESTIONS = [
   "이번 소단원에서 가장 호기심이 생겼던 개념이나, 이해가 잘 되지 않아 막혔던 부분은 무엇인가요?",
@@ -1810,6 +1861,15 @@ function charForStudent(str){
 // 완료 화면 게임 카드 채우기
 function renderDoneCard(){
   const total = QUESTIONS.length;
+  if(total === 0){
+    document.getElementById("done-img").src = charForStudent(state.studentName);
+    document.getElementById("done-pct-num").textContent = "참여 완료";
+    document.getElementById("done-pct-sub").textContent = "오늘 활동에 끝까지 참여했어요";
+    document.getElementById("done-ring").style.background = "conic-gradient(#5db8a6 0 1turn)";
+    document.getElementById("done-msg").textContent = "고생했어요! 💪";
+    document.getElementById("done-tip").textContent = "오늘 활동과 방금 남긴 생각까지 선생님께 잘 전달됐어요.";
+    return;
+  }
   let answered = 0;
   for(let i=0;i<total;i++){ if(String(state.answers[i]||"").trim() !== "") answered++; }
   const acc = state.lastAccuracy;
@@ -1899,11 +1959,13 @@ document.getElementById("btn-start").addEventListener("click", async ()=>{
   startBtn.disabled = false;
   if(prevAnswers && prevAnswers.length){
     const nQ = QUESTIONS.length;
+    // 예전(문항 포함) 기록이면 마지막 3칸이 성찰 답이므로 그 위치에서 읽는다
+    const off = Math.max(0, prevAnswers.length - (nQ + REFLECT_QUESTIONS.length));
     for(let i=0; i<nQ; i++){
       if(prevAnswers[i] !== undefined && prevAnswers[i] !== "") state.answers[i] = prevAnswers[i];
     }
     for(let j=0; j<REFLECT_QUESTIONS.length; j++){
-      const v = prevAnswers[nQ + j];
+      const v = prevAnswers[off + nQ + j];
       if(v !== undefined && v !== "") state.reflectAnswers[j] = v;
     }
   }
@@ -1917,8 +1979,14 @@ var worksheetStarted = false, worksheetScreen = "question";
 function openWorksheet(){
   if(!worksheetStarted){
     worksheetStarted = true;
-    renderQuestion();
-    showScreen("question");
+    if(QUESTIONS.length === 0){
+      state.reflectIdx = 0;
+      renderReflect();
+      showScreen("reflect");
+    } else {
+      renderQuestion();
+      showScreen("question");
+    }
     reportProgress();
   } else {
     if(worksheetScreen === "reflect") renderReflect();
@@ -2094,7 +2162,7 @@ document.getElementById("btn-reflect-prev").addEventListener("click", ()=>{
   if(state.reflectIdx > 0){
     state.reflectIdx--;
     renderReflect();
-  } else {
+  } else if(QUESTIONS.length > 0){
     // 마지막 문항으로 되돌아감
     state.current = QUESTIONS.length-1;
     renderQuestion();
@@ -2460,6 +2528,9 @@ function switchTeacherTab(tab){
   document.getElementById("view-heatq").classList.toggle("hidden", tab!=="heatq");
   document.getElementById("tab-qr").classList.toggle("active", tab==="qr");
   document.getElementById("view-qr").classList.toggle("hidden", tab!=="qr");
+  document.getElementById("view-lecture").classList.toggle("hidden", tab!=="lecture");
+  if(tab==="lecture") renderLecture();
+  paintMenuBtn(tab);
   if(tab==="qr") showQr();
   if(tab==="neutral"){ const f=document.getElementById("gf-neutral-frame"); if(!f.src) f.src="neutralization.html?v=8"; fitNeutralFrame(); }
   if(tab==="groups" || tab==="exprec" || tab==="heatq") GF.teacherRender();
@@ -2481,6 +2552,106 @@ function fitNeutralFrame(){
 window.addEventListener("resize", fitNeutralFrame);
 document.getElementById("tab-heatq").addEventListener("click", ()=>switchTeacherTab("heatq"));
 document.getElementById("tab-qr").addEventListener("click", ()=>switchTeacherTab("qr"));
+
+/* ---------- 「학습내용 ▾」 메뉴 + 발열·흡열 설명 슬라이드 ---------- */
+const LESSON_ITEMS = [
+  {no:1, icon:"⏸", label:"입장·대기", tab:"progress", open:0, lec:false},
+  {no:2, icon:"🧪", label:"중화 반응 실험", tab:"neutral", open:1, lec:false, tg:"학생 ① 열림"},
+  {no:3, icon:"📈", label:"실험 기록", tab:"exprec", tg:"보기만"},
+  {no:4, icon:"💡", label:"발열·흡열 설명", tab:"lecture", lec:true, tg:"학생 화면 가림"},
+  {no:5, icon:"🔥", label:"발열·흡열 퀴즈", tab:"heatq", open:2, lec:false, q:true, tg:"학생 ② 열림"},
+  {no:6, icon:"✍️", label:"성찰 질문·결과", tab:"results", open:3, lec:false, tg:"학생 ③ 열림"},
+  {sep:true},
+  {no:0, icon:"👥", label:"조별 현황", tab:"groups", tg:"보기만"},
+];
+let lectureOn = false, lecIdx = 0;
+async function setLecture(on){
+  lectureOn = !!on;
+  paintLecture();
+  if(!teacherClass) return;
+  try{ await setSetting("lecture-"+teacherClass, {on:lectureOn}); }catch(e){}
+}
+async function loadLecture(){
+  if(!teacherClass) return;
+  try{ const v = await getSetting("lecture-"+teacherClass); lectureOn = !!(v && v.on); paintLecture(); }catch(e){}
+}
+function paintLecture(){
+  const t = document.getElementById("lec-lock-tag"), b = document.getElementById("lec-lock-toggle");
+  if(t) t.textContent = lectureOn ? "📵 학생 화면 가림" : "👀 학생 화면 열림";
+  if(b) b.textContent = lectureOn ? "학생 화면 열기" : "학생 화면 가리기";
+  paintMenuBtn(teacherTab);
+}
+function paintMenuBtn(tab){
+  const btn = document.getElementById("tab-menu"), lab = document.getElementById("tab-menu-label");
+  if(!btn || !lab) return;
+  const it = LESSON_ITEMS.find(x=>x.tab===tab);
+  const inMenu = !!it && tab!=="progress";
+  btn.classList.toggle("active", inMenu);
+  lab.textContent = (inMenu ? it.icon+" "+it.label : "📚 학습내용") + (lectureOn ? " 🔒" : "");
+}
+function buildLessonMenu(){
+  const m = document.getElementById("lesson-menu");
+  m.innerHTML = "";
+  LESSON_ITEMS.forEach(it=>{
+    if(it.sep){ const d=document.createElement("div"); d.className="lm-sep"; m.appendChild(d); return; }
+    const b = document.createElement("button");
+    b.className = "lm-item" + (it.q?" q":"") + (teacherTab===it.tab?" on":"");
+    b.innerHTML = '<span class="no">'+(it.no||"")+'</span><span>'+it.icon+" "+it.label+'</span><span class="tg">'+(it.tg||"")+'</span>';
+    b.addEventListener("click", async ()=>{
+      m.classList.add("hidden");
+      switchTeacherTab(it.tab);
+      if(it.open !== undefined){
+        const o = document.querySelector('#gf-stagectl [data-open="'+it.open+'"]'); if(o) o.click();
+      }
+      if(it.lec !== undefined) await setLecture(it.lec);
+    });
+    m.appendChild(b);
+  });
+}
+(function(){
+  const btn = document.getElementById("tab-menu"), m = document.getElementById("lesson-menu");
+  btn.addEventListener("click", async (e)=>{
+    e.stopPropagation();
+    if(!m.classList.contains("hidden")){ m.classList.add("hidden"); return; }
+    await loadLecture();
+    buildLessonMenu();
+    const r = btn.getBoundingClientRect();
+    m.style.left = Math.max(6, Math.min(r.left, window.innerWidth - 350)) + "px";
+    m.style.top = (r.bottom + 6) + "px";
+    m.classList.remove("hidden");
+  });
+  document.addEventListener("click", e=>{ if(!m.contains(e.target)) m.classList.add("hidden"); });
+  document.getElementById("lec-lock-toggle").addEventListener("click", ()=>setLecture(!lectureOn));
+  document.getElementById("lec-prev").addEventListener("click", ()=>{ if(lecIdx>0){ lecIdx--; renderLecture(); } });
+  document.getElementById("lec-next").addEventListener("click", ()=>{ if(lecIdx<LECTURE_SLIDES.length-1){ lecIdx++; renderLecture(); } });
+})();
+function lecAxes(){ return '<line x1="30" y1="175" x2="290" y2="175" stroke="#999" stroke-width="1.5"/><line x1="30" y1="175" x2="30" y2="15" stroke="#999" stroke-width="1.5"/>'; }
+const LECTURE_SLIDES = [
+  {n:"1 / 5 · 실험 되돌아보기", h:"우리 실험에서 온도는 어떻게 변했나?",
+   svg:'<svg viewBox="0 0 300 200">'+lecAxes()+'<text x="150" y="195" font-size="11" text-anchor="middle" fill="#666">시간(초)</text><text x="4" y="12" font-size="11" fill="#666">온도(℃)</text><path d="M30 140 C80 138 100 90 150 55 S250 40 285 38" fill="none" stroke="#d9534f" stroke-width="3.5"/><circle cx="30" cy="140" r="4" fill="#333"/><text x="38" y="160" font-size="11">처음 온도</text><text x="185" y="30" font-size="12" fill="#d9534f" font-weight="700">▲ 온도 상승</text></svg>',
+   tx:'NaOH 수용액과 HCl 수용액을 섞었더니 온도가 <span class="lec-hot">올랐다</span>.<br><br>용액의 온도가 올랐다 = 반응하면서 주변으로 <b>열(에너지)을 내보냈다</b>.'},
+  {n:"2 / 5 · 발열 반응", h:"🔥 발열 반응 — 에너지를 방출",
+   svg:'<svg viewBox="0 0 300 200">'+lecAxes()+'<text x="150" y="195" font-size="11" text-anchor="middle" fill="#666">반응 진행</text><text x="4" y="12" font-size="11" fill="#666">에너지</text><line x1="45" y1="50" x2="115" y2="50" stroke="#333" stroke-width="4"/><text x="80" y="42" font-size="12" text-anchor="middle">반응물</text><line x1="195" y1="130" x2="265" y2="130" stroke="#333" stroke-width="4"/><text x="230" y="150" font-size="12" text-anchor="middle">생성물</text><path d="M115 50 C150 50 160 130 195 130" fill="none" stroke="#999" stroke-dasharray="4"/><line x1="150" y1="55" x2="150" y2="122" stroke="#d9534f" stroke-width="3"/><polygon points="150,128 144,116 156,116" fill="#d9534f"/><text x="158" y="95" font-size="12" fill="#d9534f" font-weight="700">열 방출</text></svg>',
+   tx:'반응물의 에너지 <b>&gt;</b> 생성물의 에너지<br>차이만큼 에너지를 <span class="lec-hot">방출</span><br>→ 주변의 온도 <span class="lec-hot">↑</span><br><span class="lec-chip">연소</span><span class="lec-chip">중화 반응</span><span class="lec-chip">세포호흡</span><span class="lec-chip">손난로</span>'},
+  {n:"3 / 5 · 흡열 반응", h:"🧊 흡열 반응 — 에너지를 흡수",
+   svg:'<svg viewBox="0 0 300 200">'+lecAxes()+'<text x="150" y="195" font-size="11" text-anchor="middle" fill="#666">반응 진행</text><text x="4" y="12" font-size="11" fill="#666">에너지</text><line x1="45" y1="130" x2="115" y2="130" stroke="#333" stroke-width="4"/><text x="80" y="150" font-size="12" text-anchor="middle">반응물</text><line x1="195" y1="50" x2="265" y2="50" stroke="#333" stroke-width="4"/><text x="230" y="42" font-size="12" text-anchor="middle">생성물</text><path d="M115 130 C150 130 160 50 195 50" fill="none" stroke="#999" stroke-dasharray="4"/><line x1="150" y1="125" x2="150" y2="60" stroke="#3b78c4" stroke-width="3"/><polygon points="150,53 144,65 156,65" fill="#3b78c4"/><text x="158" y="95" font-size="12" fill="#3b78c4" font-weight="700">열 흡수</text></svg>',
+   tx:'반응물의 에너지 <b>&lt;</b> 생성물의 에너지<br>차이만큼 에너지를 <span class="lec-cold">흡수</span><br>→ 주변의 온도 <span class="lec-cold">↓</span><br><span class="lec-chip">냉찜질 팩</span><span class="lec-chip">광합성</span><span class="lec-chip">열분해</span>'},
+  {n:"4 / 5 · 한눈에 비교", h:"온도 변화 그래프로 구별하기",
+   svg:'<svg viewBox="0 0 300 200">'+lecAxes()+'<line x1="30" y1="95" x2="290" y2="95" stroke="#bbb" stroke-dasharray="3"/><text x="34" y="90" font-size="10" fill="#888">처음 온도</text><path d="M30 95 C90 90 130 40 285 30" fill="none" stroke="#d9534f" stroke-width="3.5"/><text x="170" y="22" font-size="12" fill="#d9534f" font-weight="700">발열: 온도 ↑</text><path d="M30 95 C90 100 130 150 285 160" fill="none" stroke="#3b78c4" stroke-width="3.5"/><text x="170" y="172" font-size="12" fill="#3b78c4" font-weight="700">흡열: 온도 ↓</text></svg>',
+   tx:'<span class="lec-hot">발열</span> : 에너지 방출 → 주변이 따뜻해진다<br><span class="lec-cold">흡열</span> : 에너지 흡수 → 주변이 차가워진다<br><br>🔑 <b>주변의 온도 변화</b>로 판단!'},
+  {n:"5 / 5 · 바로 확인", h:"이 그래프는 발열 반응? 흡열 반응?",
+   svg:'<svg viewBox="0 0 300 200">'+lecAxes()+'<text x="150" y="195" font-size="11" text-anchor="middle" fill="#666">반응 진행</text><text x="4" y="12" font-size="11" fill="#666">에너지</text><line x1="45" y1="140" x2="115" y2="140" stroke="#333" stroke-width="4"/><text x="80" y="160" font-size="12" text-anchor="middle">반응물</text><line x1="195" y1="55" x2="265" y2="55" stroke="#333" stroke-width="4"/><text x="230" y="47" font-size="12" text-anchor="middle">생성물</text><path d="M115 140 C150 140 160 55 195 55" fill="none" stroke="#999" stroke-dasharray="4"/><text x="150" y="112" font-size="34" text-anchor="middle">?</text></svg>',
+   tx:'① 발열 반응<br>② 흡열 반응<br><br>생각해 본 뒤, 이어서 <b>조별 퀴즈</b>로 확인해요!'},
+];
+function renderLecture(){
+  const s = LECTURE_SLIDES[lecIdx];
+  document.getElementById("lec-count").textContent = (lecIdx+1)+" / "+LECTURE_SLIDES.length;
+  document.getElementById("lec-prev").disabled = lecIdx===0;
+  document.getElementById("lec-next").disabled = lecIdx===LECTURE_SLIDES.length-1;
+  document.getElementById("lec-slide").innerHTML =
+    '<div class="lec-n">'+s.n+'</div><h2>'+s.h+'</h2><div class="lec-body">'+s.svg+'<div class="lec-tx">'+s.tx+'</div></div>';
+  paintLecture();
+}
 // QR 탭: images/qr.png 가 있으면 그것을, 없으면 이 페이지 주소로 QR을 만들어 보여줌
 function showQr(){
   const img=document.getElementById("gf-qr-img"), gen=document.getElementById("gf-qr-gen"), u=document.getElementById("gf-qr-url");
@@ -3282,7 +3453,7 @@ window.GF = (function(){
   const GROUP_COUNT = 6;
   const CONTROL_ROLE = "실험자";
   const RECORD_ROLE  = "관찰자";
-  const STAGE_NAMES = ["","① 중화 반응 실험","② 발열? 흡열?","③ 문제 풀이"];
+  const STAGE_NAMES = ["","① 중화 반응 실험","② 발열? 흡열?","③ 성찰 질문"];
   const $ = id => document.getElementById(id);
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
@@ -3360,6 +3531,7 @@ window.GF = (function(){
     try{
       const v = await getSetting("stage-"+me.cls);
       stageMax = v ? v.max : 0;
+      try{ const lv = await getSetting("lecture-"+me.cls); $("lecture-lock").classList.toggle("hidden", !(lv && lv.on)); }catch(e){}
       if(stageMax < 1){ if(!waiting) showWait(); }
       else if(waiting){ waiting = false; $("stage-nav").classList.remove("hidden"); if(isRec() && !recShown){ recShown = true; $("gf-st-rec").click(); } goStage(groupStage); }
       paintNext();
@@ -4391,6 +4563,7 @@ function simStep(dt){
   const vis = id => { const e=document.getElementById(id); return e && !e.classList.contains("hidden") && e.offsetParent!==null; };
   const click = el => { if(el && !el.disabled){ el.click(); return true; } return false; };
   function next(){
+    if(vis("view-lecture")) return click(document.getElementById("lec-next"));
     if(vis("view-results")){
       const gate = document.getElementById("reveal-gate");
       if(gate && !gate.classList.contains("hidden")) return click(document.getElementById("btn-reveal"));
@@ -4406,6 +4579,7 @@ function simStep(dt){
     return false;
   }
   function prev(){
+    if(vis("view-lecture")) return click(document.getElementById("lec-prev"));
     if(vis("view-results")) return click(document.getElementById("btn-tq-prev"));
     if(vis("view-heatq")) return click(document.getElementById("gf-tq-prev"));
     return false;
