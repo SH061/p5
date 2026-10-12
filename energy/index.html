@@ -1130,7 +1130,7 @@
     <nav class="stage-nav hidden" id="stage-nav">
       <button data-stage="1">① 중화 반응 실험</button>
       <button data-stage="2">② 발열? 흡열?</button>
-      <button data-stage="3">③ 성찰 질문</button>
+      <button data-stage="3">③ 문제 풀이</button>
     </nav>
   </header>
 
@@ -1242,7 +1242,7 @@
       <div class="gf-err" id="gf-intro-err"></div>
       <div class="callout-warning">
         <div class="cw-title">⚠️ 시작 전 꼭 확인하세요</div>
-        오늘 활동은 조원과 함께 진행해요. 실험과 퀴즈에 성실하게 참여해 주세요. 장난스럽게 참여하는 경우 감점의 대상이 됩니다.
+        이 문제는 학습지의 문제입니다. 문제를 풀 때 모르면 학습지를 보면서 풀어보세요. 장난스럽게 푸는 경우 감점의 대상이 됩니다.
       </div>
       <div class="btnrow">
         <button class="btn primary" id="btn-start" disabled>시작하기</button>
@@ -1303,7 +1303,7 @@
       <div class="done-card">
         <div class="done-inner">
           <div class="done-badge">✅ 완주 인증</div>
-          <div class="done-sub">성찰 질문 3개 완료</div>
+          <div class="done-sub">전 문항 + 성찰 질문 3개 완료</div>
           <div class="done-gauge">
             <div class="ring" id="done-ring"></div>
             <div class="hole"><img id="done-img" src="" alt=""></div>
@@ -1674,7 +1674,7 @@ const CHAR_SALT = "에너지의 흡수와 방출";
 /* ============================================================
    문항 데이터
 ============================================================ */
-// 개인 학습지 문항은 수업 흐름에서 제외했다(데이터만 보관). 되살리려면 아래 QUESTIONS = QUESTIONS_ARCHIVE 로 바꾼다.
+// 전체 문항 원본(기출·수능대비 포함). 실제 수업에 쓰는 목록은 아래 QUESTIONS.
 const QUESTIONS_ARCHIVE = [
   /* ══════════ 에너지의 흡수와 방출 (학습지 36~41쪽) ══════════ */
 
@@ -1794,7 +1794,8 @@ const QUESTIONS_ARCHIVE = [
     text:"[2026 실시 9월 학평 12번 통합과학(고2)]",
     image:"images/img-2026sep-12.png", imageSize:"small" },
 ];
-const QUESTIONS = [];
+// 개인 문제 풀이: 기출 문제·수능대비문제만 제외하고 나머지(스스로 확인하기·확인문제·깨알 개념 체크)는 유지
+const QUESTIONS = QUESTIONS_ARCHIVE.filter(q => !/^기출\s*문제/.test(q.tag||"") && q.tag !== "수능대비문제");
 
 const REFLECT_QUESTIONS = [
   "이번 소단원에서 가장 호기심이 생겼던 개념이나, 이해가 잘 되지 않아 막혔던 부분은 무엇인가요?",
@@ -2589,7 +2590,7 @@ const LESSON_ITEMS = [
   {no:3, icon:"📈", label:"실험 기록", tab:"exprec", tg:"보기만"},
   {no:4, icon:"💡", label:"발열·흡열 설명", tab:"lecture", lec:true, tg:"학생 화면 가림"},
   {no:5, icon:"🔥", label:"발열·흡열 퀴즈", tab:"heatq", open:2, lec:false, q:true, tg:"학생 ② 열림"},
-  {no:6, icon:"✍️", label:"성찰 질문·결과", tab:"results", open:3, lec:false, tg:"학생 ③ 열림"},
+  {no:6, icon:"✍️", label:"문제 풀이·결과", tab:"results", open:3, lec:false, tg:"학생 ③ 열림"},
   {sep:true},
   {no:0, icon:"👥", label:"조별 현황", tab:"groups", tg:"보기만"},
 ];
@@ -3555,7 +3556,7 @@ window.GF = (function(){
   const GROUP_COUNT = 6;
   const CONTROL_ROLE = "실험자";
   const RECORD_ROLE  = "관찰자";
-  const STAGE_NAMES = ["","① 중화 반응 실험","② 발열? 흡열?","③ 성찰 질문"];
+  const STAGE_NAMES = ["","① 중화 반응 실험","② 발열? 흡열?","③ 문제 풀이"];
   const $ = id => document.getElementById(id);
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
